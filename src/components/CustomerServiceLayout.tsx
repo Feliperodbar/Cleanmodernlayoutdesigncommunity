@@ -485,10 +485,29 @@ export function CustomerServiceLayout({ onNewService, customer, onSelectCustomer
                           <div className="space-y-3">
                             <p className="text-xs text-slate-500">Serviços da UC</p>
                             <div className="grid grid-cols-2 md:grid-cols-3 gap-3">
+                              {/* Coluna única com os três serviços apenas com switch */}
+                              <div className="col-span-2 md:col-span-1 flex flex-col gap-3">
+                                {toggleServicesList.map((service) => {
+                                  const on = isServiceOn(address.id, service);
+                                  return (
+                                    <div key={service} className="flex items-center justify-between rounded-md border border-slate-200 bg-white p-3">
+                                      <span className="text-sm text-slate-900">{service}</span>
+                                      <div className="flex items-center gap-2">
+                                        <span className={`text-xs font-medium ${on ? 'text-green-600' : 'text-red-600'}`}>{on ? 'Ligado' : 'Desligado'}</span>
+                                        <Switch
+                                          checked={on}
+                                          onCheckedChange={(v) => setServiceOn(address.id, service, v)}
+                                          aria-label={`Alternar ${service}`}
+                                          className="data-[state=checked]:bg-green-500 data-[state=unchecked]:bg-red-500"
+                                        />
+                                      </div>
+                                    </div>
+                                  );
+                                })}
+                              </div>
+
+                              {/* Demais serviços com botão e favoritos */}
                               {[
-                                'Fatura Digital',
-                                'Débito Automático',
-                                'Data Certa',
                                 'Atendimento Emergencial',
                                 'Alteração Cadastral',
                                 '2ª Via de Quitação de Débito',
@@ -514,13 +533,6 @@ export function CustomerServiceLayout({ onNewService, customer, onSelectCustomer
                                     >
                                       <Star className={`w-4 h-4 ${favoriteServices.includes(service) ? 'text-yellow-500' : 'text-slate-400'}`} fill={favoriteServices.includes(service) ? 'currentColor' : 'none'} />
                                     </Button>
-                                    {toggleServicesList.includes(service) && (
-                                      <Switch
-                                        checked={isServiceOn(address.id, service)}
-                                        onCheckedChange={(v) => setServiceOn(address.id, service, v)}
-                                        aria-label={`Alternar ${service}`}
-                                      />
-                                    )}
                                   </div>
                                 </div>
                               ))}
