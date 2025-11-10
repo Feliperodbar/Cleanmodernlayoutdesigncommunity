@@ -484,15 +484,16 @@ export function CustomerServiceLayout({ onNewService, customer, onSelectCustomer
 
                           <div className="space-y-3">
                             <p className="text-xs text-slate-500">Serviços da UC</p>
-                            <div className="grid grid-cols-2 md:grid-cols-3 gap-3">
-                              {/* Coluna única com os três serviços apenas com switch */}
-                              <div className="col-span-2 md:col-span-1 flex flex-col gap-3">
+                            {/* Container único para todos os serviços */}
+                            <div className="rounded-lg border border-slate-200 bg-white overflow-hidden">
+                              <div className="divide-y divide-slate-200">
+                                {/* Serviços com switch, sem texto, com ícone de estado */}
                                 {toggleServicesList.map((service) => {
                                   const on = isServiceOn(address.id, service);
                                   return (
                                     <div
                                       key={service}
-                                      className="flex items-center justify-between rounded-md border border-slate-200 bg-white p-3 cursor-pointer"
+                                      className="flex items-center justify-between p-3 cursor-pointer"
                                       role="button"
                                       tabIndex={0}
                                       aria-pressed={on}
@@ -504,7 +505,10 @@ export function CustomerServiceLayout({ onNewService, customer, onSelectCustomer
                                         }
                                       }}
                                     >
-                                      <span className="text-sm text-slate-900">{service}</span>
+                                      <div className="flex items-center gap-2">
+                                        <Power className={`w-4 h-4 ${on ? 'text-green-600' : 'text-red-600'}`} />
+                                        <span className="text-sm text-slate-900">{service}</span>
+                                      </div>
                                       <div className="flex items-center gap-2">
                                         <Button
                                           variant="ghost"
@@ -518,7 +522,6 @@ export function CustomerServiceLayout({ onNewService, customer, onSelectCustomer
                                         >
                                           <Star className={`w-4 h-4 ${favoriteServices.includes(service) ? 'text-yellow-500' : 'text-slate-400'}`} fill={favoriteServices.includes(service) ? 'currentColor' : 'none'} />
                                         </Button>
-                                        <span className={`text-xs font-medium ${on ? 'text-green-600' : 'text-red-600'}`}>{on ? 'Ligado' : 'Desligado'}</span>
                                         <Switch
                                           checked={on}
                                           onCheckedChange={(v) => setServiceOn(address.id, service, v)}
@@ -530,39 +533,39 @@ export function CustomerServiceLayout({ onNewService, customer, onSelectCustomer
                                     </div>
                                   );
                                 })}
-                              </div>
 
-                              {/* Demais serviços com botão e favoritos */}
-                              {[
-                                'Atendimento Emergencial',
-                                'Alteração Cadastral',
-                                '2ª Via de Quitação de Débito',
-                                '2ª Via de Fatura',
-                                '2ª Via de Contrato de Parcelamento',
-                              ].map((service) => (
-                                <div
-                                  key={service}
-                                  className="rounded-md border border-slate-200 bg-white p-2 flex items-center justify-between"
-                                >
-                                  <Button
-                                    variant="outline"
-                                    className="h-auto px-3 py-2 justify-start gap-2 text-[#003A70] border-[#003A70]/20 hover:bg-[#003A70]/5"
-                                    size="sm"
+                                {/* Demais serviços com botão e favoritos, uniformes */}
+                                {[
+                                  'Atendimento Emergencial',
+                                  'Alteração Cadastral',
+                                  '2ª Via de Quitação de Débito',
+                                  '2ª Via de Fatura',
+                                  '2ª Via de Contrato de Parcelamento',
+                                ].map((service) => (
+                                  <div
+                                    key={service}
+                                    className="flex items-center justify-between p-2"
                                   >
-                                    <FileText className="w-4 h-4" />
-                                    {service}
-                                  </Button>
-                                  <Button
-                                    variant="ghost"
-                                    size="icon"
-                                    className="h-8 w-8"
-                                    onClick={() => toggleFavorite(service)}
-                                    aria-label={favoriteServices.includes(service) ? 'Remover dos favoritos' : 'Adicionar aos favoritos'}
-                                  >
-                                    <Star className={`w-4 h-4 ${favoriteServices.includes(service) ? 'text-yellow-500' : 'text-slate-400'}`} fill={favoriteServices.includes(service) ? 'currentColor' : 'none'} />
-                                  </Button>
-                                </div>
-                              ))}
+                                    <Button
+                                      variant="outline"
+                                      className="h-9 px-3 justify-start gap-2 text-[#003A70] border-[#003A70]/20 hover:bg-[#003A70]/5"
+                                      size="sm"
+                                    >
+                                      <FileText className="w-4 h-4" />
+                                      {service}
+                                    </Button>
+                                    <Button
+                                      variant="ghost"
+                                      size="icon"
+                                      className="h-8 w-8"
+                                      onClick={() => toggleFavorite(service)}
+                                      aria-label={favoriteServices.includes(service) ? 'Remover dos favoritos' : 'Adicionar aos favoritos'}
+                                    >
+                                      <Star className={`w-4 h-4 ${favoriteServices.includes(service) ? 'text-yellow-500' : 'text-slate-400'}`} fill={favoriteServices.includes(service) ? 'currentColor' : 'none'} />
+                                    </Button>
+                                  </div>
+                                ))}
+                              </div>
                             </div>
                           </div>
                         </div>
