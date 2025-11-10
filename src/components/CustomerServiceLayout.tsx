@@ -7,6 +7,7 @@ import { Badge } from './ui/badge';
 import { Separator } from './ui/separator';
 import { Avatar, AvatarFallback } from './ui/avatar';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from './ui/select';
+import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle } from './ui/alert-dialog';
 // Switch removido conforme nova especificação
 import { customers, findCustomers } from '../data/customers';
 import type { Customer } from '../data/customers';
@@ -24,6 +25,14 @@ export function CustomerServiceLayout({ onNewService, customer, onSelectCustomer
   const [suggestions, setSuggestions] = useState<Customer[]>([]);
   const [showSuggestions, setShowSuggestions] = useState(false);
   // Removidos estados e persistência de favoritos e switches
+  // Estados de serviços (inativo/ativo) para Fatura Digital, Débito Automático e Data Certa
+  const [serviceStatus, setServiceStatus] = useState<Record<string, boolean>>({
+    'Fatura Digital': false,
+    'Débito Automático': false,
+    'Data Certa': false,
+  });
+  const [confirmOpen, setConfirmOpen] = useState(false);
+  const [pendingService, setPendingService] = useState<string | null>(null);
   const distributors = [
     'Neoenergia Elektro',
     'Neoenergia Coelba',
@@ -81,6 +90,28 @@ export function CustomerServiceLayout({ onNewService, customer, onSelectCustomer
 
   const toggleUC = (id: string) => {
     setExpandedUC(expandedUC === id ? null : id);
+  };
+
+  const handleServiceClick = (service: string) => {
+    if (service in serviceStatus) {
+      setPendingService(service);
+      setConfirmOpen(true);
+    } else {
+      // Serviços que não possuem ativação/descadastramento permanecem como ação simples
+      onNewService?.();
+    }
+  };
+
+  const handleConfirmToggle = () => {
+    if (!pendingService) {
+      setConfirmOpen(false);
+      return;
+    }
+    setServiceStatus((prev) => ({
+      ...prev,
+      [pendingService]: !prev[pendingService],
+    }));
+    setConfirmOpen(false);
   };
 
   return (
@@ -280,16 +311,11 @@ export function CustomerServiceLayout({ onNewService, customer, onSelectCustomer
         {/* Main Content */}
         <main className="flex-1 p-6">
           <div className="max-w-6xl">
-            {/* Protocol Header */}
+            {/* Cabeçalho do protocolo (botão de finalizar movido para rodapé fixo) */}
             <div className="flex items-center justify-between mb-6">
               <div>
                 <p className="text-xs text-slate-500 mb-1">Protocolo Atendimento</p>
                 <h2 className="text-2xl text-slate-900">{selectedCustomer.lastProtocol ?? '—'}</h2>
-              </div>
-              <div>
-                <Button className="bg-[#00A859] hover:bg-[#008F4A]">
-                  Finalizar Protocolo
-                </Button>
               </div>
             </div>
 
@@ -448,17 +474,34 @@ export function CustomerServiceLayout({ onNewService, customer, onSelectCustomer
                                 '2ª Via de Quitação de Débito',
                                 '2ª Via de Fatura',
                                 '2ª Via de Contrato de Parcelamento',
-                              ].map((service) => (
-                                <Button
-                                  key={service}
-                                  variant="outline"
-                                  className="h-12 w-full justify-start gap-2 text-[#003A70] border-[#003A70]/20 hover:bg-[#003A70]/5"
-                                  size="sm"
-                                >
-                                  <FileText className="w-4 h-4" />
-                                  {service}
-                                </Button>
-                              ))}
+                              ].map((service) => {
+                                const isToggleService = service in serviceStatus;
+                                const isActive = isToggleService ? serviceStatus[service] : false;
+                                return (
+                                  <Button
+                                    key={service}
+                                    variant="outline"
+                                    className="h-12 w-full justify-start gap-2 text-[#003A70] border-[#003A70]/20 hover:bg-[#003A70]/5"
+                                    size="sm"
+                                    onClick={() => handleServiceClick(service)}
+                                  >
+                                    <FileText className="w-4 h-4" />
+                                    <span>{service}</span>
+                                    {isToggleService && (
+                                      <Badge
+                                        className={
+                                          `ml-auto border ` +
+                                          (isActive
+                                            ? 'bg-green-100 text-green-700 border-green-200'
+                                            : 'bg-red-100 text-red-700 border-red-200')
+                                        }
+                                      >
+                                        {isActive ? 'Ativo' : 'Inativo'}
+                                      </Badge>
+                                    )}
+                                  </Button>
+                                );
+                              })}
                             </div>
                           </div>
                         </div>
@@ -468,6 +511,33 @@ export function CustomerServiceLayout({ onNewService, customer, onSelectCustomer
                 </Card>
               ))}
             </div>
+            {/* Rodapé fixo com ação principal (melhor visibilidade para o usuário) */}
+            <div className="sticky bottom-0 bg-white border-t border-slate-200 mt-6">
+              <div className="max-w-6xl p-4 flex justify-end">
+                <Button className="bg-[#00A859] hover:bg-[#008F4A]">Finalizar Protocolo</Button>
+              </div>
+            </div>
+
+            {/* Dialogo de confirmação para ativar/descadastrar serviços */}
+            <AlertDialog open={confirmOpen} onOpenChange={setConfirmOpen}>
+              <AlertDialogContent>
+                <AlertDialogHeader>
+                  <AlertDialogTitle>Confirmação</AlertDialogTitle>
+                  <AlertDialogDescription>
+                    {pendingService && (
+                      serviceStatus[pendingService]
+                        ? `Deseja realmente descadastrar o serviço ${pendingService}?`
+                        : `Deseja ativar o ${pendingService}?`
+                    )}
+                  </AlertDialogDescription>
+                </AlertDialogHeader>
+                <AlertDialogFooter>
+                  <AlertDialogCancel onClick={() => setConfirmOpen(false)}>Não</AlertDialogCancel>
+                  <AlertDialogAction onClick={handleConfirmToggle}>Sim</AlertDialogAction>
+                </AlertDialogFooter>
+              </AlertDialogContent>
+            </AlertDialog>
+
           </div>
         </main>
       </div>
