@@ -6,6 +6,7 @@ import { Card, CardContent } from './ui/card';
 import { Badge } from './ui/badge';
 import { Separator } from './ui/separator';
 import { Avatar, AvatarFallback } from './ui/avatar';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from './ui/select';
 import { customers, findCustomers } from '../data/customers';
 import type { Customer } from '../data/customers';
 
@@ -21,12 +22,36 @@ export function CustomerServiceLayout({ onNewService, customer, onSelectCustomer
   const [searchTerm, setSearchTerm] = useState('');
   const [suggestions, setSuggestions] = useState<Customer[]>([]);
   const [showSuggestions, setShowSuggestions] = useState(false);
+  const distributors = [
+    'Neoenergia Elektro',
+    'Neoenergia Coelba',
+    'Neoenergia Cosern',
+    'Neoenergia Pernambuco',
+  ];
+  const [selectedDistributor, setSelectedDistributor] = useState<string>('Neoenergia Cosern');
   const selectedCustomer: Customer = useMemo(
     () => customer ?? customers[0],
     [customer]
   );
 
-  const addresses = selectedCustomer.addresses;
+  const baseAddress = selectedCustomer.addresses[0];
+
+  const computeUCForDistributor = (uc: string, dist: string) => {
+    const prefixes: Record<string, string> = {
+      'Neoenergia Elektro': '101',
+      'Neoenergia Coelba': '102',
+      'Neoenergia Cosern': uc.slice(0, 3) || '103',
+      'Neoenergia Pernambuco': '104',
+    };
+    const prefix = prefixes[dist] ?? '105';
+    return (uc.length >= 3 ? prefix + uc.slice(3) : prefix + uc);
+  };
+
+  const currentAddress = {
+    ...baseAddress,
+    ucNumber: computeUCForDistributor(baseAddress.ucNumber, selectedDistributor),
+  };
+  const addresses = [currentAddress];
 
   useEffect(() => {
     if (searchTerm.trim().length >= 2) {
@@ -67,7 +92,7 @@ export function CustomerServiceLayout({ onNewService, customer, onSelectCustomer
               </div>
               <div>
                 <h1 className="text-slate-900">Atendimento</h1>
-                <p className="text-xs text-[#00A859]">NEOENERGIA COSERN</p>
+                <p className="text-xs text-[#00A859]">{selectedDistributor.toUpperCase()}</p>
               </div>
             </div>
           </div>
@@ -242,6 +267,27 @@ export function CustomerServiceLayout({ onNewService, customer, onSelectCustomer
             </div>
 
             <Separator className="my-6" />
+
+            <div className="space-y-3">
+              <div className="flex items-start gap-3">
+                <div className="w-8 h-8 rounded-lg bg-[#003A70]/10 flex items-center justify-center flex-shrink-0">
+                  <Zap className="w-4 h-4 text-[#003A70]" />
+                </div>
+                <div className="flex-1">
+                  <p className="text-xs text-slate-500">Distribuidora</p>
+                  <Select value={selectedDistributor} onValueChange={(v) => setSelectedDistributor(v)}>
+                    <SelectTrigger className="w-full">
+                      <SelectValue />
+                    </SelectTrigger>
+                    <SelectContent>
+                      {distributors.map((d) => (
+                        <SelectItem key={d} value={d}>{d}</SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                </div>
+              </div>
+            </div>
 
             <div className="space-y-2">
               <p className="text-xs text-slate-500 mb-2">Ações Rápidas</p>
