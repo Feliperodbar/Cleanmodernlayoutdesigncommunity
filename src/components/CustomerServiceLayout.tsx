@@ -485,6 +485,7 @@ export function CustomerServiceLayout({ onNewService, customer, onSelectCustomer
                                     variant="outline"
                                     className="h-12 w-full justify-start gap-2 text-[#003A70] border-[#003A70]/20 hover:bg-[#003A70]/5"
                                     size="sm"
+                                    type="button"
                                     onClick={() => handleServiceClick(service)}
                                   >
                                     <FileText className="w-4 h-4" />
@@ -514,9 +515,9 @@ export function CustomerServiceLayout({ onNewService, customer, onSelectCustomer
               ))}
             </div>
             {/* Rodapé fixo com ação principal (melhor visibilidade para o usuário) */}
-            <div className="sticky bottom-0 bg-white border-t border-slate-200 mt-6">
+            <div className="sticky bottom-0 bg-white border-t border-slate-200 mt-6 z-30">
               <div className="max-w-6xl p-4 flex justify-end">
-                <Button className="bg-[#00A859] hover:bg-[#008F4A]">Finalizar Protocolo</Button>
+                <Button className="bg-[#00A859] hover:bg-[#008F4A]" type="button">Finalizar Protocolo</Button>
               </div>
             </div>
 
