@@ -93,6 +93,8 @@ export function CustomerServiceLayout({ onNewService, customer, onSelectCustomer
   };
 
   const handleServiceClick = (service: string) => {
+    // Debug: clique de serviço
+    console.log('[ServiceClick]', service);
     if (service in serviceStatus) {
       setPendingService(service);
       setConfirmOpen(true);
@@ -520,22 +522,22 @@ export function CustomerServiceLayout({ onNewService, customer, onSelectCustomer
 
             {/* Dialogo de confirmação para ativar/descadastrar serviços */}
             <AlertDialog open={confirmOpen} onOpenChange={setConfirmOpen}>
-              <AlertDialogContent>
-                <AlertDialogHeader>
-                  <AlertDialogTitle>Confirmação</AlertDialogTitle>
-                  <AlertDialogDescription>
-                    {pendingService && (
-                      serviceStatus[pendingService]
+              {confirmOpen && pendingService && (
+                <AlertDialogContent>
+                  <AlertDialogHeader>
+                    <AlertDialogTitle>Confirmação</AlertDialogTitle>
+                    <AlertDialogDescription>
+                      {serviceStatus[pendingService]
                         ? `Deseja realmente descadastrar o serviço ${pendingService}?`
-                        : `Deseja ativar o ${pendingService}?`
-                    )}
-                  </AlertDialogDescription>
-                </AlertDialogHeader>
-                <AlertDialogFooter>
-                  <AlertDialogCancel onClick={() => setConfirmOpen(false)}>Não</AlertDialogCancel>
-                  <AlertDialogAction onClick={handleConfirmToggle}>Sim</AlertDialogAction>
-                </AlertDialogFooter>
-              </AlertDialogContent>
+                        : `Deseja ativar o ${pendingService}?`}
+                    </AlertDialogDescription>
+                  </AlertDialogHeader>
+                  <AlertDialogFooter>
+                    <AlertDialogCancel onClick={() => setConfirmOpen(false)}>Não</AlertDialogCancel>
+                    <AlertDialogAction onClick={handleConfirmToggle}>Sim</AlertDialogAction>
+                  </AlertDialogFooter>
+                </AlertDialogContent>
+              )}
             </AlertDialog>
 
           </div>
