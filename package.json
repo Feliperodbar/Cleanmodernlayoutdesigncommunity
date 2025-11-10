@@ -48,9 +48,14 @@
       },
       "devDependencies": {
             "@types/node": "^20.10.0",
+<<<<<<< HEAD
             "@types/react": "^19.2.2",
             "@vitejs/plugin-react-swc": "^3.10.2",
             "vite": "^6.4.1"
+=======
+            "@vitejs/plugin-react-swc": "^3.10.2",
+            "vite": "^6.3.5"
+>>>>>>> 9b17c5f (111)
       },
       "scripts": {
             "dev": "vite",
