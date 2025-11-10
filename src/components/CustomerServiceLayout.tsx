@@ -434,23 +434,33 @@ export function CustomerServiceLayout({ onNewService, customer, onSelectCustomer
 
                           <Separator />
 
-                          <div className="flex items-center gap-3 mt-2">
-                            <Button className="bg-[#00A859] hover:bg-[#008F4A] gap-2" size="sm">
-                              <FileText className="w-4 h-4" />
-                              2ª Via de Fatura
-                            </Button>
-                            <Button variant="outline" className="gap-2 text-[#003A70] border-[#003A70]/20 hover:bg-[#003A70]/5" size="sm">
-                              <Power className="w-4 h-4" />
-                              Falta de Energia
-                            </Button>
-                            <Button variant="outline" className="gap-2 text-[#003A70] border-[#003A70]/20 hover:bg-[#003A70]/5" size="sm">
-                              <Settings className="w-4 h-4" />
-                              Serviços UC
-                            </Button>
-                            <Button variant="outline" className="gap-2 text-[#003A70] border-[#003A70]/20 hover:bg-[#003A70]/5" size="sm">
-                              <FileText className="w-4 h-4" />
-                              Histórico
-                            </Button>
+                          <div className="space-y-3">
+                            <p className="text-xs text-slate-500">Serviços da UC</p>
+                            <div className="grid grid-cols-2 md:grid-cols-3 gap-3">
+                              {[
+                                'Registro de Informação',
+                                'Ligação Nova',
+                                'Fatura Digital',
+                                'Débito Automático',
+                                'Data Certa',
+                                'Cadastro de Cliente',
+                                'Atendimento Emergencial',
+                                'Alteração Cadastral',
+                                '2ª Via de Quitação de Débito',
+                                '2ª Via de Fatura',
+                                '2ª Via de Contrato de Parcelamento',
+                              ].map((service) => (
+                                <Button
+                                  key={service}
+                                  variant="outline"
+                                  className="justify-start gap-2 text-[#003A70] border-[#003A70]/20 hover:bg-[#003A70]/5"
+                                  size="sm"
+                                >
+                                  <FileText className="w-4 h-4" />
+                                  {service}
+                                </Button>
+                              ))}
+                            </div>
                           </div>
                         </div>
                       </div>
