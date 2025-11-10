@@ -49,6 +49,28 @@ export const customers: Customer[] = [
         lastBill: 'R$ 145,30',
         dueDate: '15/11/2024',
         consumption: '320 kWh'
+      },
+      {
+        id: '2',
+        ucNumber: '007027555001',
+        address: 'AV. BRASIL, 150, CENTRO',
+        city: 'NATAL',
+        cep: '59000-000',
+        status: 'active',
+        lastBill: 'R$ 210,40',
+        dueDate: '20/11/2024',
+        consumption: '410 kWh'
+      },
+      {
+        id: '3',
+        ucNumber: '007027999888',
+        address: 'RUA DOS PINHEIROS, 45, LAGOA NOVA',
+        city: 'NATAL',
+        cep: '59076-001',
+        status: 'inactive',
+        lastBill: '-',
+        dueDate: '-',
+        consumption: '-'
       }
     ]
   },
@@ -74,6 +96,28 @@ export const customers: Customer[] = [
         lastBill: 'R$ 89,50',
         dueDate: '18/11/2024',
         consumption: '180 kWh'
+      },
+      {
+        id: '2',
+        ucNumber: '007028123456',
+        address: 'RUA DOS JASMINS, 12, EMAÚS',
+        city: 'PARNAMIRIM',
+        cep: '59148-000',
+        status: 'inactive',
+        lastBill: '-',
+        dueDate: '-',
+        consumption: '-'
+      },
+      {
+        id: '3',
+        ucNumber: '007028654321',
+        address: 'AV. AYRTON SENNA, 300, NOVA PARNAMIRIM',
+        city: 'PARNAMIRIM',
+        cep: '59122-200',
+        status: 'active',
+        lastBill: 'R$ 126,70',
+        dueDate: '22/11/2024',
+        consumption: '250 kWh'
       }
     ]
   },
@@ -95,6 +139,28 @@ export const customers: Customer[] = [
         address: 'RUA DEZESSETE DE DEZEMBRO, 35 TO - D AP. 103',
         city: 'BOA VIAGEM',
         cep: '59155-020',
+        status: 'inactive',
+        lastBill: '-',
+        dueDate: '-',
+        consumption: '-'
+      },
+      {
+        id: '2',
+        ucNumber: '007024111222',
+        address: 'RUA DOS LÍRIOS, 88, CAPIM MACIO',
+        city: 'NATAL',
+        cep: '59078-500',
+        status: 'active',
+        lastBill: 'R$ 174,90',
+        dueDate: '25/11/2024',
+        consumption: '300 kWh'
+      },
+      {
+        id: '3',
+        ucNumber: '007024333444',
+        address: 'AV. ROBERTO FREIRE, 950, PONTA NEGRA',
+        city: 'NATAL',
+        cep: '59090-145',
         status: 'inactive',
         lastBill: '-',
         dueDate: '-',

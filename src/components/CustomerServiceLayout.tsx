@@ -7,6 +7,7 @@ import { Badge } from './ui/badge';
 import { Separator } from './ui/separator';
 import { Avatar, AvatarFallback } from './ui/avatar';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from './ui/select';
+import { Switch } from './ui/switch';
 import { customers, findCustomers } from '../data/customers';
 import type { Customer } from '../data/customers';
 
@@ -23,6 +24,19 @@ export function CustomerServiceLayout({ onNewService, customer, onSelectCustomer
   const [suggestions, setSuggestions] = useState<Customer[]>([]);
   const [showSuggestions, setShowSuggestions] = useState(false);
   const [favoriteServices, setFavoriteServices] = useState<string[]>([]);
+  const [serviceToggles, setServiceToggles] = useState<Record<string, Record<string, boolean>>>({});
+  const toggleServicesList = ['Fatura Digital', 'Débito Automático', 'Data Certa'];
+
+  const isServiceOn = (addressId: string, service: string) => {
+    return !!serviceToggles[addressId]?.[service];
+  };
+
+  const setServiceOn = (addressId: string, service: string, value: boolean) => {
+    setServiceToggles((prev) => ({
+      ...prev,
+      [addressId]: { ...(prev[addressId] || {}), [service]: value },
+    }));
+  };
   // Persistência de favoritos (localStorage)
   useEffect(() => {
     try {
@@ -63,11 +77,10 @@ export function CustomerServiceLayout({ onNewService, customer, onSelectCustomer
     return (uc.length >= 3 ? prefix + uc.slice(3) : prefix + uc);
   };
 
-  const currentAddress = {
-    ...baseAddress,
-    ucNumber: computeUCForDistributor(baseAddress.ucNumber, selectedDistributor),
-  };
-  const addresses = [currentAddress];
+  const addresses = selectedCustomer.addresses.map((addr) => ({
+    ...addr,
+    ucNumber: computeUCForDistributor(addr.ucNumber, selectedDistributor),
+  }));
 
   useEffect(() => {
     if (searchTerm.trim().length >= 2) {
@@ -339,8 +352,9 @@ export function CustomerServiceLayout({ onNewService, customer, onSelectCustomer
                 <h2 className="text-2xl text-slate-900">{selectedCustomer.lastProtocol ?? '—'}</h2>
               </div>
               <div className="flex items-center gap-3">
-                <div className="px-3 py-1 rounded-md border border-slate-200 bg-slate-50 text-slate-700">
-                  {selectedDistributor || 'Distribuidora não selecionada'}
+                <div className="flex items-center gap-2 px-3 py-1 rounded-md border border-[#003A70] bg-[#003A70]/10 text-[#003A70]">
+                  <Zap className="w-4 h-4" />
+                  <span>Distribuidora: {selectedDistributor || '—'}</span>
                 </div>
                 <Button className="bg-[#00A859] hover:bg-[#008F4A]">
                   Finalizar Protocolo
@@ -499,6 +513,13 @@ export function CustomerServiceLayout({ onNewService, customer, onSelectCustomer
                                   >
                                     <Star className={`w-4 h-4 ${favoriteServices.includes(service) ? 'text-yellow-500' : 'text-slate-400'}`} fill={favoriteServices.includes(service) ? 'currentColor' : 'none'} />
                                   </Button>
+                                  {toggleServicesList.includes(service) && (
+                                    <Switch
+                                      checked={isServiceOn(address.id, service)}
+                                      onCheckedChange={(v) => setServiceOn(address.id, service, v)}
+                                      aria-label={`Alternar ${service}`}
+                                    />
+                                  )}
                                 </div>
                               ))}
                             </div>
