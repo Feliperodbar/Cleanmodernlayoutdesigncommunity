@@ -1,5 +1,5 @@
 import { useEffect, useMemo, useState } from 'react';
-import { Search, Phone, Mail, User, FileText, Zap, Plus, Settings, ChevronDown, ChevronUp, Power, DollarSign, Clock, MapPin, Copy, Check, ChevronRight, Star } from 'lucide-react';
+import { Search, Phone, Mail, User, FileText, Zap, Plus, Settings, ChevronDown, ChevronUp, Power, DollarSign, Clock, MapPin, Copy, Check, ChevronRight } from 'lucide-react';
 import { Button } from './ui/button';
 import { Input } from './ui/input';
 import { Card, CardContent } from './ui/card';
@@ -7,7 +7,7 @@ import { Badge } from './ui/badge';
 import { Separator } from './ui/separator';
 import { Avatar, AvatarFallback } from './ui/avatar';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from './ui/select';
-import { Switch } from './ui/switch';
+// Switch removido conforme nova especificação
 import { customers, findCustomers } from '../data/customers';
 import type { Customer } from '../data/customers';
 
@@ -23,35 +23,7 @@ export function CustomerServiceLayout({ onNewService, customer, onSelectCustomer
   const [searchTerm, setSearchTerm] = useState('');
   const [suggestions, setSuggestions] = useState<Customer[]>([]);
   const [showSuggestions, setShowSuggestions] = useState(false);
-  const [favoriteServices, setFavoriteServices] = useState<string[]>([]);
-  const [serviceToggles, setServiceToggles] = useState<Record<string, Record<string, boolean>>>({});
-  const toggleServicesList = ['Fatura Digital', 'Débito Automático', 'Data Certa'];
-
-  const isServiceOn = (addressId: string, service: string) => {
-    return !!serviceToggles[addressId]?.[service];
-  };
-
-  const setServiceOn = (addressId: string, service: string, value: boolean) => {
-    setServiceToggles((prev) => ({
-      ...prev,
-      [addressId]: { ...(prev[addressId] || {}), [service]: value },
-    }));
-  };
-  // Persistência de favoritos (localStorage)
-  useEffect(() => {
-    try {
-      const saved = localStorage.getItem('favoriteServices');
-      if (saved) {
-        const parsed = JSON.parse(saved);
-        if (Array.isArray(parsed)) setFavoriteServices(parsed);
-      }
-    } catch {}
-  }, []);
-  useEffect(() => {
-    try {
-      localStorage.setItem('favoriteServices', JSON.stringify(favoriteServices));
-    } catch {}
-  }, [favoriteServices]);
+  // Removidos estados e persistência de favoritos e switches
   const distributors = [
     'Neoenergia Elektro',
     'Neoenergia Coelba',
@@ -99,11 +71,7 @@ export function CustomerServiceLayout({ onNewService, customer, onSelectCustomer
     onSelectCustomer?.(c);
   };
 
-  const toggleFavorite = (service: string) => {
-    setFavoriteServices((prev) =>
-      prev.includes(service) ? prev.filter((s) => s !== service) : [...prev, service]
-    );
-  };
+  // Função de favoritos removida
 
   const copyToClipboard = (text: string, field: string) => {
     navigator.clipboard.writeText(text);
@@ -305,21 +273,7 @@ export function CustomerServiceLayout({ onNewService, customer, onSelectCustomer
 
             {/* Distribuidora seletor movido para o conteúdo principal */}
 
-            <div className="space-y-2 mt-6">
-              <p className="text-xs text-slate-500 mb-2">Favoritos</p>
-              {favoriteServices.length === 0 ? (
-                <p className="text-xs text-slate-400">Nenhum favorito ainda</p>
-              ) : (
-                <div className="space-y-2 pt-2">
-                  {favoriteServices.map((fav) => (
-                    <Button key={fav} variant="outline" className="w-full justify-start gap-2 text-[#003A70] border-[#003A70]/20 hover:bg-[#003A70]/5" size="sm">
-                      <Star className="w-4 h-4 text-yellow-500" fill="currentColor" />
-                      {fav}
-                    </Button>
-                  ))}
-                </div>
-              )}
-            </div>
+            {/* Favoritos removidos conforme nova especificação */}
           </div>
         </aside>
 
@@ -356,7 +310,7 @@ export function CustomerServiceLayout({ onNewService, customer, onSelectCustomer
                 <div className="flex-1">
                   <p className="text-xs text-slate-500">Distribuidora</p>
                   <Select value={selectedDistributor} onValueChange={(v) => setSelectedDistributor(v)}>
-                    <SelectTrigger className="w-full">
+                    <SelectTrigger className="w-64 bg-white border border-[#003A70]/40 shadow-sm">
                       <SelectValue />
                     </SelectTrigger>
                     <SelectContent>
@@ -494,47 +448,17 @@ export function CustomerServiceLayout({ onNewService, customer, onSelectCustomer
                                 '2ª Via de Quitação de Débito',
                                 '2ª Via de Fatura',
                                 '2ª Via de Contrato de Parcelamento',
-                              ].map((service) => {
-                                const isToggle = toggleServicesList.includes(service);
-                                const on = isToggle ? isServiceOn(address.id, service) : false;
-                                return (
-                                  <div
-                                    key={service}
-                                    className="group h-12 rounded-md border border-slate-200 bg-white px-3 py-2 flex items-center justify-between cursor-pointer hover:bg-[#003A70]/5"
-                                    onClick={() => {
-                                      if (isToggle) setServiceOn(address.id, service, !on);
-                                    }}
-                                  >
-                                    <div className="flex items-center gap-2">
-                                      <FileText className="w-4 h-4 text-[#003A70]" />
-                                      <span className="text-sm text-slate-900">{service}</span>
-                                    </div>
-                                    <div className="flex items-center gap-2">
-                                      <Button
-                                        variant="ghost"
-                                        size="icon"
-                                        className="h-8 w-8"
-                                        onClick={(e) => {
-                                          e.stopPropagation();
-                                          toggleFavorite(service);
-                                        }}
-                                        aria-label={favoriteServices.includes(service) ? 'Remover dos favoritos' : 'Adicionar aos favoritos'}
-                                      >
-                                        <Star className={`w-4 h-4 ${favoriteServices.includes(service) ? 'text-yellow-500' : 'text-slate-400'}`} fill={favoriteServices.includes(service) ? 'currentColor' : 'none'} />
-                                      </Button>
-                                      {isToggle && (
-                                        <Switch
-                                          checked={on}
-                                          onCheckedChange={(v) => setServiceOn(address.id, service, v)}
-                                          aria-label={`Alternar ${service}`}
-                                          className="h-6 w-12 data-[state=checked]:bg-green-500 data-[state=unchecked]:bg-red-500 transition-all"
-                                          onClick={(e) => e.stopPropagation()}
-                                        />
-                                      )}
-                                    </div>
-                                  </div>
-                                );
-                              })}
+                              ].map((service) => (
+                                <Button
+                                  key={service}
+                                  variant="outline"
+                                  className="h-12 w-full justify-start gap-2 text-[#003A70] border-[#003A70]/20 hover:bg-[#003A70]/5"
+                                  size="sm"
+                                >
+                                  <FileText className="w-4 h-4" />
+                                  {service}
+                                </Button>
+                              ))}
                             </div>
                           </div>
                         </div>
