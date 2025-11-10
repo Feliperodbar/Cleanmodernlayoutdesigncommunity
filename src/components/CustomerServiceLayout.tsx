@@ -7,7 +7,11 @@ import { Badge } from './ui/badge';
 import { Separator } from './ui/separator';
 import { Avatar, AvatarFallback } from './ui/avatar';
 
-export function CustomerServiceLayout() {
+interface CustomerServiceLayoutProps {
+  onNewService?: () => void;
+}
+
+export function CustomerServiceLayout({ onNewService }: CustomerServiceLayoutProps) {
   const [expandedUC, setExpandedUC] = useState<string | null>('1');
   const [copiedField, setCopiedField] = useState<string | null>(null);
 
@@ -94,9 +98,12 @@ export function CustomerServiceLayout() {
           </div>
 
           <div className="flex items-center gap-3">
-            <Button className="bg-[#00A859] hover:bg-[#008F4A] gap-2">
+            <Button 
+              className="bg-[#00A859] hover:bg-[#008F4A] gap-2"
+              onClick={onNewService}
+            >
               <Plus className="w-4 h-4" />
-              Nova Ligação
+              Novo Atendimento
             </Button>
             <Button variant="outline" size="icon" className="hover:bg-[#003A70]/5">
               <Settings className="w-5 h-5 text-[#003A70]" />
