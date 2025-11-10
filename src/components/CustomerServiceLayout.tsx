@@ -490,15 +490,41 @@ export function CustomerServiceLayout({ onNewService, customer, onSelectCustomer
                                 {toggleServicesList.map((service) => {
                                   const on = isServiceOn(address.id, service);
                                   return (
-                                    <div key={service} className="flex items-center justify-between rounded-md border border-slate-200 bg-white p-3">
+                                    <div
+                                      key={service}
+                                      className="flex items-center justify-between rounded-md border border-slate-200 bg-white p-3 cursor-pointer"
+                                      role="button"
+                                      tabIndex={0}
+                                      aria-pressed={on}
+                                      onClick={() => setServiceOn(address.id, service, !on)}
+                                      onKeyDown={(e) => {
+                                        if (e.key === 'Enter' || e.key === ' ') {
+                                          e.preventDefault();
+                                          setServiceOn(address.id, service, !on);
+                                        }
+                                      }}
+                                    >
                                       <span className="text-sm text-slate-900">{service}</span>
                                       <div className="flex items-center gap-2">
+                                        <Button
+                                          variant="ghost"
+                                          size="icon"
+                                          className="h-8 w-8"
+                                          onClick={(e) => {
+                                            e.stopPropagation();
+                                            toggleFavorite(service);
+                                          }}
+                                          aria-label={favoriteServices.includes(service) ? 'Remover dos favoritos' : 'Adicionar aos favoritos'}
+                                        >
+                                          <Star className={`w-4 h-4 ${favoriteServices.includes(service) ? 'text-yellow-500' : 'text-slate-400'}`} fill={favoriteServices.includes(service) ? 'currentColor' : 'none'} />
+                                        </Button>
                                         <span className={`text-xs font-medium ${on ? 'text-green-600' : 'text-red-600'}`}>{on ? 'Ligado' : 'Desligado'}</span>
                                         <Switch
                                           checked={on}
                                           onCheckedChange={(v) => setServiceOn(address.id, service, v)}
                                           aria-label={`Alternar ${service}`}
                                           className="data-[state=checked]:bg-green-500 data-[state=unchecked]:bg-red-500"
+                                          onClick={(e) => e.stopPropagation()}
                                         />
                                       </div>
                                     </div>
@@ -514,26 +540,27 @@ export function CustomerServiceLayout({ onNewService, customer, onSelectCustomer
                                 '2ª Via de Fatura',
                                 '2ª Via de Contrato de Parcelamento',
                               ].map((service) => (
-                                <div key={service} className="flex flex-col gap-2">
+                                <div
+                                  key={service}
+                                  className="rounded-md border border-slate-200 bg-white p-2 flex items-center justify-between"
+                                >
                                   <Button
                                     variant="outline"
-                                    className="w-full justify-start gap-2 text-[#003A70] border-[#003A70]/20 hover:bg-[#003A70]/5"
+                                    className="h-auto px-3 py-2 justify-start gap-2 text-[#003A70] border-[#003A70]/20 hover:bg-[#003A70]/5"
                                     size="sm"
                                   >
                                     <FileText className="w-4 h-4" />
                                     {service}
                                   </Button>
-                                  <div className="flex items-center gap-2">
-                                    <Button
-                                      variant="ghost"
-                                      size="icon"
-                                      className="h-8 w-8"
-                                      onClick={() => toggleFavorite(service)}
-                                      aria-label={favoriteServices.includes(service) ? 'Remover dos favoritos' : 'Adicionar aos favoritos'}
-                                    >
-                                      <Star className={`w-4 h-4 ${favoriteServices.includes(service) ? 'text-yellow-500' : 'text-slate-400'}`} fill={favoriteServices.includes(service) ? 'currentColor' : 'none'} />
-                                    </Button>
-                                  </div>
+                                  <Button
+                                    variant="ghost"
+                                    size="icon"
+                                    className="h-8 w-8"
+                                    onClick={() => toggleFavorite(service)}
+                                    aria-label={favoriteServices.includes(service) ? 'Remover dos favoritos' : 'Adicionar aos favoritos'}
+                                  >
+                                    <Star className={`w-4 h-4 ${favoriteServices.includes(service) ? 'text-yellow-500' : 'text-slate-400'}`} fill={favoriteServices.includes(service) ? 'currentColor' : 'none'} />
+                                  </Button>
                                 </div>
                               ))}
                             </div>
