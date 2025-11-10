@@ -495,31 +495,33 @@ export function CustomerServiceLayout({ onNewService, customer, onSelectCustomer
                                 '2ª Via de Fatura',
                                 '2ª Via de Contrato de Parcelamento',
                               ].map((service) => (
-                                <div key={service} className="flex items-center gap-2">
+                                <div key={service} className="flex flex-col gap-2">
                                   <Button
                                     variant="outline"
-                                    className="flex-1 justify-start gap-2 text-[#003A70] border-[#003A70]/20 hover:bg-[#003A70]/5"
+                                    className="w-full justify-start gap-2 text-[#003A70] border-[#003A70]/20 hover:bg-[#003A70]/5"
                                     size="sm"
                                   >
                                     <FileText className="w-4 h-4" />
                                     {service}
                                   </Button>
-                                  <Button
-                                    variant="ghost"
-                                    size="icon"
-                                    className="h-8 w-8"
-                                    onClick={() => toggleFavorite(service)}
-                                    aria-label={favoriteServices.includes(service) ? 'Remover dos favoritos' : 'Adicionar aos favoritos'}
-                                  >
-                                    <Star className={`w-4 h-4 ${favoriteServices.includes(service) ? 'text-yellow-500' : 'text-slate-400'}`} fill={favoriteServices.includes(service) ? 'currentColor' : 'none'} />
-                                  </Button>
-                                  {toggleServicesList.includes(service) && (
-                                    <Switch
-                                      checked={isServiceOn(address.id, service)}
-                                      onCheckedChange={(v) => setServiceOn(address.id, service, v)}
-                                      aria-label={`Alternar ${service}`}
-                                    />
-                                  )}
+                                  <div className="flex items-center gap-2">
+                                    <Button
+                                      variant="ghost"
+                                      size="icon"
+                                      className="h-8 w-8"
+                                      onClick={() => toggleFavorite(service)}
+                                      aria-label={favoriteServices.includes(service) ? 'Remover dos favoritos' : 'Adicionar aos favoritos'}
+                                    >
+                                      <Star className={`w-4 h-4 ${favoriteServices.includes(service) ? 'text-yellow-500' : 'text-slate-400'}`} fill={favoriteServices.includes(service) ? 'currentColor' : 'none'} />
+                                    </Button>
+                                    {toggleServicesList.includes(service) && (
+                                      <Switch
+                                        checked={isServiceOn(address.id, service)}
+                                        onCheckedChange={(v) => setServiceOn(address.id, service, v)}
+                                        aria-label={`Alternar ${service}`}
+                                      />
+                                    )}
+                                  </div>
                                 </div>
                               ))}
                             </div>
