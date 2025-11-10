@@ -23,6 +23,21 @@ export function CustomerServiceLayout({ onNewService, customer, onSelectCustomer
   const [suggestions, setSuggestions] = useState<Customer[]>([]);
   const [showSuggestions, setShowSuggestions] = useState(false);
   const [favoriteServices, setFavoriteServices] = useState<string[]>([]);
+  // Persistência de favoritos (localStorage)
+  useEffect(() => {
+    try {
+      const saved = localStorage.getItem('favoriteServices');
+      if (saved) {
+        const parsed = JSON.parse(saved);
+        if (Array.isArray(parsed)) setFavoriteServices(parsed);
+      }
+    } catch {}
+  }, []);
+  useEffect(() => {
+    try {
+      localStorage.setItem('favoriteServices', JSON.stringify(favoriteServices));
+    } catch {}
+  }, [favoriteServices]);
   const distributors = [
     'Neoenergia Elektro',
     'Neoenergia Coelba',
@@ -297,18 +312,11 @@ export function CustomerServiceLayout({ onNewService, customer, onSelectCustomer
             </div>
 
             <div className="space-y-2 mt-6">
-              <p className="text-xs text-slate-500 mb-2">Ações Rápidas</p>
-              <Button variant="outline" className="w-full justify-start gap-2 text-[#003A70] border-[#003A70]/20 hover:bg-[#003A70]/5" size="sm">
-                <Settings className="w-4 h-4" />
-                Alterar Cadastro
-              </Button>
-              <Button variant="outline" className="w-full justify-start gap-2 text-[#003A70] border-[#003A70]/20 hover:bg-[#003A70]/5" size="sm">
-                <FileText className="w-4 h-4" />
-                Ver Histórico
-              </Button>
-              {favoriteServices.length > 0 && (
+              <p className="text-xs text-slate-500 mb-2">Favoritos</p>
+              {favoriteServices.length === 0 ? (
+                <p className="text-xs text-slate-400">Nenhum favorito ainda</p>
+              ) : (
                 <div className="space-y-2 pt-2">
-                  <p className="text-xs text-slate-500">Favoritos</p>
                   {favoriteServices.map((fav) => (
                     <Button key={fav} variant="outline" className="w-full justify-start gap-2 text-[#003A70] border-[#003A70]/20 hover:bg-[#003A70]/5" size="sm">
                       <Star className="w-4 h-4 text-yellow-500" fill="currentColor" />
@@ -331,9 +339,9 @@ export function CustomerServiceLayout({ onNewService, customer, onSelectCustomer
                 <h2 className="text-2xl text-slate-900">{selectedCustomer.lastProtocol ?? '—'}</h2>
               </div>
               <div className="flex items-center gap-3">
-                <Badge className="bg-blue-100 text-blue-700 hover:bg-blue-100">
-                  Call Center Cosern
-                </Badge>
+                <div className="px-3 py-1 rounded-md border border-slate-200 bg-slate-50 text-slate-700">
+                  {selectedDistributor || 'Distribuidora não selecionada'}
+                </div>
                 <Button className="bg-[#00A859] hover:bg-[#008F4A]">
                   Finalizar Protocolo
                 </Button>
