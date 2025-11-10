@@ -1,64 +1,49 @@
-import { useState } from 'react';
-import { Search, Phone, Mail, User, FileText, Zap, Plus, Settings, ChevronDown, ChevronUp, Power, DollarSign, Clock, MapPin, Copy, Check } from 'lucide-react';
+import { useEffect, useMemo, useState } from 'react';
+import { Search, Phone, Mail, User, FileText, Zap, Plus, Settings, ChevronDown, ChevronUp, Power, DollarSign, Clock, MapPin, Copy, Check, ChevronRight } from 'lucide-react';
 import { Button } from './ui/button';
 import { Input } from './ui/input';
 import { Card, CardContent } from './ui/card';
 import { Badge } from './ui/badge';
 import { Separator } from './ui/separator';
 import { Avatar, AvatarFallback } from './ui/avatar';
+import { customers, findCustomers } from '../data/customers';
+import type { Customer } from '../data/customers';
 
 interface CustomerServiceLayoutProps {
   onNewService?: () => void;
+  customer?: Customer | null;
+  onSelectCustomer?: (customer: Customer) => void;
 }
 
-export function CustomerServiceLayout({ onNewService }: CustomerServiceLayoutProps) {
+export function CustomerServiceLayout({ onNewService, customer, onSelectCustomer }: CustomerServiceLayoutProps) {
   const [expandedUC, setExpandedUC] = useState<string | null>('1');
   const [copiedField, setCopiedField] = useState<string | null>(null);
+  const [searchTerm, setSearchTerm] = useState('');
+  const [suggestions, setSuggestions] = useState<Customer[]>([]);
+  const [showSuggestions, setShowSuggestions] = useState(false);
+  const selectedCustomer: Customer = useMemo(
+    () => customer ?? customers[0],
+    [customer]
+  );
 
-  const customerData = {
-    name: 'THIAGO GOMES DO NASCIMENTO',
-    cpf: '072.190.104-27',
-    rg: '00.262.439-8',
-    birthDate: '28/08/1986',
-    email: 'thiagogomesnascimento280886@gmail.com',
-    phone: '+5584994043923'
-  };
+  const addresses = selectedCustomer.addresses;
 
-  const addresses = [
-    {
-      id: '1',
-      ucNumber: '007027028416',
-      address: 'RUA DAS ORQUÍDEAS, 270, TABORDA',
-      city: 'SÃO GONÇALO DO AMARANTE',
-      cep: '59162-000',
-      status: 'active',
-      lastBill: 'R$ 145,30',
-      dueDate: '15/11/2024',
-      consumption: '320 kWh'
-    },
-    {
-      id: '2',
-      ucNumber: '007028897760',
-      address: 'RUA DA TAINHA, 40 SL. 1, VIDA NOVA',
-      city: 'PARNAMIRIM',
-      cep: '59147-535',
-      status: 'active',
-      lastBill: 'R$ 89,50',
-      dueDate: '18/11/2024',
-      consumption: '180 kWh'
-    },
-    {
-      id: '3',
-      ucNumber: '007024004478',
-      address: 'RUA DEZESSETE DE DEZEMBRO, 35 TO - D AP. 103',
-      city: 'BOA VIAGEM',
-      cep: '59155-020',
-      status: 'inactive',
-      lastBill: '-',
-      dueDate: '-',
-      consumption: '-'
+  useEffect(() => {
+    if (searchTerm.trim().length >= 2) {
+      const filtered = findCustomers(searchTerm);
+      setSuggestions(filtered);
+      setShowSuggestions(true);
+    } else {
+      setSuggestions([]);
+      setShowSuggestions(false);
     }
-  ];
+  }, [searchTerm]);
+
+  const handleSelectSuggestion = (c: Customer) => {
+    setSearchTerm('');
+    setShowSuggestions(false);
+    onSelectCustomer?.(c);
+  };
 
   const copyToClipboard = (text: string, field: string) => {
     navigator.clipboard.writeText(text);
@@ -93,7 +78,44 @@ export function CustomerServiceLayout({ onNewService }: CustomerServiceLayoutPro
               <Input 
                 placeholder="Buscar UC, CPF, Protocolo..." 
                 className="pl-10 bg-slate-50 border-slate-200"
+                value={searchTerm}
+                onChange={(e) => setSearchTerm(e.target.value)}
+                onFocus={() => searchTerm.length >= 2 && setShowSuggestions(true)}
               />
+              {showSuggestions && suggestions.length > 0 && (
+                <div className="absolute top-full left-0 right-0 mt-2 bg-white border border-slate-200 rounded-lg shadow-lg max-h-80 overflow-auto z-50">
+                  {suggestions.map((c) => (
+                    <div
+                      key={c.id}
+                      className="p-3 hover:bg-slate-50 cursor-pointer border-b border-slate-100 last:border-b-0 transition-colors"
+                      onClick={() => handleSelectSuggestion(c)}
+                    >
+                      <div className="flex items-center justify-between">
+                        <div className="flex items-center gap-3">
+                          <div className="w-8 h-8 bg-[#003A70] rounded-lg flex items-center justify-center">
+                            <User className="w-4 h-4 text-white" />
+                          </div>
+                          <div>
+                            <p className="text-sm text-slate-900">{c.name}</p>
+                            <p className="text-xs text-slate-500">{c.cpf}</p>
+                          </div>
+                        </div>
+                        <ChevronRight className="w-5 h-5 text-slate-400" />
+                      </div>
+                      <div className="flex items-center gap-4 text-xs text-slate-500 ml-11 mt-1">
+                        <span className="flex items-center gap-1">
+                          <Zap className="w-3 h-3" />
+                          UC: {c.addresses[0]?.ucNumber}
+                        </span>
+                        <span className="flex items-center gap-1">
+                          <Phone className="w-3 h-3" />
+                          {c.phone}
+                        </span>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              )}
             </div>
           </div>
 
@@ -124,11 +146,11 @@ export function CustomerServiceLayout({ onNewService }: CustomerServiceLayoutPro
             <div className="flex items-center gap-3 mb-6">
               <Avatar className="w-16 h-16">
                 <AvatarFallback className="bg-[#003A70] text-white text-xl">
-                  TG
+                  {selectedCustomer.name.split(' ').slice(0,2).map(n => n[0]).join('')}
                 </AvatarFallback>
               </Avatar>
               <div className="flex-1">
-                <h3 className="text-slate-900">{customerData.name}</h3>
+                <h3 className="text-slate-900">{selectedCustomer.name}</h3>
                 <p className="text-xs text-[#00A859]">Pessoa Física</p>
               </div>
             </div>
@@ -143,12 +165,12 @@ export function CustomerServiceLayout({ onNewService }: CustomerServiceLayoutPro
                 <div className="flex-1">
                   <p className="text-xs text-slate-500">CPF</p>
                   <div className="flex items-center justify-between">
-                    <p className="text-sm text-slate-900">{customerData.cpf}</p>
+                    <p className="text-sm text-slate-900">{selectedCustomer.cpf}</p>
                     <Button
                       variant="ghost"
                       size="sm"
                       className="h-6 w-6 p-0 opacity-0 group-hover:opacity-100 transition-opacity"
-                      onClick={() => copyToClipboard(customerData.cpf, 'cpf')}
+                      onClick={() => copyToClipboard(selectedCustomer.cpf, 'cpf')}
                     >
                       {copiedField === 'cpf' ? (
                         <Check className="w-3 h-3 text-green-600" />
@@ -166,7 +188,7 @@ export function CustomerServiceLayout({ onNewService }: CustomerServiceLayoutPro
                 </div>
                 <div className="flex-1">
                   <p className="text-xs text-slate-500">Nascimento</p>
-                  <p className="text-sm text-slate-900">{customerData.birthDate}</p>
+                  <p className="text-sm text-slate-900">{selectedCustomer.birthDate}</p>
                 </div>
               </div>
 
@@ -177,12 +199,12 @@ export function CustomerServiceLayout({ onNewService }: CustomerServiceLayoutPro
                 <div className="flex-1">
                   <p className="text-xs text-slate-500">Telefone</p>
                   <div className="flex items-center justify-between">
-                    <p className="text-sm text-slate-900">{customerData.phone}</p>
+                    <p className="text-sm text-slate-900">{selectedCustomer.phone}</p>
                     <Button
                       variant="ghost"
                       size="sm"
                       className="h-6 w-6 p-0 opacity-0 group-hover:opacity-100 transition-opacity"
-                      onClick={() => copyToClipboard(customerData.phone, 'phone')}
+                      onClick={() => copyToClipboard(selectedCustomer.phone, 'phone')}
                     >
                       {copiedField === 'phone' ? (
                         <Check className="w-3 h-3 text-green-600" />
@@ -201,12 +223,12 @@ export function CustomerServiceLayout({ onNewService }: CustomerServiceLayoutPro
                 <div className="flex-1">
                   <p className="text-xs text-slate-500">Email</p>
                   <div className="flex items-center justify-between">
-                    <p className="text-sm text-slate-900 break-all">{customerData.email}</p>
+                    <p className="text-sm text-slate-900 break-all">{selectedCustomer.email}</p>
                     <Button
                       variant="ghost"
                       size="sm"
                       className="h-6 w-6 p-0 opacity-0 group-hover:opacity-100 transition-opacity flex-shrink-0"
-                      onClick={() => copyToClipboard(customerData.email, 'email')}
+                      onClick={() => copyToClipboard(selectedCustomer.email ?? '', 'email')}
                     >
                       {copiedField === 'email' ? (
                         <Check className="w-3 h-3 text-green-600" />
@@ -242,7 +264,7 @@ export function CustomerServiceLayout({ onNewService }: CustomerServiceLayoutPro
             <div className="flex items-center justify-between mb-6">
               <div>
                 <p className="text-xs text-slate-500 mb-1">Protocolo Atendimento</p>
-                <h2 className="text-2xl text-slate-900">202511052102925525</h2>
+                <h2 className="text-2xl text-slate-900">{selectedCustomer.lastProtocol ?? '—'}</h2>
               </div>
               <div className="flex items-center gap-3">
                 <Badge className="bg-blue-100 text-blue-700 hover:bg-blue-100">

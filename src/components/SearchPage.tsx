@@ -5,72 +5,26 @@ import { Button } from './ui/button';
 import { Card, CardContent } from './ui/card';
 import { Avatar, AvatarFallback } from './ui/avatar';
 import { Badge } from './ui/badge';
+import { customers, findCustomers, Customer } from '../data/customers';
 
 interface SearchPageProps {
-  onSearchComplete: () => void;
+  onSearchComplete: (customer: Customer) => void;
   onRegisterNew: () => void;
 }
 
-interface Customer {
-  id: string;
-  name: string;
-  cpf: string;
-  phone: string;
-  uc: string;
-  lastProtocol?: string;
-  lastService?: string;
-  timestamp?: string;
-}
+// Using shared Customer type from data module
 
 export function SearchPage({ onSearchComplete, onRegisterNew }: SearchPageProps) {
   const [searchTerm, setSearchTerm] = useState('');
   const [suggestions, setSuggestions] = useState<Customer[]>([]);
   const [showSuggestions, setShowSuggestions] = useState(false);
 
-  // Clientes cadastrados (mockado)
-  const registeredCustomers: Customer[] = [
-    {
-      id: '1',
-      name: 'THIAGO GOMES DO NASCIMENTO',
-      cpf: '072.190.104-27',
-      phone: '+5584994043923',
-      uc: '007027028416',
-      lastProtocol: '202511052102925525',
-      lastService: '2ª Via de Fatura',
-      timestamp: 'Hoje às 14:30'
-    },
-    {
-      id: '2',
-      name: 'MARIA SILVA SANTOS',
-      cpf: '123.456.789-00',
-      phone: '+5584988887777',
-      uc: '007028897760',
-      lastProtocol: '202511052102925524',
-      lastService: 'Falta de Energia',
-      timestamp: 'Hoje às 10:15'
-    },
-    {
-      id: '3',
-      name: 'JOÃO PEDRO OLIVEIRA',
-      cpf: '987.654.321-00',
-      phone: '+5584977776666',
-      uc: '007024004478',
-      lastProtocol: '202511052102925523',
-      lastService: 'Informação',
-      timestamp: 'Ontem às 16:45'
-    }
-  ];
+  // Dados compartilhados importados de src/data/customers
 
   // Atualizar sugestões conforme digita
   useEffect(() => {
     if (searchTerm.trim().length >= 2) {
-      const filtered = registeredCustomers.filter(customer => 
-        customer.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-        customer.cpf.includes(searchTerm) ||
-        customer.uc.includes(searchTerm) ||
-        customer.phone.includes(searchTerm) ||
-        customer.lastProtocol?.includes(searchTerm)
-      );
+      const filtered = findCustomers(searchTerm);
       setSuggestions(filtered);
       setShowSuggestions(true);
     } else {
@@ -82,7 +36,7 @@ export function SearchPage({ onSearchComplete, onRegisterNew }: SearchPageProps)
   const handleSelectCustomer = (customer: Customer) => {
     setSearchTerm('');
     setShowSuggestions(false);
-    onSearchComplete();
+    onSearchComplete(customer);
   };
 
   const handleKeyPress = (e: React.KeyboardEvent) => {
@@ -166,7 +120,7 @@ export function SearchPage({ onSearchComplete, onRegisterNew }: SearchPageProps)
                           <div className="flex items-center gap-4 text-xs text-slate-500 ml-13">
                             <span className="flex items-center gap-1">
                               <Zap className="w-3 h-3" />
-                              UC: {customer.uc}
+                              UC: {customer.addresses[0]?.ucNumber}
                             </span>
                             <span className="flex items-center gap-1">
                               <Phone className="w-3 h-3" />
@@ -209,7 +163,7 @@ export function SearchPage({ onSearchComplete, onRegisterNew }: SearchPageProps)
             <div className="flex items-center justify-center gap-4 text-xs text-slate-400">
               <span className="flex items-center gap-1">
                 <Zap className="w-3 h-3" />
-                {registeredCustomers.length} clientes cadastrados
+                {customers.length} clientes cadastrados
               </span>
               <span className="flex items-center gap-1">
                 <Search className="w-3 h-3" />
