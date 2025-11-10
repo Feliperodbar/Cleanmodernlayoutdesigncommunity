@@ -1,5 +1,5 @@
 import { useEffect, useMemo, useState } from 'react';
-import { Search, Phone, Mail, User, FileText, Zap, Plus, Settings, ChevronDown, ChevronUp, Power, DollarSign, Clock, MapPin, Copy, Check, ChevronRight } from 'lucide-react';
+import { Search, Phone, Mail, User, FileText, Zap, Plus, Settings, ChevronDown, ChevronUp, Power, DollarSign, Clock, MapPin, Copy, Check, ChevronRight, Star } from 'lucide-react';
 import { Button } from './ui/button';
 import { Input } from './ui/input';
 import { Card, CardContent } from './ui/card';
@@ -22,6 +22,7 @@ export function CustomerServiceLayout({ onNewService, customer, onSelectCustomer
   const [searchTerm, setSearchTerm] = useState('');
   const [suggestions, setSuggestions] = useState<Customer[]>([]);
   const [showSuggestions, setShowSuggestions] = useState(false);
+  const [favoriteServices, setFavoriteServices] = useState<string[]>([]);
   const distributors = [
     'Neoenergia Elektro',
     'Neoenergia Coelba',
@@ -68,6 +69,12 @@ export function CustomerServiceLayout({ onNewService, customer, onSelectCustomer
     setSearchTerm('');
     setShowSuggestions(false);
     onSelectCustomer?.(c);
+  };
+
+  const toggleFavorite = (service: string) => {
+    setFavoriteServices((prev) =>
+      prev.includes(service) ? prev.filter((s) => s !== service) : [...prev, service]
+    );
   };
 
   const copyToClipboard = (text: string, field: string) => {
@@ -299,6 +306,17 @@ export function CustomerServiceLayout({ onNewService, customer, onSelectCustomer
                 <FileText className="w-4 h-4" />
                 Ver Histórico
               </Button>
+              {favoriteServices.length > 0 && (
+                <div className="space-y-2 pt-2">
+                  <p className="text-xs text-slate-500">Favoritos</p>
+                  {favoriteServices.map((fav) => (
+                    <Button key={fav} variant="outline" className="w-full justify-start gap-2 text-[#003A70] border-[#003A70]/20 hover:bg-[#003A70]/5" size="sm">
+                      <Star className="w-4 h-4 text-yellow-500" fill="currentColor" />
+                      {fav}
+                    </Button>
+                  ))}
+                </div>
+              )}
             </div>
           </div>
         </aside>
@@ -320,6 +338,14 @@ export function CustomerServiceLayout({ onNewService, customer, onSelectCustomer
                   Finalizar Protocolo
                 </Button>
               </div>
+            </div>
+
+            {/* Nova Ligação CTA */}
+            <div className="mb-6">
+              <Button className="bg-[#00A859] hover:bg-[#008F4A] gap-2">
+                <Power className="w-4 h-4" />
+                Ligação Nova
+              </Button>
             </div>
 
             {/* UC Cards */}
@@ -438,27 +464,34 @@ export function CustomerServiceLayout({ onNewService, customer, onSelectCustomer
                             <p className="text-xs text-slate-500">Serviços da UC</p>
                             <div className="grid grid-cols-2 md:grid-cols-3 gap-3">
                               {[
-                                'Registro de Informação',
-                                'Ligação Nova',
                                 'Fatura Digital',
                                 'Débito Automático',
                                 'Data Certa',
-                                'Cadastro de Cliente',
                                 'Atendimento Emergencial',
                                 'Alteração Cadastral',
                                 '2ª Via de Quitação de Débito',
                                 '2ª Via de Fatura',
                                 '2ª Via de Contrato de Parcelamento',
                               ].map((service) => (
-                                <Button
-                                  key={service}
-                                  variant="outline"
-                                  className="justify-start gap-2 text-[#003A70] border-[#003A70]/20 hover:bg-[#003A70]/5"
-                                  size="sm"
-                                >
-                                  <FileText className="w-4 h-4" />
-                                  {service}
-                                </Button>
+                                <div key={service} className="flex items-center gap-2">
+                                  <Button
+                                    variant="outline"
+                                    className="flex-1 justify-start gap-2 text-[#003A70] border-[#003A70]/20 hover:bg-[#003A70]/5"
+                                    size="sm"
+                                  >
+                                    <FileText className="w-4 h-4" />
+                                    {service}
+                                  </Button>
+                                  <Button
+                                    variant="ghost"
+                                    size="icon"
+                                    className="h-8 w-8"
+                                    onClick={() => toggleFavorite(service)}
+                                    aria-label={favoriteServices.includes(service) ? 'Remover dos favoritos' : 'Adicionar aos favoritos'}
+                                  >
+                                    <Star className={`w-4 h-4 ${favoriteServices.includes(service) ? 'text-yellow-500' : 'text-slate-400'}`} fill={favoriteServices.includes(service) ? 'currentColor' : 'none'} />
+                                  </Button>
+                                </div>
                               ))}
                             </div>
                           </div>
