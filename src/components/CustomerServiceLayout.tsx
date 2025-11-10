@@ -164,7 +164,7 @@ export function CustomerServiceLayout({ onNewService, customer, onSelectCustomer
         </div>
       </header>
 
-      <div className="flex">
+      <div className="flex gap-6">
         {/* Sidebar */}
         <aside className="w-80 bg-white border-r border-slate-200 min-h-[calc(100vh-73px)]">
           <div className="p-6">
@@ -182,7 +182,7 @@ export function CustomerServiceLayout({ onNewService, customer, onSelectCustomer
 
             <Separator className="my-4" />
 
-            <div className="space-y-3">
+            <div className="space-y-4">
               <div className="flex items-start gap-3 group">
                 <div className="w-8 h-8 rounded-lg bg-[#003A70]/10 flex items-center justify-center flex-shrink-0">
                   <FileText className="w-4 h-4 text-[#003A70]" />
@@ -289,7 +289,7 @@ export function CustomerServiceLayout({ onNewService, customer, onSelectCustomer
               </div>
             </div>
 
-            <div className="space-y-2">
+            <div className="space-y-2 mt-6">
               <p className="text-xs text-slate-500 mb-2">Ações Rápidas</p>
               <Button variant="outline" className="w-full justify-start gap-2 text-[#003A70] border-[#003A70]/20 hover:bg-[#003A70]/5" size="sm">
                 <Settings className="w-4 h-4" />
@@ -324,7 +324,7 @@ export function CustomerServiceLayout({ onNewService, customer, onSelectCustomer
 
             {/* UC Cards */}
             <div className="space-y-4">
-              <div className="flex items-center justify-between mb-4">
+              <div className="flex items-center justify-between mb-6">
                 <h3 className="text-slate-900">Unidades Consumidoras ({addresses.length})</h3>
                 <Input 
                   placeholder="Filtrar UC..." 
@@ -385,7 +385,7 @@ export function CustomerServiceLayout({ onNewService, customer, onSelectCustomer
                     {expandedUC === address.id && (
                       <div className="border-t border-slate-200 bg-slate-50">
                         <div className="p-6 space-y-4">
-                          <div className="grid grid-cols-4 gap-4">
+                          <div className="grid grid-cols-4 gap-6">
                             <div className="flex items-start gap-3">
                               <div className="w-10 h-10 rounded-lg bg-[#003A70]/10 flex items-center justify-center">
                                 <MapPin className="w-5 h-5 text-[#003A70]" />
@@ -434,7 +434,7 @@ export function CustomerServiceLayout({ onNewService, customer, onSelectCustomer
 
                           <Separator />
 
-                          <div className="flex items-center gap-2">
+                          <div className="flex items-center gap-3 mt-2">
                             <Button className="bg-[#00A859] hover:bg-[#008F4A] gap-2" size="sm">
                               <FileText className="w-4 h-4" />
                               2ª Via de Fatura
