@@ -303,26 +303,7 @@ export function CustomerServiceLayout({ onNewService, customer, onSelectCustomer
 
             <Separator className="my-6" />
 
-            <div className="space-y-3">
-              <div className="flex items-start gap-3">
-                <div className="w-8 h-8 rounded-lg bg-[#003A70]/10 flex items-center justify-center flex-shrink-0">
-                  <Zap className="w-4 h-4 text-[#003A70]" />
-                </div>
-                <div className="flex-1">
-                  <p className="text-xs text-slate-500">Distribuidora</p>
-                  <Select value={selectedDistributor} onValueChange={(v) => setSelectedDistributor(v)}>
-                    <SelectTrigger className="w-full">
-                      <SelectValue />
-                    </SelectTrigger>
-                    <SelectContent>
-                      {distributors.map((d) => (
-                        <SelectItem key={d} value={d}>{d}</SelectItem>
-                      ))}
-                    </SelectContent>
-                  </Select>
-                </div>
-              </div>
-            </div>
+            {/* Distribuidora seletor movido para o conteúdo principal */}
 
             <div className="space-y-2 mt-6">
               <p className="text-xs text-slate-500 mb-2">Favoritos</p>
@@ -351,11 +332,7 @@ export function CustomerServiceLayout({ onNewService, customer, onSelectCustomer
                 <p className="text-xs text-slate-500 mb-1">Protocolo Atendimento</p>
                 <h2 className="text-2xl text-slate-900">{selectedCustomer.lastProtocol ?? '—'}</h2>
               </div>
-              <div className="flex items-center gap-3">
-                <div className="flex items-center gap-2 px-3 py-1 rounded-md border border-[#003A70] bg-[#003A70]/10 text-[#003A70]">
-                  <Zap className="w-4 h-4" />
-                  <span>Distribuidora: {selectedDistributor || '—'}</span>
-                </div>
+              <div>
                 <Button className="bg-[#00A859] hover:bg-[#008F4A]">
                   Finalizar Protocolo
                 </Button>
@@ -368,6 +345,28 @@ export function CustomerServiceLayout({ onNewService, customer, onSelectCustomer
                 <Power className="w-4 h-4" />
                 Ligação Nova
               </Button>
+            </div>
+
+            {/* Seletor de distribuidora acima das UCs */}
+            <div className="mb-6">
+              <div className="flex items-start gap-3">
+                <div className="w-8 h-8 rounded-lg bg-[#003A70]/10 flex items-center justify-center flex-shrink-0">
+                  <Zap className="w-4 h-4 text-[#003A70]" />
+                </div>
+                <div className="flex-1">
+                  <p className="text-xs text-slate-500">Distribuidora</p>
+                  <Select value={selectedDistributor} onValueChange={(v) => setSelectedDistributor(v)}>
+                    <SelectTrigger className="w-full">
+                      <SelectValue />
+                    </SelectTrigger>
+                    <SelectContent>
+                      {distributors.map((d) => (
+                        <SelectItem key={d} value={d}>{d}</SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                </div>
+              </div>
             </div>
 
             {/* UC Cards */}
@@ -484,88 +483,58 @@ export function CustomerServiceLayout({ onNewService, customer, onSelectCustomer
 
                           <div className="space-y-3">
                             <p className="text-xs text-slate-500">Serviços da UC</p>
-                            {/* Container único para todos os serviços */}
-                            <div className="rounded-lg border border-slate-200 bg-white overflow-hidden">
-                              <div className="divide-y divide-slate-200">
-                                {/* Serviços com switch, sem texto, com ícone de estado */}
-                                {toggleServicesList.map((service) => {
-                                  const on = isServiceOn(address.id, service);
-                                  return (
-                                    <div
-                                      key={service}
-                                      className="flex items-center justify-between p-3 cursor-pointer"
-                                      role="button"
-                                      tabIndex={0}
-                                      aria-pressed={on}
-                                      onClick={() => setServiceOn(address.id, service, !on)}
-                                      onKeyDown={(e) => {
-                                        if (e.key === 'Enter' || e.key === ' ') {
-                                          e.preventDefault();
-                                          setServiceOn(address.id, service, !on);
-                                        }
-                                      }}
-                                    >
-                                      <div className="flex items-center gap-2">
-                                        <Power className={`w-4 h-4 ${on ? 'text-green-600' : 'text-red-600'}`} />
-                                        <span className="text-sm text-slate-900">{service}</span>
-                                      </div>
-                                      <div className="flex items-center gap-2">
-                                        <Button
-                                          variant="ghost"
-                                          size="icon"
-                                          className="h-8 w-8"
-                                          onClick={(e) => {
-                                            e.stopPropagation();
-                                            toggleFavorite(service);
-                                          }}
-                                          aria-label={favoriteServices.includes(service) ? 'Remover dos favoritos' : 'Adicionar aos favoritos'}
-                                        >
-                                          <Star className={`w-4 h-4 ${favoriteServices.includes(service) ? 'text-yellow-500' : 'text-slate-400'}`} fill={favoriteServices.includes(service) ? 'currentColor' : 'none'} />
-                                        </Button>
+                            {/* Grid em duas colunas com botões uniformes */}
+                            <div className="grid grid-cols-2 gap-3">
+                              {[
+                                'Fatura Digital',
+                                'Débito Automático',
+                                'Data Certa',
+                                'Atendimento Emergencial',
+                                'Alteração Cadastral',
+                                '2ª Via de Quitação de Débito',
+                                '2ª Via de Fatura',
+                                '2ª Via de Contrato de Parcelamento',
+                              ].map((service) => {
+                                const isToggle = toggleServicesList.includes(service);
+                                const on = isToggle ? isServiceOn(address.id, service) : false;
+                                return (
+                                  <div
+                                    key={service}
+                                    className="group h-12 rounded-md border border-slate-200 bg-white px-3 py-2 flex items-center justify-between cursor-pointer hover:bg-[#003A70]/5"
+                                    onClick={() => {
+                                      if (isToggle) setServiceOn(address.id, service, !on);
+                                    }}
+                                  >
+                                    <div className="flex items-center gap-2">
+                                      <FileText className="w-4 h-4 text-[#003A70]" />
+                                      <span className="text-sm text-slate-900">{service}</span>
+                                    </div>
+                                    <div className="flex items-center gap-2">
+                                      <Button
+                                        variant="ghost"
+                                        size="icon"
+                                        className="h-8 w-8"
+                                        onClick={(e) => {
+                                          e.stopPropagation();
+                                          toggleFavorite(service);
+                                        }}
+                                        aria-label={favoriteServices.includes(service) ? 'Remover dos favoritos' : 'Adicionar aos favoritos'}
+                                      >
+                                        <Star className={`w-4 h-4 ${favoriteServices.includes(service) ? 'text-yellow-500' : 'text-slate-400'}`} fill={favoriteServices.includes(service) ? 'currentColor' : 'none'} />
+                                      </Button>
+                                      {isToggle && (
                                         <Switch
                                           checked={on}
                                           onCheckedChange={(v) => setServiceOn(address.id, service, v)}
                                           aria-label={`Alternar ${service}`}
-                                          className="data-[state=checked]:bg-green-500 data-[state=unchecked]:bg-red-500"
+                                          className="h-6 w-12 data-[state=checked]:bg-green-500 data-[state=unchecked]:bg-red-500 transition-all"
                                           onClick={(e) => e.stopPropagation()}
                                         />
-                                      </div>
+                                      )}
                                     </div>
-                                  );
-                                })}
-
-                                {/* Demais serviços com botão e favoritos, uniformes */}
-                                {[
-                                  'Atendimento Emergencial',
-                                  'Alteração Cadastral',
-                                  '2ª Via de Quitação de Débito',
-                                  '2ª Via de Fatura',
-                                  '2ª Via de Contrato de Parcelamento',
-                                ].map((service) => (
-                                  <div
-                                    key={service}
-                                    className="flex items-center justify-between p-2"
-                                  >
-                                    <Button
-                                      variant="outline"
-                                      className="h-9 px-3 justify-start gap-2 text-[#003A70] border-[#003A70]/20 hover:bg-[#003A70]/5"
-                                      size="sm"
-                                    >
-                                      <FileText className="w-4 h-4" />
-                                      {service}
-                                    </Button>
-                                    <Button
-                                      variant="ghost"
-                                      size="icon"
-                                      className="h-8 w-8"
-                                      onClick={() => toggleFavorite(service)}
-                                      aria-label={favoriteServices.includes(service) ? 'Remover dos favoritos' : 'Adicionar aos favoritos'}
-                                    >
-                                      <Star className={`w-4 h-4 ${favoriteServices.includes(service) ? 'text-yellow-500' : 'text-slate-400'}`} fill={favoriteServices.includes(service) ? 'currentColor' : 'none'} />
-                                    </Button>
                                   </div>
-                                ))}
-                              </div>
+                                );
+                              })}
                             </div>
                           </div>
                         </div>
