@@ -18,6 +18,7 @@ export interface Customer {
   cpf: string;
   rg?: string;
   birthDate?: string;
+  sex?: string;
   email?: string;
   phone: string;
   addresses: Address[];

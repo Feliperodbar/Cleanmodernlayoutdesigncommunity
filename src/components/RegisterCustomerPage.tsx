@@ -44,6 +44,9 @@ export function RegisterCustomerPage({
   const [documentType, setDocumentType] = useState<"cpf" | "cnpj">("cpf");
   const [document, setDocument] = useState("");
   const [fullName, setFullName] = useState("");
+  const [birthDate, setBirthDate] = useState("");
+  const [birthDateError, setBirthDateError] = useState<string | null>(null);
+  const [sex, setSex] = useState("");
   const [cep, setCep] = useState("");
   const [addressData, setAddressData] = useState<AddressData | null>(null);
   const [number, setNumber] = useState("");
@@ -128,8 +131,57 @@ export function RegisterCustomerPage({
     setDocument(formatted);
   };
 
+  const formatBirthDate = (value: string) => {
+    // input type=date gives YYYY-MM-DD, convert to DD/MM/YYYY to match existing data
+    if (!value) return undefined;
+    const parts = value.split("-");
+    if (parts.length !== 3) return value;
+    const [y, m, d] = parts;
+    return `${d}/${m}/${y}`;
+  };
+
+  const isFutureDate = (value: string) => {
+    if (!value) return false;
+    const parts = value.split("-");
+    if (parts.length !== 3) return false;
+    const [y, m, d] = parts;
+    const dt = new Date(Number(y), Number(m) - 1, Number(d));
+    const today = new Date();
+    // zero out time for comparison
+    today.setHours(0, 0, 0, 0);
+    return dt.getTime() > today.getTime();
+  };
+
+  const isAtLeastAge = (value: string, minAge: number) => {
+    if (!value) return false;
+    const parts = value.split("-");
+    if (parts.length !== 3) return false;
+    const [y, m, d] = parts;
+    const birth = new Date(Number(y), Number(m) - 1, Number(d));
+    const today = new Date();
+    let age = today.getFullYear() - birth.getFullYear();
+    const mDiff = today.getMonth() - birth.getMonth();
+    if (mDiff < 0 || (mDiff === 0 && today.getDate() < birth.getDate())) {
+      age--;
+    }
+    return age >= minAge;
+  };
+
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
+    // Ensure birthDate present and valid (>18 and not future)
+    if (!birthDate) {
+      setBirthDateError("Data de nascimento é obrigatória");
+      return;
+    }
+    if (isFutureDate(birthDate)) {
+      setBirthDateError("Data de nascimento não pode ser no futuro");
+      return;
+    }
+    if (!isAtLeastAge(birthDate, 18)) {
+      setBirthDateError("É necessário ter 18 anos ou mais");
+      return;
+    }
     // Monta objeto Customer mínimo e persiste no pequeno banco (localStorage)
     const primaryPhone = cellPhone || homePhone;
     const addrLine = addressData
@@ -142,6 +194,8 @@ export function RegisterCustomerPage({
       name: fullName || "Cliente Sem Nome",
       cpf: document,
       email: email || undefined,
+      birthDate: formatBirthDate(birthDate) || undefined,
+      sex: sex || undefined,
       phone: primaryPhone || "",
       lastProtocol: undefined,
       lastService: undefined,
@@ -256,6 +310,43 @@ export function RegisterCustomerPage({
                         placeholder="Digite o nome completo"
                         required
                       />
+                      <div className="space-y-2">
+                        <Label htmlFor="birthDate">Data de Nascimento</Label>
+                        <Input
+                          id="birthDate"
+                          type="date"
+                          value={birthDate}
+                          onChange={(e) => {
+                            const v = e.target.value;
+                            setBirthDate(v);
+                            if (isFutureDate(v)) {
+                              setBirthDateError("Data de nascimento não pode ser no futuro");
+                            } else {
+                              setBirthDateError(null);
+                            }
+                          }}
+                          placeholder="dd/mm/aaaa"
+                          aria-invalid={birthDateError ? true : undefined}
+                          aria-describedby={birthDateError ? "birthDate-error" : undefined}
+                        />
+                        {birthDateError && (
+                          <p id="birthDate-error" className="text-sm text-red-600 mt-1">{birthDateError}</p>
+                        )}
+                      <div className="space-y-2">
+                        <Label htmlFor="sex">Sexo</Label>
+                        <Select value={sex} onValueChange={setSex}>
+                          <SelectTrigger id="sex" className="w-44">
+                            <SelectValue placeholder="Selecione" />
+                          </SelectTrigger>
+                          <SelectContent>
+                            <SelectItem value="male">Masculino</SelectItem>
+                            <SelectItem value="female">Feminino</SelectItem>
+                            <SelectItem value="other">Outro</SelectItem>
+                            <SelectItem value="prefer_not">Prefiro não dizer</SelectItem>
+                          </SelectContent>
+                        </Select>
+                      </div>
+                      </div>
                     </div>
                   </div>
                 </div>
@@ -425,7 +516,7 @@ export function RegisterCustomerPage({
                 </div>
 
                 {/* Action Buttons */}
-                <div className="flex items-center justify-end gap-3 pt-6 border-t border-slate-200">
+                  <div className="flex items-center justify-end gap-3 pt-6 border-t border-slate-200">
                   <Button
                     type="button"
                     variant="outline"
@@ -437,6 +528,7 @@ export function RegisterCustomerPage({
                   <Button
                     type="submit"
                     className="bg-[#00A859] hover:bg-[#008F4A] gap-2"
+                    disabled={!!birthDateError}
                   >
                     <UserIcon className="w-4 h-4" />
                     Cadastrar Cliente
