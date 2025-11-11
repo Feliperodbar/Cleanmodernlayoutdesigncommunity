@@ -1,13 +1,38 @@
 import { useState } from 'react';
+import { SearchPage } from './components/SearchPage';
 import { CustomerServiceLayout } from './components/CustomerServiceLayout';
-import { HomePage } from './components/HomePage';
+import { RegisterCustomerPage } from './components/RegisterCustomerPage';
+import type { Customer } from './data/customers';
 
 export default function App() {
-  const [view, setView] = useState<'home' | 'service'>('home');
+  const [currentPage, setCurrentPage] = useState<'search' | 'service' | 'register'>('search');
+  const [selectedCustomer, setSelectedCustomer] = useState<Customer | null>(null);
 
-  if (view === 'home') {
-    return <HomePage onIdentifyClick={() => setView('service')} />;
+  if (currentPage === 'search') {
+    return (
+      <SearchPage 
+        onSearchComplete={(customer) => {
+          setSelectedCustomer(customer);
+          setCurrentPage('service');
+        }}
+        onRegisterNew={() => setCurrentPage('register')}
+      />
+    );
   }
 
-  return <CustomerServiceLayout />;
+  if (currentPage === 'register') {
+    return (
+      <RegisterCustomerPage 
+        onBack={() => setCurrentPage('search')}
+        onRegisterComplete={() => setCurrentPage('service')}
+      />
+    );
+  }
+  return (
+    <CustomerServiceLayout 
+      customer={selectedCustomer}
+      onNewService={() => setCurrentPage('search')}
+      onSelectCustomer={(customer) => setSelectedCustomer(customer)}
+    />
+  );
 }

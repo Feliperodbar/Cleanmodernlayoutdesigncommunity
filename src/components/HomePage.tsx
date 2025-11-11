@@ -35,6 +35,7 @@ export function HomePage({ onIdentifyClick }: HomePageProps) {
           <div className="flex items-center justify-center">
             <Card className="w-56 cursor-pointer hover:shadow-md transition-shadow" onClick={onIdentifyClick}>
               <CardContent className="p-6 flex flex-col items-center gap-3">
+
                 <User className="w-24 h-24 text-[#003A70]/40" />
                 <p className="text-sm text-slate-600">Identificar cliente</p>
               </CardContent>

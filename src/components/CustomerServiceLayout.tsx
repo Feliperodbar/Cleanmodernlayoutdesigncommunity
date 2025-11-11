@@ -1,60 +1,86 @@
-import { useState } from 'react';
-import { Search, Phone, Mail, User, FileText, Zap, Plus, Settings, ChevronDown, ChevronUp, Power, DollarSign, Clock, MapPin, Copy, Check } from 'lucide-react';
+import { useEffect, useMemo, useState } from 'react';
+import { Search, Phone, Mail, User, FileText, Zap, Plus, Settings, ChevronDown, ChevronUp, Power, DollarSign, Clock, MapPin, Copy, Check, ChevronRight } from 'lucide-react';
 import { Button } from './ui/button';
 import { Input } from './ui/input';
 import { Card, CardContent } from './ui/card';
 import { Badge } from './ui/badge';
 import { Separator } from './ui/separator';
 import { Avatar, AvatarFallback } from './ui/avatar';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from './ui/select';
+import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle } from './ui/alert-dialog';
+// Switch removido conforme nova especificação
+import { customers, findCustomers } from '../data/customers';
+import type { Customer } from '../data/customers';
 
-export function CustomerServiceLayout() {
+interface CustomerServiceLayoutProps {
+  onNewService?: () => void;
+  customer?: Customer | null;
+  onSelectCustomer?: (customer: Customer) => void;
+}
+
+export function CustomerServiceLayout({ onNewService, customer, onSelectCustomer }: CustomerServiceLayoutProps) {
   const [expandedUC, setExpandedUC] = useState<string | null>('1');
   const [copiedField, setCopiedField] = useState<string | null>(null);
+  const [searchTerm, setSearchTerm] = useState('');
+  const [suggestions, setSuggestions] = useState<Customer[]>([]);
+  const [showSuggestions, setShowSuggestions] = useState(false);
+  // Removidos estados e persistência de favoritos e switches
+  // Estados de serviços (inativo/ativo) para Fatura Digital, Débito Automático e Data Certa
+  const [serviceStatus, setServiceStatus] = useState<Record<string, boolean>>({
+    'Fatura Digital': false,
+    'Débito Automático': false,
+    'Data Certa': false,
+  });
+  const [confirmOpen, setConfirmOpen] = useState(false);
+  const [pendingService, setPendingService] = useState<string | null>(null);
+  const distributors = [
+    'Neoenergia Elektro',
+    'Neoenergia Coelba',
+    'Neoenergia Cosern',
+    'Neoenergia Pernambuco',
+  ];
+  const [selectedDistributor, setSelectedDistributor] = useState<string>('Neoenergia Cosern');
+  const selectedCustomer: Customer = useMemo(
+    () => customer ?? customers[0],
+    [customer]
+  );
 
-  const customerData = {
-    name: 'THIAGO GOMES DO NASCIMENTO',
-    cpf: '072.190.104-27',
-    rg: '00.262.439-8',
-    birthDate: '28/08/1986',
-    email: 'thiagogomesnascimento280886@gmail.com',
-    phone: '+5584994043923'
+  const baseAddress = selectedCustomer.addresses[0];
+
+  const computeUCForDistributor = (uc: string, dist: string) => {
+    const prefixes: Record<string, string> = {
+      'Neoenergia Elektro': '101',
+      'Neoenergia Coelba': '102',
+      'Neoenergia Cosern': uc.slice(0, 3) || '103',
+      'Neoenergia Pernambuco': '104',
+    };
+    const prefix = prefixes[dist] ?? '105';
+    return (uc.length >= 3 ? prefix + uc.slice(3) : prefix + uc);
   };
 
-  const addresses = [
-    {
-      id: '1',
-      ucNumber: '007027028416',
-      address: 'RUA DAS ORQUÍDEAS, 270, TABORDA',
-      city: 'SÃO GONÇALO DO AMARANTE',
-      cep: '59162-000',
-      status: 'active',
-      lastBill: 'R$ 145,30',
-      dueDate: '15/11/2024',
-      consumption: '320 kWh'
-    },
-    {
-      id: '2',
-      ucNumber: '007028897760',
-      address: 'RUA DA TAINHA, 40 SL. 1, VIDA NOVA',
-      city: 'PARNAMIRIM',
-      cep: '59147-535',
-      status: 'active',
-      lastBill: 'R$ 89,50',
-      dueDate: '18/11/2024',
-      consumption: '180 kWh'
-    },
-    {
-      id: '3',
-      ucNumber: '007024004478',
-      address: 'RUA DEZESSETE DE DEZEMBRO, 35 TO - D AP. 103',
-      city: 'BOA VIAGEM',
-      cep: '59155-020',
-      status: 'inactive',
-      lastBill: '-',
-      dueDate: '-',
-      consumption: '-'
+  const addresses = selectedCustomer.addresses.map((addr) => ({
+    ...addr,
+    ucNumber: computeUCForDistributor(addr.ucNumber, selectedDistributor),
+  }));
+
+  useEffect(() => {
+    if (searchTerm.trim().length >= 2) {
+      const filtered = findCustomers(searchTerm);
+      setSuggestions(filtered);
+      setShowSuggestions(true);
+    } else {
+      setSuggestions([]);
+      setShowSuggestions(false);
     }
-  ];
+  }, [searchTerm]);
+
+  const handleSelectSuggestion = (c: Customer) => {
+    setSearchTerm('');
+    setShowSuggestions(false);
+    onSelectCustomer?.(c);
+  };
+
+  // Função de favoritos removida
 
   const copyToClipboard = (text: string, field: string) => {
     navigator.clipboard.writeText(text);
@@ -64,6 +90,30 @@ export function CustomerServiceLayout() {
 
   const toggleUC = (id: string) => {
     setExpandedUC(expandedUC === id ? null : id);
+  };
+
+  const handleServiceClick = (service: string) => {
+    // Debug: clique de serviço
+    console.log('[ServiceClick]', service);
+    if (service in serviceStatus) {
+      setPendingService(service);
+      setConfirmOpen(true);
+    } else {
+      // Serviços que não possuem ativação/descadastramento permanecem como ação simples
+      onNewService?.();
+    }
+  };
+
+  const handleConfirmToggle = () => {
+    if (!pendingService) {
+      setConfirmOpen(false);
+      return;
+    }
+    setServiceStatus((prev) => ({
+      ...prev,
+      [pendingService]: !prev[pendingService],
+    }));
+    setConfirmOpen(false);
   };
 
   return (
@@ -78,7 +128,7 @@ export function CustomerServiceLayout() {
               </div>
               <div>
                 <h1 className="text-slate-900">Atendimento</h1>
-                <p className="text-xs text-[#00A859]">NEOENERGIA COSERN</p>
+                <p className="text-xs text-[#00A859]">{selectedDistributor.toUpperCase()}</p>
               </div>
             </div>
           </div>
@@ -89,14 +139,54 @@ export function CustomerServiceLayout() {
               <Input 
                 placeholder="Buscar UC, CPF, Protocolo..." 
                 className="pl-10 bg-slate-50 border-slate-200"
+                value={searchTerm}
+                onChange={(e) => setSearchTerm(e.target.value)}
+                onFocus={() => searchTerm.length >= 2 && setShowSuggestions(true)}
               />
+              {showSuggestions && suggestions.length > 0 && (
+                <div className="absolute top-full left-0 right-0 mt-2 bg-white border border-slate-200 rounded-lg shadow-lg max-h-80 overflow-auto z-50">
+                  {suggestions.map((c) => (
+                    <div
+                      key={c.id}
+                      className="p-3 hover:bg-slate-50 cursor-pointer border-b border-slate-100 last:border-b-0 transition-colors"
+                      onClick={() => handleSelectSuggestion(c)}
+                    >
+                      <div className="flex items-center justify-between">
+                        <div className="flex items-center gap-3">
+                          <div className="w-8 h-8 bg-[#003A70] rounded-lg flex items-center justify-center">
+                            <User className="w-4 h-4 text-white" />
+                          </div>
+                          <div>
+                            <p className="text-sm text-slate-900">{c.name}</p>
+                            <p className="text-xs text-slate-500">{c.cpf}</p>
+                          </div>
+                        </div>
+                        <ChevronRight className="w-5 h-5 text-slate-400" />
+                      </div>
+                      <div className="flex items-center gap-4 text-xs text-slate-500 ml-11 mt-1">
+                        <span className="flex items-center gap-1">
+                          <Zap className="w-3 h-3" />
+                          UC: {c.addresses[0]?.ucNumber}
+                        </span>
+                        <span className="flex items-center gap-1">
+                          <Phone className="w-3 h-3" />
+                          {c.phone}
+                        </span>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              )}
             </div>
           </div>
 
           <div className="flex items-center gap-3">
-            <Button className="bg-[#00A859] hover:bg-[#008F4A] gap-2">
+            <Button 
+              className="bg-[#00A859] hover:bg-[#008F4A] gap-2"
+              onClick={onNewService}
+            >
               <Plus className="w-4 h-4" />
-              Nova Ligação
+              Novo Atendimento
             </Button>
             <Button variant="outline" size="icon" className="hover:bg-[#003A70]/5">
               <Settings className="w-5 h-5 text-[#003A70]" />
@@ -110,25 +200,25 @@ export function CustomerServiceLayout() {
         </div>
       </header>
 
-      <div className="flex">
+      <div className="flex gap-6">
         {/* Sidebar */}
         <aside className="w-80 bg-white border-r border-slate-200 min-h-[calc(100vh-73px)]">
           <div className="p-6">
             <div className="flex items-center gap-3 mb-6">
               <Avatar className="w-16 h-16">
                 <AvatarFallback className="bg-[#003A70] text-white text-xl">
-                  TG
+                  {selectedCustomer.name.split(' ').slice(0,2).map(n => n[0]).join('')}
                 </AvatarFallback>
               </Avatar>
               <div className="flex-1">
-                <h3 className="text-slate-900">{customerData.name}</h3>
+                <h3 className="text-slate-900">{selectedCustomer.name}</h3>
                 <p className="text-xs text-[#00A859]">Pessoa Física</p>
               </div>
             </div>
 
             <Separator className="my-4" />
 
-            <div className="space-y-3">
+            <div className="space-y-4">
               <div className="flex items-start gap-3 group">
                 <div className="w-8 h-8 rounded-lg bg-[#003A70]/10 flex items-center justify-center flex-shrink-0">
                   <FileText className="w-4 h-4 text-[#003A70]" />
@@ -136,12 +226,12 @@ export function CustomerServiceLayout() {
                 <div className="flex-1">
                   <p className="text-xs text-slate-500">CPF</p>
                   <div className="flex items-center justify-between">
-                    <p className="text-sm text-slate-900">{customerData.cpf}</p>
+                    <p className="text-sm text-slate-900">{selectedCustomer.cpf}</p>
                     <Button
                       variant="ghost"
                       size="sm"
                       className="h-6 w-6 p-0 opacity-0 group-hover:opacity-100 transition-opacity"
-                      onClick={() => copyToClipboard(customerData.cpf, 'cpf')}
+                      onClick={() => copyToClipboard(selectedCustomer.cpf, 'cpf')}
                     >
                       {copiedField === 'cpf' ? (
                         <Check className="w-3 h-3 text-green-600" />
@@ -159,7 +249,7 @@ export function CustomerServiceLayout() {
                 </div>
                 <div className="flex-1">
                   <p className="text-xs text-slate-500">Nascimento</p>
-                  <p className="text-sm text-slate-900">{customerData.birthDate}</p>
+                  <p className="text-sm text-slate-900">{selectedCustomer.birthDate}</p>
                 </div>
               </div>
 
@@ -170,12 +260,12 @@ export function CustomerServiceLayout() {
                 <div className="flex-1">
                   <p className="text-xs text-slate-500">Telefone</p>
                   <div className="flex items-center justify-between">
-                    <p className="text-sm text-slate-900">{customerData.phone}</p>
+                    <p className="text-sm text-slate-900">{selectedCustomer.phone}</p>
                     <Button
                       variant="ghost"
                       size="sm"
                       className="h-6 w-6 p-0 opacity-0 group-hover:opacity-100 transition-opacity"
-                      onClick={() => copyToClipboard(customerData.phone, 'phone')}
+                      onClick={() => copyToClipboard(selectedCustomer.phone, 'phone')}
                     >
                       {copiedField === 'phone' ? (
                         <Check className="w-3 h-3 text-green-600" />
@@ -194,12 +284,12 @@ export function CustomerServiceLayout() {
                 <div className="flex-1">
                   <p className="text-xs text-slate-500">Email</p>
                   <div className="flex items-center justify-between">
-                    <p className="text-sm text-slate-900 break-all">{customerData.email}</p>
+                    <p className="text-sm text-slate-900 break-all">{selectedCustomer.email}</p>
                     <Button
                       variant="ghost"
                       size="sm"
                       className="h-6 w-6 p-0 opacity-0 group-hover:opacity-100 transition-opacity flex-shrink-0"
-                      onClick={() => copyToClipboard(customerData.email, 'email')}
+                      onClick={() => copyToClipboard(selectedCustomer.email ?? '', 'email')}
                     >
                       {copiedField === 'email' ? (
                         <Check className="w-3 h-3 text-green-600" />
@@ -214,42 +304,56 @@ export function CustomerServiceLayout() {
 
             <Separator className="my-6" />
 
-            <div className="space-y-2">
-              <p className="text-xs text-slate-500 mb-2">Ações Rápidas</p>
-              <Button variant="outline" className="w-full justify-start gap-2 text-[#003A70] border-[#003A70]/20 hover:bg-[#003A70]/5" size="sm">
-                <Settings className="w-4 h-4" />
-                Alterar Cadastro
-              </Button>
-              <Button variant="outline" className="w-full justify-start gap-2 text-[#003A70] border-[#003A70]/20 hover:bg-[#003A70]/5" size="sm">
-                <FileText className="w-4 h-4" />
-                Ver Histórico
-              </Button>
-            </div>
+            {/* Distribuidora seletor movido para o conteúdo principal */}
+
+            {/* Favoritos removidos conforme nova especificação */}
           </div>
         </aside>
 
         {/* Main Content */}
         <main className="flex-1 p-6">
           <div className="max-w-6xl">
-            {/* Protocol Header */}
+            {/* Cabeçalho do protocolo (botão de finalizar movido para rodapé fixo) */}
             <div className="flex items-center justify-between mb-6">
               <div>
                 <p className="text-xs text-slate-500 mb-1">Protocolo Atendimento</p>
-                <h2 className="text-2xl text-slate-900">202511052102925525</h2>
+                <h2 className="text-2xl text-slate-900">{selectedCustomer.lastProtocol ?? '—'}</h2>
               </div>
-              <div className="flex items-center gap-3">
-                <Badge className="bg-blue-100 text-blue-700 hover:bg-blue-100">
-                  Call Center Cosern
-                </Badge>
-                <Button className="bg-[#00A859] hover:bg-[#008F4A]">
-                  Finalizar Protocolo
-                </Button>
+            </div>
+
+            {/* Nova Ligação CTA */}
+            <div className="mb-6">
+              <Button className="bg-[#00A859] hover:bg-[#008F4A] gap-2">
+                <Power className="w-4 h-4" />
+                Ligação Nova
+              </Button>
+            </div>
+
+            {/* Seletor de distribuidora acima das UCs */}
+            <div className="mb-6">
+              <div className="flex items-start gap-3">
+                <div className="w-8 h-8 rounded-lg bg-[#003A70]/10 flex items-center justify-center flex-shrink-0">
+                  <Zap className="w-4 h-4 text-[#003A70]" />
+                </div>
+                <div className="flex-1">
+                  <p className="text-xs text-slate-500">Distribuidora</p>
+                  <Select value={selectedDistributor} onValueChange={(v) => setSelectedDistributor(v)}>
+                    <SelectTrigger className="w-64 bg-white border border-[#003A70]/40 shadow-sm">
+                      <SelectValue />
+                    </SelectTrigger>
+                    <SelectContent>
+                      {distributors.map((d) => (
+                        <SelectItem key={d} value={d}>{d}</SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                </div>
               </div>
             </div>
 
             {/* UC Cards */}
             <div className="space-y-4">
-              <div className="flex items-center justify-between mb-4">
+              <div className="flex items-center justify-between mb-6">
                 <h3 className="text-slate-900">Unidades Consumidoras ({addresses.length})</h3>
                 <Input 
                   placeholder="Filtrar UC..." 
@@ -310,7 +414,7 @@ export function CustomerServiceLayout() {
                     {expandedUC === address.id && (
                       <div className="border-t border-slate-200 bg-slate-50">
                         <div className="p-6 space-y-4">
-                          <div className="grid grid-cols-4 gap-4">
+                          <div className="grid grid-cols-4 gap-6">
                             <div className="flex items-start gap-3">
                               <div className="w-10 h-10 rounded-lg bg-[#003A70]/10 flex items-center justify-center">
                                 <MapPin className="w-5 h-5 text-[#003A70]" />
@@ -359,23 +463,49 @@ export function CustomerServiceLayout() {
 
                           <Separator />
 
-                          <div className="flex items-center gap-2">
-                            <Button className="bg-[#00A859] hover:bg-[#008F4A] gap-2" size="sm">
-                              <FileText className="w-4 h-4" />
-                              2ª Via de Fatura
-                            </Button>
-                            <Button variant="outline" className="gap-2 text-[#003A70] border-[#003A70]/20 hover:bg-[#003A70]/5" size="sm">
-                              <Power className="w-4 h-4" />
-                              Falta de Energia
-                            </Button>
-                            <Button variant="outline" className="gap-2 text-[#003A70] border-[#003A70]/20 hover:bg-[#003A70]/5" size="sm">
-                              <Settings className="w-4 h-4" />
-                              Serviços UC
-                            </Button>
-                            <Button variant="outline" className="gap-2 text-[#003A70] border-[#003A70]/20 hover:bg-[#003A70]/5" size="sm">
-                              <FileText className="w-4 h-4" />
-                              Histórico
-                            </Button>
+                          <div className="space-y-3">
+                            <p className="text-xs text-slate-500">Serviços da UC</p>
+                            {/* Grid em duas colunas com botões uniformes */}
+                            <div className="grid grid-cols-2 gap-3">
+                              {[
+                                'Fatura Digital',
+                                'Débito Automático',
+                                'Data Certa',
+                                'Atendimento Emergencial',
+                                'Alteração Cadastral',
+                                '2ª Via de Quitação de Débito',
+                                '2ª Via de Fatura',
+                                '2ª Via de Contrato de Parcelamento',
+                              ].map((service) => {
+                                const isToggleService = service in serviceStatus;
+                                const isActive = isToggleService ? serviceStatus[service] : false;
+                                return (
+                                  <Button
+                                    key={service}
+                                    variant="outline"
+                                    className="h-12 w-full justify-start gap-2 text-[#003A70] border-[#003A70]/20 hover:bg-[#003A70]/5"
+                                    size="sm"
+                                    type="button"
+                                    onClick={() => handleServiceClick(service)}
+                                  >
+                                    <FileText className="w-4 h-4" />
+                                    <span>{service}</span>
+                                    {isToggleService && (
+                                      <Badge
+                                        className={
+                                          `ml-auto border ` +
+                                          (isActive
+                                            ? 'bg-green-100 text-green-700 border-green-200'
+                                            : 'bg-red-100 text-red-700 border-red-200')
+                                        }
+                                      >
+                                        {isActive ? 'Ativo' : 'Inativo'}
+                                      </Badge>
+                                    )}
+                                  </Button>
+                                );
+                              })}
+                            </div>
                           </div>
                         </div>
                       </div>
@@ -384,6 +514,33 @@ export function CustomerServiceLayout() {
                 </Card>
               ))}
             </div>
+            {/* Rodapé fixo com ação principal (melhor visibilidade para o usuário) */}
+            <div className="sticky bottom-0 bg-white border-t border-slate-200 mt-6 z-30">
+              <div className="max-w-6xl p-4 flex justify-end">
+                <Button className="bg-[#00A859] hover:bg-[#008F4A]" type="button">Finalizar Protocolo</Button>
+              </div>
+            </div>
+
+            {/* Dialogo de confirmação para ativar/descadastrar serviços */}
+            <AlertDialog open={confirmOpen} onOpenChange={setConfirmOpen}>
+              {confirmOpen && pendingService && (
+                <AlertDialogContent>
+                  <AlertDialogHeader>
+                    <AlertDialogTitle>Confirmação</AlertDialogTitle>
+                    <AlertDialogDescription>
+                      {serviceStatus[pendingService]
+                        ? `Deseja realmente descadastrar o serviço ${pendingService}?`
+                        : `Deseja ativar o ${pendingService}?`}
+                    </AlertDialogDescription>
+                  </AlertDialogHeader>
+                  <AlertDialogFooter>
+                    <AlertDialogCancel onClick={() => setConfirmOpen(false)}>Não</AlertDialogCancel>
+                    <AlertDialogAction onClick={handleConfirmToggle}>Sim</AlertDialogAction>
+                  </AlertDialogFooter>
+                </AlertDialogContent>
+              )}
+            </AlertDialog>
+
           </div>
         </main>
       </div>
