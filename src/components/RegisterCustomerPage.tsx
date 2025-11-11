@@ -1,11 +1,29 @@
-import { useState } from 'react';
-import { ArrowLeft, Zap, User as UserIcon, CreditCard, MapPin, Phone, Mail, Building2, Loader2 } from 'lucide-react';
-import { Input } from './ui/input';
-import { Button } from './ui/button';
-import { Card, CardContent, CardHeader, CardTitle } from './ui/card';
-import { Avatar, AvatarFallback } from './ui/avatar';
-import { Label } from './ui/label';
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from './ui/select';
+import { useState } from "react";
+
+import {
+  ArrowLeft,
+  Zap,
+  User as UserIcon,
+  CreditCard,
+  MapPin,
+  Phone,
+  Mail,
+  Building2,
+  Loader2,
+} from "lucide-react";
+import { Input } from "./ui/input";
+import { Button } from "./ui/button";
+import { Card, CardContent, CardHeader, CardTitle } from "./ui/card";
+import { Avatar, AvatarFallback } from "./ui/avatar";
+import { Label } from "./ui/label";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "./ui/select";
+import { addCustomer, Customer } from "../data/customers";
 
 interface RegisterCustomerPageProps {
   onBack: () => void;
@@ -19,79 +37,84 @@ interface AddressData {
   state: string;
 }
 
-export function RegisterCustomerPage({ onBack, onRegisterComplete }: RegisterCustomerPageProps) {
-  const [documentType, setDocumentType] = useState<'cpf' | 'cnpj'>('cpf');
-  const [document, setDocument] = useState('');
-  const [fullName, setFullName] = useState('');
-  const [cep, setCep] = useState('');
+export function RegisterCustomerPage({
+  onBack,
+  onRegisterComplete,
+}: RegisterCustomerPageProps) {
+  const [documentType, setDocumentType] = useState<"cpf" | "cnpj">("cpf");
+  const [document, setDocument] = useState("");
+  const [fullName, setFullName] = useState("");
+  const [cep, setCep] = useState("");
   const [addressData, setAddressData] = useState<AddressData | null>(null);
-  const [number, setNumber] = useState('');
-  const [complement, setComplement] = useState('');
-  const [cellPhone, setCellPhone] = useState('');
-  const [homePhone, setHomePhone] = useState('');
-  const [email, setEmail] = useState('');
-  const [company, setCompany] = useState('');
+  const [number, setNumber] = useState("");
+  const [complement, setComplement] = useState("");
+  const [cellPhone, setCellPhone] = useState("");
+  const [homePhone, setHomePhone] = useState("");
+  const [email, setEmail] = useState("");
+  const [company, setCompany] = useState("");
   const [loadingCep, setLoadingCep] = useState(false);
 
-  const formatDocument = (value: string, type: 'cpf' | 'cnpj') => {
-    const numbers = value.replace(/\D/g, '');
-    
-    if (type === 'cpf') {
+  const formatDocument = (value: string, type: "cpf" | "cnpj") => {
+    const numbers = value.replace(/\D/g, "");
+
+    if (type === "cpf") {
       return numbers
         .slice(0, 11)
-        .replace(/(\d{3})(\d)/, '$1.$2')
-        .replace(/(\d{3})(\d)/, '$1.$2')
-        .replace(/(\d{3})(\d{1,2})$/, '$1-$2');
+        .replace(/(\d{3})(\d)/, "$1.$2")
+        .replace(/(\d{3})(\d)/, "$1.$2")
+        .replace(/(\d{3})(\d{1,2})$/, "$1-$2");
     } else {
       return numbers
         .slice(0, 14)
-        .replace(/(\d{2})(\d)/, '$1.$2')
-        .replace(/(\d{3})(\d)/, '$1.$2')
-        .replace(/(\d{3})(\d)/, '$1/$2')
-        .replace(/(\d{4})(\d{1,2})$/, '$1-$2');
+        .replace(/(\d{2})(\d)/, "$1.$2")
+        .replace(/(\d{3})(\d)/, "$1.$2")
+        .replace(/(\d{3})(\d)/, "$1/$2")
+        .replace(/(\d{4})(\d{1,2})$/, "$1-$2");
     }
   };
 
   const formatCep = (value: string) => {
-    const numbers = value.replace(/\D/g, '');
-    return numbers.slice(0, 8).replace(/(\d{5})(\d)/, '$1-$2');
+    const numbers = value.replace(/\D/g, "");
+    return numbers.slice(0, 8).replace(/(\d{5})(\d)/, "$1-$2");
   };
 
   const formatPhone = (value: string) => {
-    const numbers = value.replace(/\D/g, '');
+    const numbers = value.replace(/\D/g, "");
     if (numbers.length <= 10) {
       return numbers
         .slice(0, 10)
-        .replace(/(\d{2})(\d)/, '($1) $2')
-        .replace(/(\d{4})(\d)/, '$1-$2');
+        .replace(/(\d{2})(\d)/, "($1) $2")
+        .replace(/(\d{4})(\d)/, "$1-$2");
     }
     return numbers
       .slice(0, 11)
-      .replace(/(\d{2})(\d)/, '($1) $2')
-      .replace(/(\d{5})(\d)/, '$1-$2');
+      .replace(/(\d{2})(\d)/, "($1) $2")
+      .replace(/(\d{5})(\d)/, "$1-$2");
   };
 
   const handleCepChange = async (value: string) => {
     const formattedCep = formatCep(value);
     setCep(formattedCep);
 
-    const numbers = value.replace(/\D/g, '');
+    const numbers = value.replace(/\D/g, "");
     if (numbers.length === 8) {
       setLoadingCep(true);
       try {
-        const response = await fetch(`https://viacep.com.br/ws/${numbers}/json/`);
+        const response = await fetch(
+          `https://viacep.com.br/ws/${numbers}/json/`
+        );
         const data = await response.json();
-        
+
         if (!data.erro) {
           setAddressData({
             street: data.logradouro,
             neighborhood: data.bairro,
             city: data.localidade,
-            state: data.uf
+            state: data.uf,
           });
         }
       } catch (error) {
-        console.error('Erro ao buscar CEP:', error);
+        console.error("Erro ao buscar CEP:", error);
       } finally {
         setLoadingCep(false);
       }
@@ -107,7 +130,26 @@ export function RegisterCustomerPage({ onBack, onRegisterComplete }: RegisterCus
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
-    // Simular cadastro e ir para página de atendimento
+    // Monta objeto Customer mínimo e persiste no pequeno banco (localStorage)
+    const primaryPhone = cellPhone || homePhone;
+    const addrLine = addressData
+      ? `${addressData.street}${number ? ", " + number : ""}${
+          complement ? ", " + complement : ""
+        }, ${addressData.neighborhood}`
+      : "";
+
+    const newCustomer: Omit<Customer, "id"> = {
+      name: fullName || "Cliente Sem Nome",
+      cpf: document,
+      email: email || undefined,
+      phone: primaryPhone || "",
+      lastProtocol: undefined,
+      lastService: undefined,
+      timestamp: new Date().toLocaleString(),
+      addresses: [],
+    };
+
+    addCustomer(newCustomer);
     onRegisterComplete();
   };
 
@@ -127,8 +169,8 @@ export function RegisterCustomerPage({ onBack, onRegisterComplete }: RegisterCus
           </div>
 
           <div className="flex items-center gap-3">
-            <Button 
-              variant="outline" 
+            <Button
+              variant="outline"
               className="gap-2 text-[#003A70] border-[#003A70]/20 hover:bg-[#003A70]/5"
               onClick={onBack}
             >
@@ -155,7 +197,9 @@ export function RegisterCustomerPage({ onBack, onRegisterComplete }: RegisterCus
                 </div>
                 <div>
                   <CardTitle className="text-slate-900">Novo Cliente</CardTitle>
-                  <p className="text-sm text-slate-500">Preencha os dados para cadastrar um novo cliente</p>
+                  <p className="text-sm text-slate-500">
+                    Preencha os dados para cadastrar um novo cliente
+                  </p>
                 </div>
               </div>
             </CardHeader>
@@ -175,9 +219,9 @@ export function RegisterCustomerPage({ onBack, onRegisterComplete }: RegisterCus
                       <div className="flex gap-2">
                         <Select
                           value={documentType}
-                          onValueChange={(value: 'cpf' | 'cnpj') => {
+                          onValueChange={(value: "cpf" | "cnpj") => {
                             setDocumentType(value);
-                            setDocument('');
+                            setDocument("");
                           }}
                         >
                           <SelectTrigger className="w-28">
@@ -192,7 +236,11 @@ export function RegisterCustomerPage({ onBack, onRegisterComplete }: RegisterCus
                           id="document"
                           value={document}
                           onChange={(e) => handleDocumentChange(e.target.value)}
-                          placeholder={documentType === 'cpf' ? '000.000.000-00' : '00.000.000/0000-00'}
+                          placeholder={
+                            documentType === "cpf"
+                              ? "000.000.000-00"
+                              : "00.000.000/0000-00"
+                          }
                           className="flex-1"
                           required
                         />
@@ -240,7 +288,7 @@ export function RegisterCustomerPage({ onBack, onRegisterComplete }: RegisterCus
                       <Label htmlFor="street">Logradouro *</Label>
                       <Input
                         id="street"
-                        value={addressData?.street || ''}
+                        value={addressData?.street || ""}
                         readOnly
                         placeholder="Será preenchido automaticamente"
                         className="bg-slate-50"
@@ -274,7 +322,7 @@ export function RegisterCustomerPage({ onBack, onRegisterComplete }: RegisterCus
                       <Label htmlFor="neighborhood">Bairro *</Label>
                       <Input
                         id="neighborhood"
-                        value={addressData?.neighborhood || ''}
+                        value={addressData?.neighborhood || ""}
                         readOnly
                         placeholder="Auto-preenchido"
                         className="bg-slate-50"
@@ -285,7 +333,11 @@ export function RegisterCustomerPage({ onBack, onRegisterComplete }: RegisterCus
                       <Label htmlFor="city">Cidade/UF *</Label>
                       <Input
                         id="city"
-                        value={addressData ? `${addressData.city}/${addressData.state}` : ''}
+                        value={
+                          addressData
+                            ? `${addressData.city}/${addressData.state}`
+                            : ""
+                        }
                         readOnly
                         placeholder="Auto-preenchido"
                         className="bg-slate-50"
@@ -307,7 +359,9 @@ export function RegisterCustomerPage({ onBack, onRegisterComplete }: RegisterCus
                       <Input
                         id="cellPhone"
                         value={cellPhone}
-                        onChange={(e) => setCellPhone(formatPhone(e.target.value))}
+                        onChange={(e) =>
+                          setCellPhone(formatPhone(e.target.value))
+                        }
                         placeholder="(00) 00000-0000"
                         required
                       />
@@ -318,7 +372,9 @@ export function RegisterCustomerPage({ onBack, onRegisterComplete }: RegisterCus
                       <Input
                         id="homePhone"
                         value={homePhone}
-                        onChange={(e) => setHomePhone(formatPhone(e.target.value))}
+                        onChange={(e) =>
+                          setHomePhone(formatPhone(e.target.value))
+                        }
                         placeholder="(00) 0000-0000"
                       />
                     </div>
@@ -351,10 +407,18 @@ export function RegisterCustomerPage({ onBack, onRegisterComplete }: RegisterCus
                         <SelectValue placeholder="Selecione uma distribuidora" />
                       </SelectTrigger>
                       <SelectContent>
-                        <SelectItem value="coelba">Neoenergia Coelba</SelectItem>
-                        <SelectItem value="cosern">Neoenergia Cosern</SelectItem>
-                        <SelectItem value="elektro">Neoenergia Elektro</SelectItem>
-                        <SelectItem value="pernambuco">Neoenergia Pernambuco</SelectItem>
+                        <SelectItem value="coelba">
+                          Neoenergia Coelba
+                        </SelectItem>
+                        <SelectItem value="cosern">
+                          Neoenergia Cosern
+                        </SelectItem>
+                        <SelectItem value="elektro">
+                          Neoenergia Elektro
+                        </SelectItem>
+                        <SelectItem value="pernambuco">
+                          Neoenergia Pernambuco
+                        </SelectItem>
                       </SelectContent>
                     </Select>
                   </div>

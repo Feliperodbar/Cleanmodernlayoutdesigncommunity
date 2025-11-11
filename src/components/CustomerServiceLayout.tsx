@@ -1,13 +1,14 @@
 import { useEffect, useMemo, useState } from 'react';
 import { Search, Phone, Mail, User, FileText, Zap, Plus, Settings, ChevronDown, ChevronUp, Power, DollarSign, Clock, MapPin, Copy, Check, ChevronRight } from 'lucide-react';
 import { Button } from './ui/button';
+// Removido ThemeToggle (dark mode desativado)
 import { Input } from './ui/input';
 import { Card, CardContent } from './ui/card';
 import { Badge } from './ui/badge';
 import { Separator } from './ui/separator';
 import { Avatar, AvatarFallback } from './ui/avatar';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from './ui/select';
-import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle } from './ui/alert-dialog';
+// Removidos componentes de AlertDialog (confirmação não será usada)
 // Switch removido conforme nova especificação
 import { customers, findCustomers } from '../data/customers';
 import type { Customer } from '../data/customers';
@@ -24,15 +25,7 @@ export function CustomerServiceLayout({ onNewService, customer, onSelectCustomer
   const [searchTerm, setSearchTerm] = useState('');
   const [suggestions, setSuggestions] = useState<Customer[]>([]);
   const [showSuggestions, setShowSuggestions] = useState(false);
-  // Removidos estados e persistência de favoritos e switches
-  // Estados de serviços (inativo/ativo) para Fatura Digital, Débito Automático e Data Certa
-  const [serviceStatus, setServiceStatus] = useState<Record<string, boolean>>({
-    'Fatura Digital': false,
-    'Débito Automático': false,
-    'Data Certa': false,
-  });
-  const [confirmOpen, setConfirmOpen] = useState(false);
-  const [pendingService, setPendingService] = useState<string | null>(null);
+  // Removidos estados de serviços e diálogo de confirmação
   const distributors = [
     'Neoenergia Elektro',
     'Neoenergia Coelba',
@@ -93,27 +86,8 @@ export function CustomerServiceLayout({ onNewService, customer, onSelectCustomer
   };
 
   const handleServiceClick = (service: string) => {
-    // Debug: clique de serviço
     console.log('[ServiceClick]', service);
-    if (service in serviceStatus) {
-      setPendingService(service);
-      setConfirmOpen(true);
-    } else {
-      // Serviços que não possuem ativação/descadastramento permanecem como ação simples
-      onNewService?.();
-    }
-  };
-
-  const handleConfirmToggle = () => {
-    if (!pendingService) {
-      setConfirmOpen(false);
-      return;
-    }
-    setServiceStatus((prev) => ({
-      ...prev,
-      [pendingService]: !prev[pendingService],
-    }));
-    setConfirmOpen(false);
+    // Não navegar ao clicar em serviço
   };
 
   return (
@@ -453,8 +427,8 @@ export function CustomerServiceLayout({ onNewService, customer, onSelectCustomer
                                     <Zap className="w-5 h-5 text-purple-600" />
                                   </div>
                                   <div>
-                                    <p className="text-xs text-slate-500 mb-1">Consumo</p>
-                                    <p className="text-sm text-slate-900">{address.consumption}</p>
+                                    <p className="text-xs text-muted-foreground mb-1">Consumo</p>
+                                    <p className="text-sm text-foreground">{address.consumption}</p>
                                   </div>
                                 </div>
                               </>
@@ -464,7 +438,7 @@ export function CustomerServiceLayout({ onNewService, customer, onSelectCustomer
                           <Separator />
 
                           <div className="space-y-3">
-                            <p className="text-xs text-slate-500">Serviços da UC</p>
+                            <p className="text-xs text-muted-foreground">Serviços da UC</p>
                             {/* Grid em duas colunas com botões uniformes */}
                             <div className="grid grid-cols-2 gap-3">
                               {[
@@ -476,35 +450,19 @@ export function CustomerServiceLayout({ onNewService, customer, onSelectCustomer
                                 '2ª Via de Quitação de Débito',
                                 '2ª Via de Fatura',
                                 '2ª Via de Contrato de Parcelamento',
-                              ].map((service) => {
-                                const isToggleService = service in serviceStatus;
-                                const isActive = isToggleService ? serviceStatus[service] : false;
-                                return (
-                                  <Button
-                                    key={service}
-                                    variant="outline"
-                                    className="h-12 w-full justify-start gap-2 text-[#003A70] border-[#003A70]/20 hover:bg-[#003A70]/5"
-                                    size="sm"
-                                    type="button"
-                                    onClick={() => handleServiceClick(service)}
-                                  >
-                                    <FileText className="w-4 h-4" />
-                                    <span>{service}</span>
-                                    {isToggleService && (
-                                      <Badge
-                                        className={
-                                          `ml-auto border ` +
-                                          (isActive
-                                            ? 'bg-green-100 text-green-700 border-green-200'
-                                            : 'bg-red-100 text-red-700 border-red-200')
-                                        }
-                                      >
-                                        {isActive ? 'Ativo' : 'Inativo'}
-                                      </Badge>
-                                    )}
-                                  </Button>
-                                );
-                              })}
+                              ].map((service) => (
+                                <Button
+                                  key={service}
+                                  variant="outline"
+                                  className="h-12 w-full justify-start gap-2"
+                                  size="sm"
+                                  type="button"
+                                  onClick={() => handleServiceClick(service)}
+                                >
+                                  <FileText className="w-4 h-4" />
+                                  <span>{service}</span>
+                                </Button>
+                              ))}
                             </div>
                           </div>
                         </div>
@@ -521,25 +479,6 @@ export function CustomerServiceLayout({ onNewService, customer, onSelectCustomer
               </div>
             </div>
 
-            {/* Dialogo de confirmação para ativar/descadastrar serviços */}
-            <AlertDialog open={confirmOpen} onOpenChange={setConfirmOpen}>
-              {confirmOpen && pendingService && (
-                <AlertDialogContent>
-                  <AlertDialogHeader>
-                    <AlertDialogTitle>Confirmação</AlertDialogTitle>
-                    <AlertDialogDescription>
-                      {serviceStatus[pendingService]
-                        ? `Deseja realmente descadastrar o serviço ${pendingService}?`
-                        : `Deseja ativar o ${pendingService}?`}
-                    </AlertDialogDescription>
-                  </AlertDialogHeader>
-                  <AlertDialogFooter>
-                    <AlertDialogCancel onClick={() => setConfirmOpen(false)}>Não</AlertDialogCancel>
-                    <AlertDialogAction onClick={handleConfirmToggle}>Sim</AlertDialogAction>
-                  </AlertDialogFooter>
-                </AlertDialogContent>
-              )}
-            </AlertDialog>
 
           </div>
         </main>

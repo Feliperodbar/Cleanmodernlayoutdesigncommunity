@@ -170,15 +170,30 @@ export const customers: Customer[] = [
   }
 ];
 
+import { getAllPersistedCustomers, addPersistedCustomer } from './db';
+
+export const getAllCustomers = (): Customer[] => {
+  const persisted = getAllPersistedCustomers();
+  // Merge static and persisted, dedupe by id
+  const byId = new Map<string, Customer>();
+  [...persisted, ...customers].forEach((c) => byId.set(c.id, c));
+  return Array.from(byId.values());
+};
+
 export const findCustomers = (term: string): Customer[] => {
   const t = term.trim().toLowerCase();
   if (t.length < 2) return [];
-  return customers.filter((c) =>
+  const all = getAllCustomers();
+  return all.filter((c) =>
     c.name.toLowerCase().includes(t) ||
     c.cpf.includes(term) ||
     c.phone.includes(term) ||
     c.lastProtocol?.includes(term) ||
     c.addresses.some((a) => a.ucNumber.includes(term))
   );
+};
+
+export const addCustomer = (customer: Omit<Customer, 'id'>): Customer => {
+  return addPersistedCustomer(customer);
 };
 
