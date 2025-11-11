@@ -56,6 +56,37 @@ export function RegisterCustomerPage({
   const [email, setEmail] = useState("");
   const [company, setCompany] = useState("");
   const [loadingCep, setLoadingCep] = useState(false);
+  const [uc, setUc] = useState("");
+
+  // UCs por distribuidora — alguns arrays podem estar vazios (sem UC)
+  const ucOptions: Record<string, string[]> = {
+    coelba: ["UC-1001", "UC-1002"],
+    cosern: ["UC-2001"],
+    elektro: [], // sem UC por padrão
+    pernambuco: ["UC-4001", "UC-4002", "UC-4003"],
+  };
+
+  // Mapeamento que força UC apenas para determinada distribuidora com base no nome do cliente
+  const nameToCompany: Record<string, string> = {
+    maria: "elektro",
+    thiago: "coelba",
+    "joao pedro": "cosern",
+    "joão pedro": "cosern",
+  };
+
+  const companyLabels: Record<string, string> = {
+    coelba: "Neoenergia Coelba",
+    cosern: "Neoenergia Cosern",
+    elektro: "Neoenergia Elektro",
+    pernambuco: "Neoenergia Pernambuco",
+  };
+
+  const normalize = (s: string) =>
+    s
+      .normalize?.("NFD")
+      .replace(/\p{Diacritic}/gu, "")
+      .toLowerCase()
+      .trim();
 
   const formatDocument = (value: string, type: "cpf" | "cnpj") => {
     const numbers = value.replace(/\D/g, "");
@@ -302,7 +333,7 @@ export function RegisterCustomerPage({
 
                       <div className="space-y-2 mt-2">
                         <Label htmlFor="birthDate">Data de Nascimento *</Label>
-                        <Input
+                        <Input className="w-44"
                           id="birthDate"
                           type="date"
                           value={birthDate}
@@ -338,7 +369,24 @@ export function RegisterCustomerPage({
                         required
                       />
                       <div className="space-y-2">
-                      
+                        {/* Campo Sexo movido para cá */}
+                        <div className="space-y-2 w-44">
+                          <Label htmlFor="sex">Sexo</Label>
+                          <Select
+                            value={sex}
+                            onValueChange={(v: string) => setSex(v)}
+                          >
+                            <SelectTrigger id="sex" className="w-44">
+                              <SelectValue placeholder="Selecione" />
+                            </SelectTrigger>
+                            <SelectContent>
+                              <SelectItem value="male">Masculino</SelectItem>
+                              <SelectItem value="female">Feminino</SelectItem>
+                              <SelectItem value="other">Outro</SelectItem>
+                              <SelectItem value="prefer_not">Prefiro não dizer</SelectItem>
+                            </SelectContent>
+                          </Select>
+                        </div>
                       </div>
                     </div>
                   </div>
@@ -380,24 +428,6 @@ export function RegisterCustomerPage({
                     </div>
                   </div>
 
-                      <div className="space-y-2">
-                        <Label htmlFor="sex">Sexo</Label>
-                        <Select
-                          value={sex}
-                          onValueChange={(v: string) => setSex(v)}
-                        >
-                          <SelectTrigger id="sex" className="w-44">
-                            <SelectValue placeholder="Selecione" />
-                          </SelectTrigger>
-                          <SelectContent>
-                            <SelectItem value="male">Masculino</SelectItem>
-                            <SelectItem value="female">Feminino</SelectItem>
-                            <SelectItem value="other">Outro</SelectItem>
-                            <SelectItem value="prefer_not">Prefiro não dizer</SelectItem>
-                          </SelectContent>
-                        </Select>
-                        
-                      </div>
                   <div className="grid grid-cols-4 gap-4">
                     <div className="space-y-2">
                       <Label htmlFor="number">Número *</Label>
@@ -504,7 +534,14 @@ export function RegisterCustomerPage({
 
                   <div className="space-y-2">
                     <Label htmlFor="company">Selecione a Distribuidora *</Label>
-                    <Select value={company} onValueChange={setCompany} required>
+                    <Select
+                      value={company}
+                      onValueChange={(v: string) => {
+                        setCompany(v);
+                        setUc(""); // reset UC ao trocar distribuidora
+                      }}
+                      required
+                    >
                       <SelectTrigger id="company">
                         <SelectValue placeholder="Selecione uma distribuidora" />
                       </SelectTrigger>
@@ -523,6 +560,52 @@ export function RegisterCustomerPage({
                         </SelectItem>
                       </SelectContent>
                     </Select>
+                    {/* Campo UC — mostra select quando houver UCs para a distribuidora, caso contrário exibe mensagem */}
+                    <div className="space-y-2 mt-3">
+                      <Label htmlFor="uc">UC</Label>
+                      {company ? (
+                        // verifica se o nome do cliente exige uma distribuidora específica
+                        (() => {
+                          const required = nameToCompany[normalize(fullName || "")];
+                          const hasUcs = ucOptions[company] && ucOptions[company].length > 0;
+
+                          if (required && company !== required) {
+                            return (
+                              <p className="text-sm text-red-600 italic">
+                                UC disponível apenas para {companyLabels[required]} para este cliente.
+                              </p>
+                            );
+                          }
+
+                          if (hasUcs) {
+                            return (
+                              <Select value={uc} onValueChange={setUc}>
+                                <SelectTrigger id="uc">
+                                  <SelectValue placeholder="Selecione a UC" />
+                                </SelectTrigger>
+                                <SelectContent>
+                                  {ucOptions[company].map((u) => (
+                                    <SelectItem key={u} value={u}>
+                                      {u}
+                                    </SelectItem>
+                                  ))}
+                                </SelectContent>
+                              </Select>
+                            );
+                          }
+
+                          return (
+                            <p className="text-sm text-slate-500 italic">
+                              Sem UC disponível para esta distribuidora
+                            </p>
+                          );
+                        })()
+                      ) : (
+                        <p className="text-sm text-slate-500 italic">
+                          Selecione uma distribuidora para ver as UCs
+                        </p>
+                      )}
+                    </div>
                   </div>
                 </div>
 
