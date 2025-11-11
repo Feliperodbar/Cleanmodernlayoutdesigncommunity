@@ -289,7 +289,7 @@ export function RegisterCustomerPage({
                         <Input
                           id="document"
                           value={document}
-                          onChange={(e) => handleDocumentChange(e.target.value)}
+                          onChange={(e: { target: { value: string; }; }) => handleDocumentChange(e.target.value)}
                           placeholder={
                             documentType === "cpf"
                               ? "000.000.000-00"
@@ -298,6 +298,33 @@ export function RegisterCustomerPage({
                           className="flex-1"
                           required
                         />
+                      </div>
+
+                      <div className="space-y-2 mt-2">
+                        <Label htmlFor="birthDate">Data de Nascimento *</Label>
+                        <Input
+                          id="birthDate"
+                          type="date"
+                          value={birthDate}
+                          onChange={(e) => {
+                            const v = e.target.value;
+                            setBirthDate(v);
+                            if (isFutureDate(v)) {
+                              setBirthDateError("Data de nascimento não pode ser no futuro");
+                            } else if (!isAtLeastAge(v, 18)) {
+                              setBirthDateError("É necessário ter 18 anos ou mais");
+                            } else {
+                              setBirthDateError(null);
+                            }
+                          }}
+                          placeholder="dd/mm/aaaa"
+                          aria-invalid={birthDateError ? true : undefined}
+                          aria-describedby={birthDateError ? "birthDate-error" : undefined}
+                          required
+                        />
+                        {birthDateError && (
+                          <p id="birthDate-error" className="text-sm text-red-600 mt-1">{birthDateError}</p>
+                        )}
                       </div>
                     </div>
 
@@ -311,41 +338,7 @@ export function RegisterCustomerPage({
                         required
                       />
                       <div className="space-y-2">
-                        <Label htmlFor="birthDate">Data de Nascimento</Label>
-                        <Input
-                          id="birthDate"
-                          type="date"
-                          value={birthDate}
-                          onChange={(e) => {
-                            const v = e.target.value;
-                            setBirthDate(v);
-                            if (isFutureDate(v)) {
-                              setBirthDateError("Data de nascimento não pode ser no futuro");
-                            } else {
-                              setBirthDateError(null);
-                            }
-                          }}
-                          placeholder="dd/mm/aaaa"
-                          aria-invalid={birthDateError ? true : undefined}
-                          aria-describedby={birthDateError ? "birthDate-error" : undefined}
-                        />
-                        {birthDateError && (
-                          <p id="birthDate-error" className="text-sm text-red-600 mt-1">{birthDateError}</p>
-                        )}
-                      <div className="space-y-2">
-                        <Label htmlFor="sex">Sexo</Label>
-                        <Select value={sex} onValueChange={setSex}>
-                          <SelectTrigger id="sex" className="w-44">
-                            <SelectValue placeholder="Selecione" />
-                          </SelectTrigger>
-                          <SelectContent>
-                            <SelectItem value="male">Masculino</SelectItem>
-                            <SelectItem value="female">Feminino</SelectItem>
-                            <SelectItem value="other">Outro</SelectItem>
-                            <SelectItem value="prefer_not">Prefiro não dizer</SelectItem>
-                          </SelectContent>
-                        </Select>
-                      </div>
+                      
                       </div>
                     </div>
                   </div>
@@ -387,6 +380,24 @@ export function RegisterCustomerPage({
                     </div>
                   </div>
 
+                      <div className="space-y-2">
+                        <Label htmlFor="sex">Sexo</Label>
+                        <Select
+                          value={sex}
+                          onValueChange={(v: string) => setSex(v)}
+                        >
+                          <SelectTrigger id="sex" className="w-44">
+                            <SelectValue placeholder="Selecione" />
+                          </SelectTrigger>
+                          <SelectContent>
+                            <SelectItem value="male">Masculino</SelectItem>
+                            <SelectItem value="female">Feminino</SelectItem>
+                            <SelectItem value="other">Outro</SelectItem>
+                            <SelectItem value="prefer_not">Prefiro não dizer</SelectItem>
+                          </SelectContent>
+                        </Select>
+                        
+                      </div>
                   <div className="grid grid-cols-4 gap-4">
                     <div className="space-y-2">
                       <Label htmlFor="number">Número *</Label>
