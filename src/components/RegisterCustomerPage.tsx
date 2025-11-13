@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 
 import {
   ArrowLeft,
@@ -23,11 +23,13 @@ import {
   SelectTrigger,
   SelectValue,
 } from "./ui/select";
-import { addCustomer, Customer } from "../data/customers";
+import { addCustomer, Customer, getAllCustomers } from "../data/customers";
+import { AppHeader } from "./AppHeader";
 
 interface RegisterCustomerPageProps {
   onBack: () => void;
   onRegisterComplete: () => void;
+  initialDocument?: string;
 }
 
 interface AddressData {
@@ -40,6 +42,7 @@ interface AddressData {
 export function RegisterCustomerPage({
   onBack,
   onRegisterComplete,
+  initialDocument,
 }: RegisterCustomerPageProps) {
   const [documentType, setDocumentType] = useState<"cpf" | "cnpj">("cpf");
   const [document, setDocument] = useState("");
@@ -57,6 +60,7 @@ export function RegisterCustomerPage({
   const [company, setCompany] = useState("");
   const [loadingCep, setLoadingCep] = useState(false);
   const [uc, setUc] = useState("");
+  const [loadingDocument, setLoadingDocument] = useState(false);
 
   // UCs por distribuidora — alguns arrays podem estar vazios (sem UC)
   const ucOptions: Record<string, string[]> = {
@@ -162,6 +166,24 @@ export function RegisterCustomerPage({
     setDocument(formatted);
   };
 
+  useEffect(() => {
+    (async () => {
+      await handleDocumentAutofill();
+    })();
+  }, [documentType, document]);
+
+  useEffect(() => {
+    if (!initialDocument) return;
+    const digits = initialDocument.replace(/\D/g, "");
+    if (digits.length === 11) {
+      setDocumentType("cpf");
+      setDocument(formatDocument(digits, "cpf"));
+    } else if (digits.length === 14) {
+      setDocumentType("cnpj");
+      setDocument(formatDocument(digits, "cnpj"));
+    }
+  }, [initialDocument]);
+
   const formatBirthDate = (value: string) => {
     // input type=date gives YYYY-MM-DD, convert to DD/MM/YYYY to match existing data
     if (!value) return undefined;
@@ -169,6 +191,13 @@ export function RegisterCustomerPage({
     if (parts.length !== 3) return value;
     const [y, m, d] = parts;
     return `${d}/${m}/${y}`;
+  };
+
+  const toInputDateFromBR = (value: string | undefined) => {
+    if (!value) return "";
+    const m = value.match(/^(\d{2})\/(\d{2})\/(\d{4})$/);
+    if (!m) return "";
+    return `${m[3]}-${m[2]}-${m[1]}`;
   };
 
   const isFutureDate = (value: string) => {
@@ -238,51 +267,127 @@ export function RegisterCustomerPage({
     onRegisterComplete();
   };
 
-  return (
-    <div className="min-h-screen bg-slate-50">
-      {/* Header */}
-      <header className="bg-white border-b border-slate-200">
-        <div className="flex items-center justify-between px-6 py-4">
-          <div className="flex items-center gap-3">
-            <div className="w-10 h-10 bg-[#003A70] rounded-lg flex items-center justify-center">
-              <Zap className="w-6 h-6 text-white" />
-            </div>
-            <div>
-              <h1 className="text-slate-900">Cadastro de Cliente</h1>
-              <p className="text-xs text-[#00A859]">NEOENERGIA COSERN</p>
-            </div>
-          </div>
+  const tryAutofillFromCPF = async (digits: string) => {
+    const all = getAllCustomers();
+    const found = all.find((c) => c.cpf.replace(/\D/g, "") === digits);
+    if (found) {
+      setFullName(found.name || "");
+      setEmail(found.email || "");
+      setCellPhone(found.phone ? formatPhone(found.phone) : "");
+      setBirthDate(toInputDateFromBR(found.birthDate));
+      const cepCandidate = found.addresses[0]?.cep || "";
+      if (cepCandidate) await handleCepChange(cepCandidate);
+      return true;
+    }
+    return false;
+  };
 
-          <div className="flex items-center gap-3">
+  const tryAutofillFromCPFRemote = async (digits: string) => {
+    const base = (import.meta as any)?.env?.VITE_CPF_API_URL as string | undefined;
+    if (!base) return;
+    setLoadingDocument(true);
+    try {
+      const res = await fetch(`${base.replace(/\/$/, "")}/${digits}`);
+      if (res.ok) {
+        const data = await res.json();
+        const nome = data?.name || data?.nome || "";
+        const emailApi = data?.email || "";
+        const telApi = data?.phone || data?.telefone || "";
+        const cepApi = data?.cep || "";
+        const logradouro = data?.logradouro || "";
+        const bairro = data?.bairro || "";
+        const municipio = data?.cidade || data?.municipio || "";
+        const uf = data?.uf || "";
+        if (nome) setFullName(nome);
+        if (emailApi) setEmail(emailApi);
+        if (telApi) setCellPhone(formatPhone(telApi));
+        if (cepApi) {
+          await handleCepChange(cepApi);
+        } else if (logradouro || bairro || municipio || uf) {
+          setAddressData({ street: logradouro, neighborhood: bairro, city: municipio, state: uf });
+        }
+      }
+    } catch {}
+    setLoadingDocument(false);
+  };
+
+  const tryAutofillFromCNPJ = async (digits: string) => {
+    setLoadingDocument(true);
+    try {
+      const res = await fetch(`https://publica.cnpj.ws/cnpj/${digits}`);
+      if (res.ok) {
+        const data = await res.json();
+        if (data) {
+          const nome = data.razao_social || data.nome_fantasia || "";
+          const emailApi = data.email || "";
+          const telApi = data.telefone || "";
+          const cepApi = data.cep || "";
+          const logradouro = data.logradouro || "";
+          const bairro = data.bairro || "";
+          const municipio = data.municipio || "";
+          const uf = data.uf || "";
+          setFullName(nome);
+          setEmail(emailApi);
+          setCellPhone(telApi ? formatPhone(telApi) : "");
+          if (cepApi) {
+            await handleCepChange(cepApi);
+          } else {
+            setAddressData({ street: logradouro, neighborhood: bairro, city: municipio, state: uf });
+          }
+        }
+      }
+    } catch {}
+    setLoadingDocument(false);
+  };
+
+  const handleDocumentAutofill = async () => {
+    const digits = document.replace(/\D/g, "");
+    if (documentType === "cpf" && digits.length === 11) {
+      const foundLocal = await tryAutofillFromCPF(digits);
+      if (!foundLocal) {
+        await tryAutofillFromCPFRemote(digits);
+      }
+    }
+    if (documentType === "cnpj" && digits.length === 14) {
+      await tryAutofillFromCNPJ(digits);
+    }
+  };
+
+  return (
+    <div className="min-h-screen bg-background">
+      <AppHeader
+        title="Cadastro de Cliente"
+        actions={
+          <>
             <Button
               variant="outline"
-              className="gap-2 text-[#003A70] border-[#003A70]/20 hover:bg-[#003A70]/5"
+              className="gap-2 text-secondary border-secondary/20 hover:bg-secondary/5"
               onClick={onBack}
             >
               <ArrowLeft className="w-4 h-4" />
               Voltar
             </Button>
             <Avatar>
-              <AvatarFallback className="bg-[#003A70] text-white">
+              <AvatarFallback className="bg-secondary text-white">
                 <UserIcon className="w-5 h-5" />
               </AvatarFallback>
             </Avatar>
-          </div>
-        </div>
-      </header>
+          </>
+        }
+      />
 
       {/* Main Content */}
       <main className="flex items-center justify-center min-h-[calc(100vh-73px)] p-6">
         <div className="w-full max-w-4xl">
-          <Card className="border-slate-200 shadow-lg">
-            <CardHeader className="border-b border-slate-200">
+          <Card className="shadow-lg">
+            <CardHeader className="border-b border-border">
               <div className="flex items-center gap-3">
-                <div className="w-12 h-12 bg-[#003A70]/10 rounded-lg flex items-center justify-center">
-                  <UserIcon className="w-6 h-6 text-[#003A70]" />
+                <div className="w-12 h-12 bg-secondary/10 rounded-lg flex items-center justify-center">
+                  <UserIcon className="w-6 h-6 text-secondary" />
                 </div>
                 <div>
-                  <CardTitle className="text-slate-900">Novo Cliente</CardTitle>
-                  <p className="text-sm text-slate-500">
+                  <CardTitle className="text-foreground">Novo Cliente</CardTitle>
+                  <p className="text-sm text-muted-foreground">
                     Preencha os dados para cadastrar um novo cliente
                   </p>
                 </div>
@@ -294,14 +399,14 @@ export function RegisterCustomerPage({
                 {/* Document Section */}
                 <div className="space-y-4">
                   <div className="flex items-center gap-2 mb-4">
-                    <CreditCard className="w-5 h-5 text-[#003A70]" />
-                    <h3 className="text-slate-900">Identificação</h3>
+                    <CreditCard className="w-5 h-5 text-secondary" />
+                    <h3 className="text-foreground">Identificação</h3>
                   </div>
 
                   <div className="grid grid-cols-2 gap-4">
                     <div className="space-y-2">
                       <Label htmlFor="document">CPF/CNPJ *</Label>
-                      <div className="flex gap-2">
+                      <div className="flex gap-2 relative">
                         <Select
                           value={documentType}
                           onValueChange={(value: "cpf" | "cnpj") => {
@@ -326,9 +431,16 @@ export function RegisterCustomerPage({
                               ? "000.000.000-00"
                               : "00.000.000/0000-00"
                           }
+                          inputMode="numeric"
+                          maxLength={documentType === "cpf" ? 14 : 18}
+                          pattern={documentType === "cpf" ? "\\d{3}\\.\\d{3}\\.\\d{3}-\\d{2}" : undefined}
+                          title={documentType === "cpf" ? "CPF no formato 000.000.000-00" : undefined}
                           className="flex-1"
                           required
                         />
+                        {loadingDocument && (
+                          <Loader2 className="absolute right-3 top-1/2 -translate-y-1/2 w-4 h-4 text-secondary animate-spin" />
+                        )}
                       </div>
 
                       <div className="space-y-2 mt-2">
@@ -354,7 +466,7 @@ export function RegisterCustomerPage({
                           required
                         />
                         {birthDateError && (
-                          <p id="birthDate-error" className="text-sm text-red-600 mt-1">{birthDateError}</p>
+                          <p id="birthDate-error" className="text-sm text-destructive mt-1">{birthDateError}</p>
                         )}
                       </div>
                     </div>
@@ -393,10 +505,10 @@ export function RegisterCustomerPage({
                 </div>
 
                 {/* Address Section */}
-                <div className="space-y-4 pt-6 border-t border-slate-200">
+                <div className="space-y-4 pt-6 border-t border-border">
                   <div className="flex items-center gap-2 mb-4">
-                    <MapPin className="w-5 h-5 text-[#003A70]" />
-                    <h3 className="text-slate-900">Endereço</h3>
+                    <MapPin className="w-5 h-5 text-secondary" />
+                    <h3 className="text-foreground">Endereço</h3>
                   </div>
 
                   <div className="grid grid-cols-3 gap-4">
@@ -411,7 +523,7 @@ export function RegisterCustomerPage({
                           required
                         />
                         {loadingCep && (
-                          <Loader2 className="absolute right-3 top-1/2 -translate-y-1/2 w-4 h-4 text-[#003A70] animate-spin" />
+                          <Loader2 className="absolute right-3 top-1/2 -translate-y-1/2 w-4 h-4 text-secondary animate-spin" />
                         )}
                       </div>
                     </div>
@@ -423,7 +535,7 @@ export function RegisterCustomerPage({
                         value={addressData?.street || ""}
                         readOnly
                         placeholder="Será preenchido automaticamente"
-                        className="bg-slate-50"
+                        className="bg-input-background"
                       />
                     </div>
                   </div>
@@ -457,7 +569,7 @@ export function RegisterCustomerPage({
                         value={addressData?.neighborhood || ""}
                         readOnly
                         placeholder="Auto-preenchido"
-                        className="bg-slate-50"
+                        className="bg-input-background"
                       />
                     </div>
 
@@ -472,17 +584,17 @@ export function RegisterCustomerPage({
                         }
                         readOnly
                         placeholder="Auto-preenchido"
-                        className="bg-slate-50"
+                        className="bg-input-background"
                       />
                     </div>
                   </div>
                 </div>
 
                 {/* Contact Section */}
-                <div className="space-y-4 pt-6 border-t border-slate-200">
+                <div className="space-y-4 pt-6 border-t border-border">
                   <div className="flex items-center gap-2 mb-4">
-                    <Phone className="w-5 h-5 text-[#003A70]" />
-                    <h3 className="text-slate-900">Contato</h3>
+                    <Phone className="w-5 h-5 text-secondary" />
+                    <h3 className="text-foreground">Contato</h3>
                   </div>
 
                   <div className="grid grid-cols-3 gap-4">
@@ -526,10 +638,10 @@ export function RegisterCustomerPage({
                 </div>
 
                 {/* Company Section */}
-                <div className="space-y-4 pt-6 border-t border-slate-200">
+                <div className="space-y-4 pt-6 border-t border-border">
                   <div className="flex items-center gap-2 mb-4">
-                    <Building2 className="w-5 h-5 text-[#003A70]" />
-                    <h3 className="text-slate-900">Distribuidora</h3>
+                    <Building2 className="w-5 h-5 text-secondary" />
+                    <h3 className="text-foreground">Distribuidora</h3>
                   </div>
 
                   <div className="space-y-2">
@@ -595,13 +707,13 @@ export function RegisterCustomerPage({
                           }
 
                           return (
-                            <p className="text-sm text-slate-500 italic">
+                            <p className="text-sm text-muted-foreground italic">
                               Sem UC disponível para esta distribuidora
                             </p>
                           );
                         })()
                       ) : (
-                        <p className="text-sm text-slate-500 italic">
+                        <p className="text-sm text-muted-foreground italic">
                           Selecione uma distribuidora para ver as UCs
                         </p>
                       )}
@@ -610,18 +722,18 @@ export function RegisterCustomerPage({
                 </div>
 
                 {/* Action Buttons */}
-                  <div className="flex items-center justify-end gap-3 pt-6 border-t border-slate-200">
+                  <div className="flex items-center justify-end gap-3 pt-6 border-t border-border">
                   <Button
                     type="button"
                     variant="outline"
-                    className="text-[#003A70] border-[#003A70]/20 hover:bg-[#003A70]/5"
+                    className="text-secondary border-secondary/20 hover:bg-secondary/5"
                     onClick={onBack}
                   >
                     Cancelar
                   </Button>
                   <Button
                     type="submit"
-                    className="bg-[#00A859] hover:bg-[#008F4A] gap-2"
+                    className="bg-primary hover:bg-primary/90 gap-2"
                     disabled={!!birthDateError}
                   >
                     <UserIcon className="w-4 h-4" />

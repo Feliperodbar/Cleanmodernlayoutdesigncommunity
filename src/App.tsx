@@ -7,6 +7,7 @@ import type { Customer } from './data/customers';
 export default function App() {
   const [currentPage, setCurrentPage] = useState<'search' | 'service' | 'register'>('search');
   const [selectedCustomer, setSelectedCustomer] = useState<Customer | null>(null);
+  const [registerInitialDocument, setRegisterInitialDocument] = useState<string | undefined>(undefined);
 
   if (currentPage === 'search') {
     return (
@@ -15,7 +16,10 @@ export default function App() {
           setSelectedCustomer(customer);
           setCurrentPage('service');
         }}
-        onRegisterNew={() => setCurrentPage('register')}
+        onRegisterNew={(initialDocument) => {
+          setRegisterInitialDocument(initialDocument);
+          setCurrentPage('register');
+        }}
       />
     );
   }
@@ -25,6 +29,7 @@ export default function App() {
       <RegisterCustomerPage 
         onBack={() => setCurrentPage('search')}
         onRegisterComplete={() => setCurrentPage('service')}
+        initialDocument={registerInitialDocument}
       />
     );
   }

@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import {
   Search,
   Phone,
@@ -17,6 +17,7 @@ import {
   Copy,
   Check,
   ChevronRight,
+  Loader2,
 } from "lucide-react";
 import { Button } from "./ui/button";
 // Removido ThemeToggle (dark mode desativado)
@@ -35,7 +36,9 @@ import {
 // Removidos componentes de AlertDialog (confirmação não será usada)
 // Switch removido conforme nova especificação
 import { customers, findCustomers } from "../data/customers";
+import { getHighlightedParts } from "./ui/utils";
 import type { Customer } from "../data/customers";
+import { AppHeader } from "./AppHeader";
 
 interface CustomerServiceLayoutProps {
   onNewService?: () => void;
@@ -53,6 +56,9 @@ export function CustomerServiceLayout({
   const [searchTerm, setSearchTerm] = useState("");
   const [suggestions, setSuggestions] = useState<Customer[]>([]);
   const [showSuggestions, setShowSuggestions] = useState(false);
+  const [loading, setLoading] = useState(false);
+  const debounceRef = useRef<number | null>(null);
+  const [activeIndex, setActiveIndex] = useState(-1);
   // Removidos estados de serviços e diálogo de confirmação
   const distributors = [
     "Neoenergia Elektro",
@@ -86,20 +92,74 @@ export function CustomerServiceLayout({
   }));
 
   useEffect(() => {
-    if (searchTerm.trim().length >= 2) {
-      const filtered = findCustomers(searchTerm);
-      setSuggestions(filtered);
-      setShowSuggestions(true);
-    } else {
+    const q = searchTerm.trim();
+    if (debounceRef.current) {
+      clearTimeout(debounceRef.current);
+    }
+    if (q.length < 2) {
       setSuggestions([]);
       setShowSuggestions(false);
+      setLoading(false);
+      return;
     }
+    const hasLetters = /[a-zA-Z]/.test(q);
+    const hasDigits = /\d/.test(q);
+    if (hasLetters && !hasDigits) {
+      const parts = q.split(/\s+/).filter(Boolean);
+      if (parts.length < 2) {
+        setSuggestions([]);
+        setShowSuggestions(false);
+        setLoading(false);
+        return;
+      }
+    }
+    setLoading(true);
+    debounceRef.current = window.setTimeout(() => {
+      const filtered = findCustomers(q);
+      setSuggestions(filtered);
+      setShowSuggestions(filtered.length > 0);
+      setActiveIndex(filtered.length > 0 ? 0 : -1);
+      setLoading(false);
+    }, 400);
+    return () => {
+      if (debounceRef.current) {
+        clearTimeout(debounceRef.current);
+      }
+    };
   }, [searchTerm]);
 
   const handleSelectSuggestion = (c: Customer) => {
     setSearchTerm("");
     setShowSuggestions(false);
     onSelectCustomer?.(c);
+  };
+
+  const handleKeyDown = (e: React.KeyboardEvent<HTMLInputElement>) => {
+    if (e.key === "Escape") {
+      setSearchTerm("");
+      setSuggestions([]);
+      setShowSuggestions(false);
+      setActiveIndex(-1);
+      return;
+    }
+    if (e.key === "ArrowDown") {
+      e.preventDefault();
+      if (suggestions.length === 0) return;
+      setActiveIndex((i) => (i + 1) % suggestions.length);
+      setShowSuggestions(true);
+      return;
+    }
+    if (e.key === "ArrowUp") {
+      e.preventDefault();
+      if (suggestions.length === 0) return;
+      setActiveIndex((i) => (i <= 0 ? suggestions.length - 1 : i - 1));
+      setShowSuggestions(true);
+      return;
+    }
+    if (e.key === "Enter" && suggestions.length > 0) {
+      const idx = activeIndex >= 0 ? activeIndex : 0;
+      handleSelectSuggestion(suggestions[idx]);
+    }
   };
 
   // Função de favoritos removida
@@ -120,104 +180,98 @@ export function CustomerServiceLayout({
   };
 
   return (
-    <div className="min-h-screen bg-slate-50">
-      {/* Header */}
-      <header className="bg-white border-b border-slate-200 sticky top-0 z-50">
-        <div className="flex items-center justify-between px-6 py-4">
-          <div className="flex items-center gap-8">
-            <div className="flex items-center gap-3">
-              <div className="w-10 h-10 bg-[#003A70] rounded-lg flex items-center justify-center">
-                <Zap className="w-6 h-6 text-white" />
-              </div>
-              <div>
-                <h1 className="text-slate-900">Atendimento</h1>
-                <p className="text-xs text-[#00A859]">
-                  {selectedDistributor.toUpperCase()}
-                </p>
-              </div>
-            </div>
-          </div>
+    <div className="min-h-screen bg-background">
+      <AppHeader
+        title=""
+        center={
+          <div className="relative">
+            <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-secondary/40" />
+            {loading && (
+              <Loader2 className="absolute right-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground animate-spin" />
+            )}
 
-          <div className="flex-1 max-w-xl mx-8">
-            <div className="relative">
-              <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-[#003A70]/40" />
-              <Input
-                placeholder="Buscar UC, CPF, Protocolo..."
-                className="pl-10 bg-slate-50 border-slate-200"
-                value={searchTerm}
-                onChange={(e) => setSearchTerm(e.target.value)}
-                onFocus={() =>
-                  searchTerm.length >= 2 && setShowSuggestions(true)
-                }
-              />
-              {showSuggestions && suggestions.length > 0 && (
-                <div className="absolute top-full left-0 right-0 mt-2 bg-white border border-slate-200 rounded-lg shadow-lg max-h-80 overflow-auto z-50">
-                  {suggestions.map((c) => (
-                    <div
-                      key={c.id}
-                      className="p-3 hover:bg-slate-50 cursor-pointer border-b border-slate-100 last:border-b-0 transition-colors"
-                      onClick={() => handleSelectSuggestion(c)}
-                    >
-                      <div className="flex items-center justify-between">
-                        <div className="flex items-center gap-3">
-                          <div className="w-8 h-8 bg-[#003A70] rounded-lg flex items-center justify-center">
-                            <User className="w-4 h-4 text-white" />
-                          </div>
-                          <div>
-                            <p className="text-sm text-slate-900">{c.name}</p>
-                            <p className="text-xs text-slate-500">{c.cpf}</p>
-                          </div>
+            <Input
+              placeholder="Buscar UC, CPF, Protocolo..."
+              className="pl-10 bg-input-background"
+              value={searchTerm}
+              onChange={(e) => setSearchTerm(e.target.value)}
+              onFocus={() => searchTerm.length >= 2 && setShowSuggestions(true)}
+              onKeyDown={handleKeyDown}
+            />
+            {showSuggestions && suggestions.length > 0 && (
+              <div className="absolute top-full left-0 right-0 mt-2 bg-card border border-border rounded-lg shadow-lg max-h-80 overflow-auto z-50">
+                {suggestions.map((c, idx) => (
+                  <div
+                    key={c.id}
+                    className={`p-3 cursor-pointer border-b border-border last:border-b-0 transition-colors ${idx === activeIndex ? 'bg-muted' : 'hover:bg-muted'}`}
+                    onClick={() => handleSelectSuggestion(c)}
+                    onMouseEnter={() => setActiveIndex(idx)}
+                  >
+                    <div className="flex items-center justify-between">
+                      <div className="flex items-center gap-3">
+                        <div className="w-8 h-8 bg-secondary rounded-lg flex items-center justify-center">
+                          <User className="w-4 h-4 text-white" />
                         </div>
-                        <ChevronRight className="w-5 h-5 text-slate-400" />
+                        <div>
+                          <p className="text-sm text-foreground">
+                            {getHighlightedParts(c.name, searchTerm).map((part, i) => (
+                              <span key={i} className={part.highlight ? 'bg-primary/20 rounded' : undefined}>{part.text}</span>
+                            ))}
+                          </p>
+                          <p className="text-xs text-muted-foreground">
+                            {getHighlightedParts(c.cpf, searchTerm).map((part, i) => (
+                              <span key={i} className={part.highlight ? 'bg-primary/20 rounded' : undefined}>{part.text}</span>
+                            ))}
+                          </p>
+                        </div>
                       </div>
-                      <div className="flex items-center gap-4 text-xs text-slate-500 ml-11 mt-1">
-                        <span className="flex items-center gap-1">
-                          <Zap className="w-3 h-3" />
-                          UC: {c.addresses[0]?.ucNumber}
-                        </span>
-                        <span className="flex items-center gap-1">
-                          <Phone className="w-3 h-3" />
-                          {c.phone}
-                        </span>
-                      </div>
+                      <ChevronRight className="w-5 h-5 text-muted-foreground" />
                     </div>
-                  ))}
-                </div>
-              )}
-            </div>
+                    <div className="flex items-center gap-4 text-xs text-muted-foreground ml-11 mt-1">
+                      <span className="flex items-center gap-1">
+                        <Zap className="w-3 h-3" />
+                        UC: {getHighlightedParts(c.addresses[0]?.ucNumber ?? '', searchTerm).map((part, i) => (
+                          <span key={i} className={part.highlight ? 'bg-primary/20 rounded' : undefined}>{part.text}</span>
+                        ))}
+                      </span>
+                      <span className="flex items-center gap-1">
+                        <Phone className="w-3 h-3" />
+                        {getHighlightedParts(c.phone ?? '', searchTerm).map((part, i) => (
+                          <span key={i} className={part.highlight ? 'bg-primary/20 rounded' : undefined}>{part.text}</span>
+                        ))}
+                      </span>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            )}
           </div>
-
-          <div className="flex items-center gap-3">
-            <Button
-              className="bg-[#00A859] hover:bg-[#008F4A] gap-2"
-              onClick={onNewService}
-            >
+        }
+        actions={
+          <>
+            <Button className="bg-primary hover:bg-primary/90 gap-2" onClick={onNewService}>
               <Plus className="w-4 h-4" />
               Novo Atendimento
             </Button>
-            <Button
-              variant="outline"
-              size="icon"
-              className="hover:bg-[#003A70]/5"
-            >
-              <Settings className="w-5 h-5 text-[#003A70]" />
+            <Button variant="outline" size="icon" className="hover:bg-secondary/5">
+              <Settings className="w-5 h-5 text-secondary" />
             </Button>
             <Avatar>
-              <AvatarFallback className="bg-[#003A70] text-white">
+              <AvatarFallback className="bg-secondary text-secondary-foreground">
                 <User className="w-5 h-5" />
               </AvatarFallback>
             </Avatar>
-          </div>
-        </div>
-      </header>
+          </>
+        }
+      />
 
       <div className="flex gap-6">
         {/* Sidebar */}
-        <aside className="w-80 bg-white border-r border-slate-200 min-h-[calc(100vh-73px)]">
+        <aside className="w-80 bg-card border-r border-border min-h-[calc(100vh-73px)]">
           <div className="p-6">
             <div className="flex items-center gap-3 mb-6">
               <Avatar className="w-16 h-16">
-                <AvatarFallback className="bg-[#003A70] text-white text-xl">
+                <AvatarFallback className="bg-secondary text-secondary-foreground text-xl">
                   {selectedCustomer.name
                     .split(" ")
                     .slice(0, 2)
@@ -226,8 +280,8 @@ export function CustomerServiceLayout({
                 </AvatarFallback>
               </Avatar>
               <div className="flex-1">
-                <h3 className="text-slate-900">{selectedCustomer.name}</h3>
-                <p className="text-xs text-[#00A859]">Pessoa Física</p>
+                <h3 className="text-foreground">{selectedCustomer.name}</h3>
+                <p className="text-xs text-primary">Pessoa Física</p>
               </div>
             </div>
 
@@ -235,13 +289,13 @@ export function CustomerServiceLayout({
 
             <div className="space-y-4">
               <div className="flex items-start gap-3 group">
-                <div className="w-8 h-8 rounded-lg bg-[#003A70]/10 flex items-center justify-center flex-shrink-0">
-                  <FileText className="w-4 h-4 text-[#003A70]" />
+                <div className="w-8 h-8 rounded-lg bg-secondary/10 flex items-center justify-center flex-shrink-0">
+                  <FileText className="w-4 h-4 text-secondary" />
                 </div>
                 <div className="flex-1">
-                  <p className="text-xs text-slate-500">CPF</p>
+                  <p className="text-xs text-muted-foreground">CPF</p>
                   <div className="flex items-center justify-between">
-                    <p className="text-sm text-slate-900">
+                    <p className="text-sm text-foreground">
                       {selectedCustomer.cpf}
                     </p>
                     <Button
@@ -253,7 +307,7 @@ export function CustomerServiceLayout({
                       }
                     >
                       {copiedField === "cpf" ? (
-                        <Check className="w-3 h-3 text-green-600" />
+                        <Check className="w-3 h-3 text-primary" />
                       ) : (
                         <Copy className="w-3 h-3" />
                       )}
@@ -263,25 +317,25 @@ export function CustomerServiceLayout({
               </div>
 
               <div className="flex items-start gap-3">
-                <div className="w-8 h-8 rounded-lg bg-[#003A70]/10 flex items-center justify-center flex-shrink-0">
-                  <User className="w-4 h-4 text-[#003A70]" />
+                <div className="w-8 h-8 rounded-lg bg-secondary/10 flex items-center justify-center flex-shrink-0">
+                  <User className="w-4 h-4 text-secondary" />
                 </div>
                 <div className="flex-1">
-                  <p className="text-xs text-slate-500">Nascimento</p>
-                  <p className="text-sm text-slate-900">
+                  <p className="text-xs text-muted-foreground">Nascimento</p>
+                  <p className="text-sm text-foreground">
                     {selectedCustomer.birthDate}
                   </p>
                 </div>
               </div>
 
               <div className="flex items-start gap-3 group">
-                <div className="w-8 h-8 rounded-lg bg-[#003A70]/10 flex items-center justify-center flex-shrink-0">
-                  <Phone className="w-4 h-4 text-[#003A70]" />
+                <div className="w-8 h-8 rounded-lg bg-secondary/10 flex items-center justify-center flex-shrink-0">
+                  <Phone className="w-4 h-4 text-secondary" />
                 </div>
                 <div className="flex-1">
-                  <p className="text-xs text-slate-500">Telefone</p>
+                  <p className="text-xs text-muted-foreground">Telefone</p>
                   <div className="flex items-center justify-between">
-                    <p className="text-sm text-slate-900">
+                    <p className="text-sm text-foreground">
                       {selectedCustomer.phone}
                     </p>
                     <Button
@@ -293,7 +347,7 @@ export function CustomerServiceLayout({
                       }
                     >
                       {copiedField === "phone" ? (
-                        <Check className="w-3 h-3 text-green-600" />
+                        <Check className="w-3 h-3 text-primary" />
                       ) : (
                         <Copy className="w-3 h-3" />
                       )}
@@ -303,13 +357,13 @@ export function CustomerServiceLayout({
               </div>
 
               <div className="flex items-start gap-3 group">
-                <div className="w-8 h-8 rounded-lg bg-[#003A70]/10 flex items-center justify-center flex-shrink-0">
-                  <Mail className="w-4 h-4 text-[#003A70]" />
+                <div className="w-8 h-8 rounded-lg bg-secondary/10 flex items-center justify-center flex-shrink-0">
+                  <Mail className="w-4 h-4 text-secondary" />
                 </div>
                 <div className="flex-1">
-                  <p className="text-xs text-slate-500">Email</p>
+                  <p className="text-xs text-muted-foreground">Email</p>
                   <div className="flex items-center justify-between">
-                    <p className="text-sm text-slate-900 break-all">
+                    <p className="text-sm text-foreground break-all">
                       {selectedCustomer.email}
                     </p>
                     <Button
@@ -321,7 +375,7 @@ export function CustomerServiceLayout({
                       }
                     >
                       {copiedField === "email" ? (
-                        <Check className="w-3 h-3 text-green-600" />
+                        <Check className="w-3 h-3 text-primary" />
                       ) : (
                         <Copy className="w-3 h-3" />
                       )}
@@ -345,10 +399,10 @@ export function CustomerServiceLayout({
             {/* Cabeçalho do protocolo (botão de finalizar movido para rodapé fixo) */}
             <div className="flex items-center justify-between mb-6">
               <div>
-                <p className="text-xs text-slate-500 mb-1">
+                <p className="text-xs text-muted-foreground mb-1">
                   Protocolo Atendimento
                 </p>
-                <h2 className="text-2xl text-slate-900">
+                <h2 className="text-2xl text-foreground">
                   {selectedCustomer.lastProtocol ?? "—"}
                 </h2>
               </div>
@@ -356,7 +410,7 @@ export function CustomerServiceLayout({
 
             {/* Nova Ligação CTA */}
             <div className="mb-6">
-              <Button className="bg-[#00A859] hover:bg-[#008F4A] gap-2">
+              <Button className="bg-primary hover:bg-primary/90 gap-2">
                 <Power className="w-4 h-4" />
                 Ligação Nova
               </Button>
@@ -365,16 +419,16 @@ export function CustomerServiceLayout({
             {/* Seletor de distribuidora acima das UCs */}
             <div className="mb-6">
               <div className="flex items-start gap-3">
-                <div className="w-8 h-8 rounded-lg bg-[#003A70]/10 flex items-center justify-center flex-shrink-0">
-                  <Zap className="w-4 h-4 text-[#003A70]" />
+                <div className="w-8 h-8 rounded-lg bg-secondary/10 flex items-center justify-center flex-shrink-0">
+                  <Zap className="w-4 h-4 text-secondary" />
                 </div>
                 <div className="flex-1">
-                  <p className="text-xs text-slate-500">Distribuidora</p>
+                  <p className="text-xs text-muted-foreground">Distribuidora</p>
                   <Select
                     value={selectedDistributor}
                     onValueChange={(v: string) => setSelectedDistributor(v)}
                   >
-                    <SelectTrigger className="w-64 bg-white border border-[#003A70]/40 shadow-sm">
+                    <SelectTrigger className="w-64 bg-card border border-border shadow-sm">
                       <SelectValue />
                     </SelectTrigger>
                     <SelectContent>
@@ -392,32 +446,32 @@ export function CustomerServiceLayout({
             {/* UC Cards */}
             <div className="space-y-4">
               <div className="flex items-center justify-between mb-6">
-                <h3 className="text-slate-900">
+                <h3 className="text-foreground">
                   Unidades Consumidoras ({addresses.length})
                 </h3>
                 <Input
                   placeholder="Filtrar UC..."
-                  className="w-64 bg-white border-slate-200"
+                  className="w-64 bg-card"
                 />
               </div>
 
               {addresses.map((address) => (
                 <Card
                   key={address.id}
-                  className="border-slate-200 overflow-hidden"
+                  className="overflow-hidden"
                 >
                   <CardContent className="p-0">
                     <div
-                      className="flex items-center justify-between p-4 cursor-pointer hover:bg-slate-50 transition-colors"
+                      className="flex items-center justify-between p-4 cursor-pointer hover:bg-muted transition-colors"
                       onClick={() => toggleUC(address.id)}
                     >
                       <div className="flex items-center gap-4 flex-1">
-                        <div className="w-12 h-12 rounded-lg bg-[#003A70] flex items-center justify-center flex-shrink-0">
+                        <div className="w-12 h-12 rounded-lg bg-secondary flex items-center justify-center flex-shrink-0">
                           <Zap className="w-6 h-6 text-white" />
                         </div>
                         <div className="flex-1">
                           <div className="flex items-center gap-2 mb-1">
-                            <p className="text-slate-900">{address.ucNumber}</p>
+                            <p className="text-foreground">{address.ucNumber}</p>
                             <Badge
                               variant={
                                 address.status === "active"
@@ -426,8 +480,8 @@ export function CustomerServiceLayout({
                               }
                               className={
                                 address.status === "active"
-                                  ? "bg-[#00A859]/10 text-[#00A859] hover:bg-[#00A859]/10"
-                                  : "bg-red-100 text-red-700 hover:bg-red-100"
+                                  ? "bg-primary/10 text-primary hover:bg-primary/10"
+                                  : "bg-destructive/10 text-destructive hover:bg-destructive/10"
                               }
                             >
                               {address.status === "active"
@@ -435,7 +489,7 @@ export function CustomerServiceLayout({
                                 : "Inativo"}
                             </Badge>
                           </div>
-                          <p className="text-sm text-slate-500">
+                          <p className="text-sm text-muted-foreground">
                             {address.address}
                           </p>
                         </div>
@@ -444,18 +498,18 @@ export function CustomerServiceLayout({
                         {address.status === "active" && (
                           <div className="flex items-center gap-4 mr-4">
                             <div className="text-right">
-                              <p className="text-xs text-slate-500">
+                              <p className="text-xs text-muted-foreground">
                                 Última Fatura
                               </p>
-                              <p className="text-sm text-slate-900">
+                              <p className="text-sm text-foreground">
                                 {address.lastBill}
                               </p>
                             </div>
                             <div className="text-right">
-                              <p className="text-xs text-slate-500">
+                              <p className="text-xs text-muted-foreground">
                                 Vencimento
                               </p>
-                              <p className="text-sm text-slate-900">
+                              <p className="text-sm text-foreground">
                                 {address.dueDate}
                               </p>
                             </div>
@@ -463,30 +517,30 @@ export function CustomerServiceLayout({
                         )}
                         <Button variant="ghost" size="icon">
                           {expandedUC === address.id ? (
-                            <ChevronUp className="w-5 h-5 text-slate-600" />
+                            <ChevronUp className="w-5 h-5 text-muted-foreground" />
                           ) : (
-                            <ChevronDown className="w-5 h-5 text-slate-600" />
+                            <ChevronDown className="w-5 h-5 text-muted-foreground" />
                           )}
                         </Button>
                       </div>
                     </div>
 
                     {expandedUC === address.id && (
-                      <div className="border-t border-slate-200 bg-slate-50">
+                      <div className="border-t border-border bg-muted">
                         <div className="p-6 space-y-4">
                           <div className="grid grid-cols-4 gap-6">
                             <div className="flex items-start gap-3">
-                              <div className="w-10 h-10 rounded-lg bg-[#003A70]/10 flex items-center justify-center">
-                                <MapPin className="w-5 h-5 text-[#003A70]" />
+                              <div className="w-10 h-10 rounded-lg bg-secondary/10 flex items-center justify-center">
+                                <MapPin className="w-5 h-5 text-secondary" />
                               </div>
                               <div>
-                                <p className="text-xs text-slate-500 mb-1">
+                                <p className="text-xs text-muted-foreground mb-1">
                                   Endereço Completo
                                 </p>
-                                <p className="text-sm text-slate-900">
+                                <p className="text-sm text-foreground">
                                   {address.address}
                                 </p>
-                                <p className="text-sm text-slate-900">
+                                <p className="text-sm text-foreground">
                                   {address.city} - {address.cep}
                                 </p>
                               </div>
@@ -495,36 +549,36 @@ export function CustomerServiceLayout({
                             {address.status === "active" && (
                               <>
                                 <div className="flex items-start gap-3">
-                                  <div className="w-10 h-10 rounded-lg bg-[#00A859]/10 flex items-center justify-center">
-                                    <DollarSign className="w-5 h-5 text-[#00A859]" />
+                                  <div className="w-10 h-10 rounded-lg bg-primary/10 flex items-center justify-center">
+                                    <DollarSign className="w-5 h-5 text-primary" />
                                   </div>
                                   <div>
-                                    <p className="text-xs text-slate-500 mb-1">
+                                    <p className="text-xs text-muted-foreground mb-1">
                                       Última Fatura
                                     </p>
-                                    <p className="text-sm text-slate-900">
+                                    <p className="text-sm text-foreground">
                                       {address.lastBill}
                                     </p>
                                   </div>
                                 </div>
 
                                 <div className="flex items-start gap-3">
-                                  <div className="w-10 h-10 rounded-lg bg-blue-100 flex items-center justify-center">
-                                    <Clock className="w-5 h-5 text-blue-600" />
+                                  <div className="w-10 h-10 rounded-lg bg-secondary/10 flex items-center justify-center">
+                                    <Clock className="w-5 h-5 text-secondary" />
                                   </div>
                                   <div>
-                                    <p className="text-xs text-slate-500 mb-1">
+                                    <p className="text-xs text-muted-foreground mb-1">
                                       Vencimento
                                     </p>
-                                    <p className="text-sm text-slate-900">
+                                    <p className="text-sm text-foreground">
                                       {address.dueDate}
                                     </p>
                                   </div>
                                 </div>
 
                                 <div className="flex items-start gap-3">
-                                  <div className="w-10 h-10 rounded-lg bg-purple-100 flex items-center justify-center">
-                                    <Zap className="w-5 h-5 text-purple-600" />
+                                  <div className="w-10 h-10 rounded-lg bg-accent/10 flex items-center justify-center">
+                                    <Zap className="w-5 h-5 text-accent" />
                                   </div>
                                   <div>
                                     <p className="text-xs text-muted-foreground mb-1">
@@ -579,10 +633,10 @@ export function CustomerServiceLayout({
               ))}
             </div>
             {/* Rodapé fixo com ação principal (melhor visibilidade para o usuário) */}
-            <div className="sticky bottom-0 bg-white border-t border-slate-200 mt-6 z-30">
+            <div className="sticky bottom-0 bg-card border-t border-border mt-6 z-30">
               <div className="max-w-6xl p-4 flex justify-end">
                 <Button
-                  className="bg-[#00A859] hover:bg-[#008F4A]"
+                  className="bg-primary hover:bg-primary/90"
                   type="button"
                 >
                   Finalizar Protocolo

@@ -182,15 +182,36 @@ export const getAllCustomers = (): Customer[] => {
 };
 
 export const findCustomers = (term: string): Customer[] => {
-  const t = term.trim().toLowerCase();
+  const raw = term.trim();
+  const t = raw.toLowerCase();
   if (t.length < 2) return [];
+  const digitsOnly = raw.replace(/\D/g, "");
+  const hasDigits = /\d/.test(raw);
+  const hasLetters = /[a-zA-Z]/.test(raw);
   const all = getAllCustomers();
+
+  const norm = {
+    cpf: (s: string) => s.replace(/\D/g, ""),
+    phone: (s: string) => s.replace(/\D/g, ""),
+    uc: (s: string) => s.replace(/\D/g, ""),
+    protocol: (s: string) => s.replace(/\D/g, ""),
+  };
+
+  if (hasDigits && digitsOnly.length >= 6 && !hasLetters) {
+    return all.filter((c) =>
+      norm.cpf(c.cpf).includes(digitsOnly) ||
+      norm.phone(c.phone ?? "").includes(digitsOnly) ||
+      norm.protocol(c.lastProtocol ?? "").includes(digitsOnly) ||
+      c.addresses.some((a) => norm.uc(a.ucNumber).includes(digitsOnly))
+    );
+  }
+
   return all.filter((c) =>
     c.name.toLowerCase().includes(t) ||
-    c.cpf.includes(term) ||
-    c.phone.includes(term) ||
-    c.lastProtocol?.includes(term) ||
-    c.addresses.some((a) => a.ucNumber.includes(term))
+    c.cpf.includes(raw) ||
+    c.phone.includes(raw) ||
+    c.lastProtocol?.includes(raw) ||
+    c.addresses.some((a) => a.ucNumber.includes(raw))
   );
 };
 
