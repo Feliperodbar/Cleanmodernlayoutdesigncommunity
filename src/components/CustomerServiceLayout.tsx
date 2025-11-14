@@ -16,6 +16,7 @@ import {
   MapPin,
   Copy,
   Check,
+  Building2,
   ChevronRight,
   Loader2,
 } from "lucide-react";
@@ -183,6 +184,7 @@ export function CustomerServiceLayout({
     <div className="min-h-screen bg-background">
       <AppHeader
         title=""
+        onLogoClick={onNewService}
         center={
           <div className="relative">
             <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-secondary/40" />
@@ -203,7 +205,9 @@ export function CustomerServiceLayout({
                 {suggestions.map((c, idx) => (
                   <div
                     key={c.id}
-                    className={`p-3 cursor-pointer border-b border-border last:border-b-0 transition-colors ${idx === activeIndex ? 'bg-muted' : 'hover:bg-muted'}`}
+                    className={`p-3 cursor-pointer border-b border-border last:border-b-0 transition-colors ${
+                      idx === activeIndex ? "bg-muted" : "hover:bg-muted"
+                    }`}
                     onClick={() => handleSelectSuggestion(c)}
                     onMouseEnter={() => setActiveIndex(idx)}
                   >
@@ -214,14 +218,36 @@ export function CustomerServiceLayout({
                         </div>
                         <div>
                           <p className="text-sm text-foreground">
-                            {getHighlightedParts(c.name, searchTerm).map((part, i) => (
-                              <span key={i} className={part.highlight ? 'bg-primary/20 rounded' : undefined}>{part.text}</span>
-                            ))}
+                            {getHighlightedParts(c.name, searchTerm).map(
+                              (part, i) => (
+                                <span
+                                  key={i}
+                                  className={
+                                    part.highlight
+                                      ? "bg-primary/20 rounded"
+                                      : undefined
+                                  }
+                                >
+                                  {part.text}
+                                </span>
+                              )
+                            )}
                           </p>
                           <p className="text-xs text-muted-foreground">
-                            {getHighlightedParts(c.cpf, searchTerm).map((part, i) => (
-                              <span key={i} className={part.highlight ? 'bg-primary/20 rounded' : undefined}>{part.text}</span>
-                            ))}
+                            {getHighlightedParts(c.cpf, searchTerm).map(
+                              (part, i) => (
+                                <span
+                                  key={i}
+                                  className={
+                                    part.highlight
+                                      ? "bg-primary/20 rounded"
+                                      : undefined
+                                  }
+                                >
+                                  {part.text}
+                                </span>
+                              )
+                            )}
                           </p>
                         </div>
                       </div>
@@ -229,16 +255,39 @@ export function CustomerServiceLayout({
                     </div>
                     <div className="flex items-center gap-4 text-xs text-muted-foreground ml-11 mt-1">
                       <span className="flex items-center gap-1">
-                        <Zap className="w-3 h-3" />
-                        UC: {getHighlightedParts(c.addresses[0]?.ucNumber ?? '', searchTerm).map((part, i) => (
-                          <span key={i} className={part.highlight ? 'bg-primary/20 rounded' : undefined}>{part.text}</span>
+                        UC:{" "}
+                        {getHighlightedParts(
+                          c.addresses[0]?.ucNumber ?? "",
+                          searchTerm
+                        ).map((part, i) => (
+                          <span
+                            key={i}
+                            className={
+                              part.highlight
+                                ? "bg-primary/20 rounded"
+                                : undefined
+                            }
+                          >
+                            {part.text}
+                          </span>
                         ))}
                       </span>
                       <span className="flex items-center gap-1">
                         <Phone className="w-3 h-3" />
-                        {getHighlightedParts(c.phone ?? '', searchTerm).map((part, i) => (
-                          <span key={i} className={part.highlight ? 'bg-primary/20 rounded' : undefined}>{part.text}</span>
-                        ))}
+                        {getHighlightedParts(c.phone ?? "", searchTerm).map(
+                          (part, i) => (
+                            <span
+                              key={i}
+                              className={
+                                part.highlight
+                                  ? "bg-primary/20 rounded"
+                                  : undefined
+                              }
+                            >
+                              {part.text}
+                            </span>
+                          )
+                        )}
                       </span>
                     </div>
                   </div>
@@ -249,11 +298,11 @@ export function CustomerServiceLayout({
         }
         actions={
           <>
-            <Button className="bg-primary hover:bg-primary/90 gap-2" onClick={onNewService}>
-              <Plus className="w-4 h-4" />
-              Novo Atendimento
-            </Button>
-            <Button variant="outline" size="icon" className="hover:bg-secondary/5">
+            <Button
+              variant="outline"
+              size="icon"
+              className="hover:bg-secondary/5"
+            >
               <Settings className="w-5 h-5 text-secondary" />
             </Button>
             <Avatar>
@@ -283,6 +332,16 @@ export function CustomerServiceLayout({
                 <h3 className="text-foreground">{selectedCustomer.name}</h3>
                 <p className="text-xs text-primary">Pessoa Física</p>
               </div>
+            </div>
+
+            <div className="mt-2">
+              <Button
+                className="bg-primary hover:bg-primary/90 gap-2 w-full"
+                onClick={onNewService}
+              >
+                <Plus className="w-4 h-4" />
+                Atualização Cadastral
+              </Button>
             </div>
 
             <Separator className="my-4" />
@@ -408,39 +467,82 @@ export function CustomerServiceLayout({
               </div>
             </div>
 
-            {/* Nova Ligação CTA */}
-            <div className="mb-6">
-              <Button className="bg-primary hover:bg-primary/90 gap-2">
-                <Power className="w-4 h-4" />
-                Ligação Nova
-              </Button>
-            </div>
-
             {/* Seletor de distribuidora acima das UCs */}
             <div className="mb-6">
               <div className="flex items-start gap-3">
-                <div className="w-8 h-8 rounded-lg bg-secondary/10 flex items-center justify-center flex-shrink-0">
-                  <Zap className="w-4 h-4 text-secondary" />
-                </div>
                 <div className="flex-1">
                   <p className="text-xs text-muted-foreground">Distribuidora</p>
-                  <Select
-                    value={selectedDistributor}
-                    onValueChange={(v: string) => setSelectedDistributor(v)}
-                  >
-                    <SelectTrigger className="w-64 bg-card border border-border shadow-sm">
-                      <SelectValue />
-                    </SelectTrigger>
-                    <SelectContent>
-                      {distributors.map((d) => (
-                        <SelectItem key={d} value={d}>
-                          {d}
-                        </SelectItem>
-                      ))}
-                    </SelectContent>
-                  </Select>
+                  <div className="flex flex-wrap gap-2 mt-1">
+                    {distributors.map((d) => (
+                      <button
+                        key={d}
+                        type="button"
+                        className={`relative rounded-lg p-4 text-center transition-colors duration-150 cursor-pointer ${
+                          selectedDistributor === d
+                            ? "ring-2 ring-green-600 border-2 border-green-600"
+                            : "border border-border hover:bg-green-50 hover:border-green-400"
+                        }`}
+                        aria-pressed={selectedDistributor === d}
+                        onKeyDown={(e) => {
+                          if (e.key === "Enter" || e.key === " ") {
+                            e.preventDefault();
+                            setSelectedDistributor(d);
+                          }
+                        }}
+                        onClick={() => setSelectedDistributor(d)}
+                        style={{
+                          backgroundColor:
+                            selectedDistributor === d
+                              ? "#00A859"
+                              : "transparent",
+                        }}
+                      >
+                        <div
+                          className={`flex items-center justify-center gap-2 ${
+                            selectedDistributor === d ? "text-white" : ""
+                          }`}
+                        >
+                          {selectedDistributor === d && (
+                            <svg
+                              viewBox="0 0 24 24"
+                              fill="none"
+                              className="w-4 h-4 text-white"
+                            >
+                              <path
+                                d="M20 6L9 17l-5-5"
+                                stroke="currentColor"
+                                strokeWidth="5"
+                              />
+                            </svg>
+                          )}
+                          <Building2
+                            className={`w-4 h-4 ${
+                              selectedDistributor === d
+                                ? "text-white"
+                                : "text-secondary"
+                            }`}
+                          />
+                          <span
+                            className={`text-sm font-medium ${
+                              selectedDistributor === d
+                                ? "text-white"
+                                : "text-foreground"
+                            }`}
+                          >
+                            {d}
+                          </span>
+                        </div>
+                      </button>
+                    ))}
+                  </div>
                 </div>
               </div>
+            </div>
+            <div className="mt-5">
+              <Button className="h-12 bg-primary hover:bg-primary/90 gap-2">
+                <Power className="w-4 h-4" />
+                Ligação Nova
+              </Button>
             </div>
 
             {/* UC Cards */}
@@ -449,17 +551,11 @@ export function CustomerServiceLayout({
                 <h3 className="text-foreground">
                   Unidades Consumidoras ({addresses.length})
                 </h3>
-                <Input
-                  placeholder="Filtrar UC..."
-                  className="w-64 bg-card"
-                />
+                <Input placeholder="Filtrar UC..." className="w-64 bg-card" />
               </div>
 
               {addresses.map((address) => (
-                <Card
-                  key={address.id}
-                  className="overflow-hidden"
-                >
+                <Card key={address.id} className="overflow-hidden">
                   <CardContent className="p-0">
                     <div
                       className="flex items-center justify-between p-4 cursor-pointer hover:bg-muted transition-colors"
@@ -471,7 +567,9 @@ export function CustomerServiceLayout({
                         </div>
                         <div className="flex-1">
                           <div className="flex items-center gap-2 mb-1">
-                            <p className="text-foreground">{address.ucNumber}</p>
+                            <p className="text-foreground">
+                              {address.ucNumber}
+                            </p>
                             <Badge
                               variant={
                                 address.status === "active"
@@ -577,9 +675,7 @@ export function CustomerServiceLayout({
                                 </div>
 
                                 <div className="flex items-start gap-3">
-                                  <div className="w-10 h-10 rounded-lg bg-accent/10 flex items-center justify-center">
-                                    <Zap className="w-5 h-5 text-accent" />
-                                  </div>
+                                  <div className="w-10 h-10 rounded-lg bg-accent/10 flex items-center justify-center"></div>
                                   <div>
                                     <p className="text-xs text-muted-foreground mb-1">
                                       Consumo

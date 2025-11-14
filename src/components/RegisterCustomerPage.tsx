@@ -10,6 +10,7 @@ import {
   Mail,
   Building2,
   Loader2,
+  Check,
 } from "lucide-react";
 import { Input } from "./ui/input";
 import { Button } from "./ui/button";
@@ -59,24 +60,7 @@ export function RegisterCustomerPage({
   const [email, setEmail] = useState("");
   const [company, setCompany] = useState("");
   const [loadingCep, setLoadingCep] = useState(false);
-  const [uc, setUc] = useState("");
   const [loadingDocument, setLoadingDocument] = useState(false);
-
-  // UCs por distribuidora — alguns arrays podem estar vazios (sem UC)
-  const ucOptions: Record<string, string[]> = {
-    coelba: ["UC-1001", "UC-1002"],
-    cosern: ["UC-2001"],
-    elektro: [], // sem UC por padrão
-    pernambuco: ["UC-4001", "UC-4002", "UC-4003"],
-  };
-
-  // Mapeamento que força UC apenas para determinada distribuidora com base no nome do cliente
-  const nameToCompany: Record<string, string> = {
-    maria: "elektro",
-    thiago: "coelba",
-    "joao pedro": "cosern",
-    "joão pedro": "cosern",
-  };
 
   const companyLabels: Record<string, string> = {
     coelba: "Neoenergia Coelba",
@@ -84,13 +68,6 @@ export function RegisterCustomerPage({
     elektro: "Neoenergia Elektro",
     pernambuco: "Neoenergia Pernambuco",
   };
-
-  const normalize = (s: string) =>
-    s
-      .normalize?.("NFD")
-      .replace(/\p{Diacritic}/gu, "")
-      .toLowerCase()
-      .trim();
 
   const formatDocument = (value: string, type: "cpf" | "cnpj") => {
     const numbers = value.replace(/\D/g, "");
@@ -283,7 +260,9 @@ export function RegisterCustomerPage({
   };
 
   const tryAutofillFromCPFRemote = async (digits: string) => {
-    const base = (import.meta as any)?.env?.VITE_CPF_API_URL as string | undefined;
+    const base = (import.meta as any)?.env?.VITE_CPF_API_URL as
+      | string
+      | undefined;
     if (!base) return;
     setLoadingDocument(true);
     try {
@@ -304,7 +283,12 @@ export function RegisterCustomerPage({
         if (cepApi) {
           await handleCepChange(cepApi);
         } else if (logradouro || bairro || municipio || uf) {
-          setAddressData({ street: logradouro, neighborhood: bairro, city: municipio, state: uf });
+          setAddressData({
+            street: logradouro,
+            neighborhood: bairro,
+            city: municipio,
+            state: uf,
+          });
         }
       }
     } catch {}
@@ -332,7 +316,12 @@ export function RegisterCustomerPage({
           if (cepApi) {
             await handleCepChange(cepApi);
           } else {
-            setAddressData({ street: logradouro, neighborhood: bairro, city: municipio, state: uf });
+            setAddressData({
+              street: logradouro,
+              neighborhood: bairro,
+              city: municipio,
+              state: uf,
+            });
           }
         }
       }
@@ -386,7 +375,9 @@ export function RegisterCustomerPage({
                   <UserIcon className="w-6 h-6 text-secondary" />
                 </div>
                 <div>
-                  <CardTitle className="text-foreground">Novo Cliente</CardTitle>
+                  <CardTitle className="text-foreground">
+                    Novo Cliente
+                  </CardTitle>
                   <p className="text-sm text-muted-foreground">
                     Preencha os dados para cadastrar um novo cliente
                   </p>
@@ -396,6 +387,73 @@ export function RegisterCustomerPage({
 
             <CardContent className="p-8">
               <form onSubmit={handleSubmit} className="space-y-6">
+                {/* Distributors at top */}
+                <div className="space-y-4">
+                  <div className="flex items-center gap-2 mb-2">
+                    <Building2 className="w-5 h-5 text-foreground" />
+                    <h3 className="text-foreground">Distribuidoras</h3>
+                  </div>
+                  <div className="grid grid-cols-2 md:grid-cols-4 gap-3 text-white">
+                    {Object.entries(companyLabels).map(([key, label]) => (
+                      <button
+                        key={key}
+                        type="button"
+                        className={`text-white relative rounded-lg p-4 text-center transition-colors duration-150 cursor-pointer'} ${
+                          company === key
+                            ? "ring-2 ring-green-600 border-4 border-green-600 bg-green-100"
+                            : "border border-border hover:bg-green-50 hover:border-green-400"
+                        }`}
+                        aria-pressed={company === key}
+                        onKeyDown={(e) => {
+                          if (e.key === "Enter" || e.key === " ") {
+                            e.preventDefault();
+                            setCompany(key);
+                          }
+                        }}
+                        style={{
+                          backgroundColor:
+                            company === key ? "#00A859" : "transparent",
+                        }}
+                        tabIndex={0}
+                        onClick={() => {
+                          setCompany(key);
+                        }}
+                      >
+                        <div
+                          className={`flex items-center justify-center gap-2 ${
+                            company === key ? "text-white" : ""
+                          }`}
+                        >
+                          {company === key && (
+                            <svg
+                              viewBox="0 0 24 24"
+                              fill="none"
+                              className="w-4 h-4 text-white"
+                            >
+                              <path
+                                d="M20 6L9 17l-5-5"
+                                stroke="currentColor"
+                                strokeWidth="5"
+                              />
+                            </svg>
+                          )}
+                          <Building2
+                            className={`w-4 h-4 ${
+                              company === key ? "text-white" : "text-secondary"
+                            }`}
+                          />
+                          <span
+                            className={`text-lg font-medium ${
+                              company === key ? "text-white" : "text-foreground"
+                            }`}
+                          >
+                            {label}
+                          </span>
+                        </div>
+                      </button>
+                    ))}
+                  </div>
+                </div>
                 {/* Document Section */}
                 <div className="space-y-4">
                   <div className="flex items-center gap-2 mb-4">
@@ -425,7 +483,9 @@ export function RegisterCustomerPage({
                         <Input
                           id="document"
                           value={document}
-                          onChange={(e: { target: { value: string; }; }) => handleDocumentChange(e.target.value)}
+                          onChange={(e: { target: { value: string } }) =>
+                            handleDocumentChange(e.target.value)
+                          }
                           placeholder={
                             documentType === "cpf"
                               ? "000.000.000-00"
@@ -433,8 +493,16 @@ export function RegisterCustomerPage({
                           }
                           inputMode="numeric"
                           maxLength={documentType === "cpf" ? 14 : 18}
-                          pattern={documentType === "cpf" ? "\\d{3}\\.\\d{3}\\.\\d{3}-\\d{2}" : undefined}
-                          title={documentType === "cpf" ? "CPF no formato 000.000.000-00" : undefined}
+                          pattern={
+                            documentType === "cpf"
+                              ? "\\d{3}\\.\\d{3}\\.\\d{3}-\\d{2}"
+                              : undefined
+                          }
+                          title={
+                            documentType === "cpf"
+                              ? "CPF no formato 000.000.000-00"
+                              : undefined
+                          }
                           className="flex-1"
                           required
                         />
@@ -445,7 +513,8 @@ export function RegisterCustomerPage({
 
                       <div className="space-y-2 mt-2">
                         <Label htmlFor="birthDate">Data de Nascimento *</Label>
-                        <Input className="w-44"
+                        <Input
+                          className="w-44"
                           id="birthDate"
                           type="date"
                           value={birthDate}
@@ -453,20 +522,31 @@ export function RegisterCustomerPage({
                             const v = e.target.value;
                             setBirthDate(v);
                             if (isFutureDate(v)) {
-                              setBirthDateError("Data de nascimento não pode ser no futuro");
+                              setBirthDateError(
+                                "Data de nascimento não pode ser no futuro"
+                              );
                             } else if (!isAtLeastAge(v, 18)) {
-                              setBirthDateError("É necessário ter 18 anos ou mais");
+                              setBirthDateError(
+                                "É necessário ter 18 anos ou mais"
+                              );
                             } else {
                               setBirthDateError(null);
                             }
                           }}
                           placeholder="dd/mm/aaaa"
                           aria-invalid={birthDateError ? true : undefined}
-                          aria-describedby={birthDateError ? "birthDate-error" : undefined}
+                          aria-describedby={
+                            birthDateError ? "birthDate-error" : undefined
+                          }
                           required
                         />
                         {birthDateError && (
-                          <p id="birthDate-error" className="text-sm text-destructive mt-1">{birthDateError}</p>
+                          <p
+                            id="birthDate-error"
+                            className="text-sm text-destructive mt-1"
+                          >
+                            {birthDateError}
+                          </p>
                         )}
                       </div>
                     </div>
@@ -495,7 +575,9 @@ export function RegisterCustomerPage({
                               <SelectItem value="male">Masculino</SelectItem>
                               <SelectItem value="female">Feminino</SelectItem>
                               <SelectItem value="other">Outro</SelectItem>
-                              <SelectItem value="prefer_not">Prefiro não dizer</SelectItem>
+                              <SelectItem value="prefer_not">
+                                Prefiro não dizer
+                              </SelectItem>
                             </SelectContent>
                           </Select>
                         </div>
@@ -637,92 +719,8 @@ export function RegisterCustomerPage({
                   </div>
                 </div>
 
-                {/* Company Section */}
-                <div className="space-y-4 pt-6 border-t border-border">
-                  <div className="flex items-center gap-2 mb-4">
-                    <Building2 className="w-5 h-5 text-secondary" />
-                    <h3 className="text-foreground">Distribuidora</h3>
-                  </div>
-
-                  <div className="space-y-2">
-                    <Label htmlFor="company">Selecione a Distribuidora *</Label>
-                    <Select
-                      value={company}
-                      onValueChange={(v: string) => {
-                        setCompany(v);
-                        setUc(""); // reset UC ao trocar distribuidora
-                      }}
-                      required
-                    >
-                      <SelectTrigger id="company">
-                        <SelectValue placeholder="Selecione uma distribuidora" />
-                      </SelectTrigger>
-                      <SelectContent>
-                        <SelectItem value="coelba">
-                          Neoenergia Coelba
-                        </SelectItem>
-                        <SelectItem value="cosern">
-                          Neoenergia Cosern
-                        </SelectItem>
-                        <SelectItem value="elektro">
-                          Neoenergia Elektro
-                        </SelectItem>
-                        <SelectItem value="pernambuco">
-                          Neoenergia Pernambuco
-                        </SelectItem>
-                      </SelectContent>
-                    </Select>
-                    {/* Campo UC — mostra select quando houver UCs para a distribuidora, caso contrário exibe mensagem */}
-                    <div className="space-y-2 mt-3">
-                      <Label htmlFor="uc">UC</Label>
-                      {company ? (
-                        // verifica se o nome do cliente exige uma distribuidora específica
-                        (() => {
-                          const required = nameToCompany[normalize(fullName || "")];
-                          const hasUcs = ucOptions[company] && ucOptions[company].length > 0;
-
-                          if (required && company !== required) {
-                            return (
-                              <p className="text-sm text-red-600 italic">
-                                UC disponível apenas para {companyLabels[required]} para este cliente.
-                              </p>
-                            );
-                          }
-
-                          if (hasUcs) {
-                            return (
-                              <Select value={uc} onValueChange={setUc}>
-                                <SelectTrigger id="uc">
-                                  <SelectValue placeholder="Selecione a UC" />
-                                </SelectTrigger>
-                                <SelectContent>
-                                  {ucOptions[company].map((u) => (
-                                    <SelectItem key={u} value={u}>
-                                      {u}
-                                    </SelectItem>
-                                  ))}
-                                </SelectContent>
-                              </Select>
-                            );
-                          }
-
-                          return (
-                            <p className="text-sm text-muted-foreground italic">
-                              Sem UC disponível para esta distribuidora
-                            </p>
-                          );
-                        })()
-                      ) : (
-                        <p className="text-sm text-muted-foreground italic">
-                          Selecione uma distribuidora para ver as UCs
-                        </p>
-                      )}
-                    </div>
-                  </div>
-                </div>
-
                 {/* Action Buttons */}
-                  <div className="flex items-center justify-end gap-3 pt-6 border-t border-border">
+                <div className="flex items-center justify-end gap-3 pt-6 border-t border-border">
                   <Button
                     type="button"
                     variant="outline"
