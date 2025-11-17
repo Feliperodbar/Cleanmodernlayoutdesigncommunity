@@ -40,6 +40,7 @@ import { customers, findCustomers } from "../data/customers";
 import { getHighlightedParts } from "./ui/utils";
 import type { Customer } from "../data/customers";
 import { AppHeader } from "./AppHeader";
+import * as DropdownMenu from "@radix-ui/react-dropdown-menu";
 
 interface CustomerServiceLayoutProps {
   onNewService?: () => void;
@@ -58,6 +59,7 @@ export function CustomerServiceLayout({
   const [suggestions, setSuggestions] = useState<Customer[]>([]);
   const [showSuggestions, setShowSuggestions] = useState(false);
   const [loading, setLoading] = useState(false);
+  const [addressFilter, setAddressFilter] = useState<"all" | "active" | "inactive">("all");
   const debounceRef = useRef<number | null>(null);
   const [activeIndex, setActiveIndex] = useState(-1);
   // Removidos estados de serviços e diálogo de confirmação
@@ -91,6 +93,12 @@ export function CustomerServiceLayout({
     ...addr,
     ucNumber: computeUCForDistributor(addr.ucNumber, selectedDistributor),
   }));
+
+  const filteredAddresses = addresses.filter((a) => {
+    if (addressFilter === "active") return a.status === "active";
+    if (addressFilter === "inactive") return a.status !== "active";
+    return true;
+  });
 
   useEffect(() => {
     const q = searchTerm.trim();
@@ -543,13 +551,23 @@ export function CustomerServiceLayout({
             {/* UC Cards */}
             <div className="space-y-4">
               <div className="flex items-center justify-between mb-6">
-                <h3 className="text-foreground">
-                  Unidades Consumidoras ({addresses.length})
-                </h3>
+                <DropdownMenu.Root>
+                  <DropdownMenu.Trigger asChild>
+                    <button type="button" className="flex items-center gap-2 text-foreground hover:text-primary">
+                      <span>Unidades Consumidoras ({filteredAddresses.length})</span>
+                      <ChevronDown className="w-4 h-4" />
+                    </button>
+                  </DropdownMenu.Trigger>
+                  <DropdownMenu.Content className="bg-card border border-border rounded-md p-1 shadow-lg">
+                    <DropdownMenu.Item className="px-3 py-2 text-sm hover:bg-muted" onClick={() => setAddressFilter("all")}>Todas</DropdownMenu.Item>
+                    <DropdownMenu.Item className="px-3 py-2 text-sm hover:bg-muted" onClick={() => setAddressFilter("active")}>Ativas</DropdownMenu.Item>
+                    <DropdownMenu.Item className="px-3 py-2 text-sm hover:bg-muted" onClick={() => setAddressFilter("inactive")}>Inativas</DropdownMenu.Item>
+                  </DropdownMenu.Content>
+                </DropdownMenu.Root>
                 <Input placeholder="Filtrar UC..." className="w-64 bg-card" />
               </div>
 
-              {addresses.map((address) => (
+              {filteredAddresses.map((address) => (
                 <Card key={address.id} className="overflow-hidden">
                   <CardContent className="p-0">
                     <div
