@@ -53,7 +53,7 @@ export function CustomerServiceLayout({
   customer,
   onSelectCustomer,
 }: CustomerServiceLayoutProps) {
-  const [expandedUC, setExpandedUC] = useState<string | null>("1");
+  const [expandedUC, setExpandedUC] = useState<string | null>(null);
   const [copiedField, setCopiedField] = useState<string | null>(null);
   const [searchTerm, setSearchTerm] = useState("");
   const [suggestions, setSuggestions] = useState<Customer[]>([]);
@@ -75,7 +75,22 @@ export function CustomerServiceLayout({
     () => customer ?? customers[0],
     [customer]
   );
-
+            <div className="mt-5">
+              <DropdownMenu.Root>
+                <DropdownMenu.Trigger asChild>
+                  <Button className="h-12 bg-primary hover:bg-primary/90 gap-2">
+                    <Power className="w-4 h-4" />
+                    Ligação Nova
+                    <ChevronDown className="w-4 h-4" />
+                  </Button>
+                </DropdownMenu.Trigger>
+                <DropdownMenu.Content className="bg-card border border-border rounded-md p-1 shadow-lg">
+                  <DropdownMenu.Item className="px-3 py-2 text-sm hover:bg-muted">Solicitar ligação</DropdownMenu.Item>
+                  <DropdownMenu.Item className="px-3 py-2 text-sm hover:bg-muted">Requisitos</DropdownMenu.Item>
+                  <DropdownMenu.Item className="px-3 py-2 text-sm hover:bg-muted">Vistoria</DropdownMenu.Item>
+                </DropdownMenu.Content>
+              </DropdownMenu.Root>
+            </div>
   const baseAddress = selectedCustomer.addresses[0];
 
   const computeUCForDistributor = (uc: string, dist: string) => {
@@ -758,3 +773,6 @@ export function CustomerServiceLayout({
     </div>
   );
 }
+  useEffect(() => {
+    setExpandedUC(null);
+  }, [selectedCustomer]);
