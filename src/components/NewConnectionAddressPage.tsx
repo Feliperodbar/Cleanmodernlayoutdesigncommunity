@@ -138,11 +138,17 @@ export function NewConnectionAddressPage({ onBack, onNext, onCancel, customer }:
                   </div>
                 )}
                 <div className="grid grid-cols-4 gap-4">
-                  <div className="space-y-2"><Label htmlFor="cep">CEP</Label><Input id="cep" className="h-10" value={form.cep} onChange={async (e) => { const v = formatCep(e.target.value); set("cep", v); await fetchViaCep(v); }} placeholder="00000-000" /></div>
-                  <div className="col-span-3 space-y-2"><Label htmlFor="address">Endereço</Label><Input id="address" className="h-10" value={form.address} onChange={(e) => set("address", e.target.value)} placeholder="Rua, Avenida..." /></div>
+                  <div className="space-y-2">
+                    <div className="flex items-center justify-between"><Label htmlFor="cep">CEP</Label><span className="text-destructive text-xs">Obrigatório</span></div>
+                    <Input id="cep" className="h-10" value={form.cep} onChange={async (e) => { const v = formatCep(e.target.value); set("cep", v); await fetchViaCep(v); }} placeholder="00000-000" />
+                  </div>
+                  <div className="col-span-3 space-y-2">
+                    <div className="flex items-center justify-between"><Label htmlFor="address">Endereço</Label><span className="text-destructive text-xs">Obrigatório</span></div>
+                    <Input id="address" className="h-10" value={form.address} onChange={(e) => set("address", e.target.value)} placeholder="Rua, Avenida..." />
+                  </div>
                 </div>
                 <div className="grid grid-cols-4 gap-4">
-                  <div className="space-y-2"><Label htmlFor="neighborhood">Bairro</Label><Input id="neighborhood" className="h-10" value={form.neighborhood} onChange={(e) => set("neighborhood", e.target.value)} /></div>
+                  <div className="space-y-2"><div className="flex items-center justify-between"><Label htmlFor="neighborhood">Bairro</Label><span className="text-destructive text-xs">Obrigatório</span></div><Input id="neighborhood" className="h-10" value={form.neighborhood} onChange={(e) => set("neighborhood", e.target.value)} /></div>
                   <div className="space-y-2"><Label htmlFor="city">Município</Label><Input id="city" className="h-10" value={form.city} onChange={(e) => set("city", e.target.value)} /></div>
                   <div className="space-y-2"><Label htmlFor="state">Estado</Label>
                     <Select value={form.state} onValueChange={(v) => set("state", v)}>
@@ -150,20 +156,20 @@ export function NewConnectionAddressPage({ onBack, onNext, onCancel, customer }:
                       <SelectContent>{["RN","PE","BA","SP","RJ"].map((uf) => (<SelectItem key={uf} value={uf}>{uf}</SelectItem>))}</SelectContent>
                     </Select>
                   </div>
-                  <div className="space-y-2"><Label htmlFor="number">Nº</Label><Input id="number" className="h-10" value={form.number} onChange={(e) => set("number", e.target.value)} /></div>
+                  <div className="space-y-2"><div className="flex items-center justify-between"><Label htmlFor="number">Nº</Label><span className="text-destructive text-xs">Obrigatório</span></div><Input id="number" className="h-10" value={form.number} onChange={(e) => set("number", e.target.value)} /></div>
                 </div>
                 <div className="grid grid-cols-2 gap-4">
                   <div className="space-y-2"><Label htmlFor="reference">Ponto de referência</Label><Input id="reference" className="h-10" value={form.reference} onChange={(e) => set("reference", e.target.value)} /></div>
-                  <div className="space-y-2"><Label htmlFor="applicant">Solicitante</Label><Input id="applicant" className="h-10" value={form.applicant} onChange={(e) => set("applicant", e.target.value)} /></div>
+                  <div className="space-y-2"><div className="flex items-center justify-between"><Label htmlFor="applicant">Solicitante</Label><span className="text-destructive text-xs">Obrigatório</span></div><Input id="applicant" className="h-10" value={form.applicant} onChange={(e) => set("applicant", e.target.value)} /></div>
                 </div>
                 <div className="grid grid-cols-2 gap-4">
-                  <div className="space-y-2"><Label htmlFor="contactName">Nome da pessoa de contato</Label><Input id="contactName" className="h-10" value={form.contactName} onChange={(e) => set("contactName", e.target.value)} /></div>
-                  <div className="space-y-2"><Label htmlFor="contactPhone">Telefone da pessoa de contato</Label><Input id="contactPhone" className="h-10" value={form.contactPhone} onChange={(e) => set("contactPhone", e.target.value)} placeholder="(00) 00000-0000" /></div>
+                  <div className="space-y-2"><div className="flex items-center justify-between"><Label htmlFor="contactName">Nome da pessoa de contato</Label><span className="text-destructive text-xs">Obrigatório</span></div><Input id="contactName" className="h-10" value={form.contactName} onChange={(e) => set("contactName", e.target.value)} /></div>
+                  <div className="space-y-2"><div className="flex items-center justify-between"><Label htmlFor="contactPhone">Telefone da pessoa de contato</Label><span className="text-destructive text-xs">Obrigatório</span></div><Input id="contactPhone" className="h-10" value={form.contactPhone} onChange={(e) => set("contactPhone", e.target.value)} placeholder="(00) 00000-0000" /></div>
                 </div>
                 <Separator />
                 <div className="grid grid-cols-2 gap-6">
                   <div className="space-y-3">
-                    <div className="text-green-700">Tensão de fornecimento (V)</div>
+                    <div className="flex items-center justify-between"><span className="text-green-700">Tensão de fornecimento (V)</span><span className="text-destructive text-xs">Obrigatório</span></div>
                     <div className="flex items-center gap-3"><label className="flex items-center gap-2"><input type="radio" name="voltage" checked={form.voltage === "220"} onChange={() => set("voltage", "220")} /><span>220 V</span></label><label className="flex items-center gap-2"><input type="radio" name="voltage" checked={form.voltage === "380"} onChange={() => set("voltage", "380")} /><span>380 V</span></label></div>
                     <label className="flex items-center gap-2"><input type="checkbox" checked={form.confirmMunicipalVoltage} onChange={(e) => set("confirmMunicipalVoltage", e.target.checked)} /><span>Confirma a tensão de fornecimento do município</span></label>
                     <Button variant="outline" className="mt-2">Consultar Sistema Técnico</Button>

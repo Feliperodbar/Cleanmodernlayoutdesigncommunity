@@ -119,15 +119,7 @@ export function NewConnectionInstallationPage({ onBack, onNext, onCancel, custom
                   </div>
                 )}
 
-                <div className="space-y-2">
-                  <Label htmlFor="description">Descrição</Label>
-                  <Input id="description" value={form.description} onChange={(e) => set("description", e.target.value)} placeholder="Detalhes da instalação" />
-                </div>
-
-                <div className="space-y-2">
-                  <Label htmlFor="description">Descrição</Label>
-                  <Input id="description" value={form.description} onChange={(e) => set("description", e.target.value)} placeholder="Detalhes da instalação" />
-                </div>
+                
 
                 <div className="space-y-2">
                   <div className="text-sm">Tarifa Branca</div>
@@ -153,7 +145,7 @@ export function NewConnectionInstallationPage({ onBack, onNext, onCancel, custom
 
                 <div className="grid grid-cols-3 gap-4">
                   <div className="space-y-2">
-                    <Label htmlFor="declaredPhase">Fase Declarada</Label>
+                    <div className="flex items-center justify-between"><Label htmlFor="declaredPhase">Fase Declarada</Label><span className="text-destructive text-xs">Obrigatório</span></div>
                     <Select value={form.declaredPhase} onValueChange={(v) => set("declaredPhase", v)}>
                       <SelectTrigger id="declaredPhase"><SelectValue placeholder="Selecione" /></SelectTrigger>
                       <SelectContent>
@@ -164,7 +156,7 @@ export function NewConnectionInstallationPage({ onBack, onNext, onCancel, custom
                     </Select>
                   </div>
                   <div className="space-y-2">
-                    <Label htmlFor="entryType">Tipo de Entrada</Label>
+                    <div className="flex items-center justify-between"><Label htmlFor="entryType">Tipo de Entrada</Label><span className="text-destructive text-xs">Obrigatório</span></div>
                     <Select value={form.entryType} onValueChange={(v) => set("entryType", v)}>
                       <SelectTrigger id="entryType"><SelectValue placeholder="Selecione" /></SelectTrigger>
                       <SelectContent>
@@ -174,7 +166,7 @@ export function NewConnectionInstallationPage({ onBack, onNext, onCancel, custom
                     </Select>
                   </div>
                   <div className="space-y-2">
-                    <Label htmlFor="supplyVoltage">Tensão de Fornecimento (V)</Label>
+                    <div className="flex items-center justify-between"><Label htmlFor="supplyVoltage">Tensão de Fornecimento (V)</Label><span className="text-destructive text-xs">Obrigatório</span></div>
                     <Select value={form.supplyVoltage} onValueChange={(v) => set("supplyVoltage", v)}>
                       <SelectTrigger id="supplyVoltage"><SelectValue placeholder="Selecione" /></SelectTrigger>
                       <SelectContent>
@@ -187,7 +179,7 @@ export function NewConnectionInstallationPage({ onBack, onNext, onCancel, custom
 
                 <div className="grid grid-cols-3 gap-4">
                   <div className="space-y-2">
-                    <Label htmlFor="installationType">Tipo Instalação</Label>
+                    <div className="flex items-center justify-between"><Label htmlFor="installationType">Tipo Instalação</Label><span className="text-destructive text-xs">Obrigatório</span></div>
                     <Select value={form.installationType} onValueChange={(v) => set("installationType", v)}>
                       <SelectTrigger id="installationType"><SelectValue placeholder="Selecione" /></SelectTrigger>
                       <SelectContent>
@@ -215,6 +207,11 @@ export function NewConnectionInstallationPage({ onBack, onNext, onCancel, custom
                     <Label htmlFor="sectorSystem">Sistema Setorial</Label>
                     <Input id="sectorSystem" value={form.sectorSystem} onChange={(e) => set("sectorSystem", e.target.value)} />
                   </div>
+                </div>
+
+                <div className="space-y-2">
+                  <Label htmlFor="description">Descrição</Label>
+                  <Input id="description" value={form.description} onChange={(e) => set("description", e.target.value)} placeholder="Detalhes da instalação" />
                 </div>
               </CardContent>
               <CardFooter className="border-t border-border justify-between">
