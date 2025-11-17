@@ -5,6 +5,8 @@ import { Button } from "./ui/button";
 import { Alert, AlertDescription } from "./ui/alert";
 import { Separator } from "./ui/separator";
 import { Info } from "lucide-react";
+import { Badge } from "./ui/badge";
+import { Progress } from "./ui/progress";
 
 type NewConnectionChecklistPageProps = {
   onBack: () => void;
@@ -43,6 +45,7 @@ export function NewConnectionChecklistPage({ onBack, onNext }: NewConnectionChec
   );
 
   const incomplete = requiredKeys.some((k) => answers[k] === undefined);
+  const progress = Math.round(((requiredKeys.filter((k) => answers[k] !== undefined).length) / requiredKeys.length) * 100);
 
   return (
     <div className="min-h-screen bg-background">
@@ -51,14 +54,20 @@ export function NewConnectionChecklistPage({ onBack, onNext }: NewConnectionChec
         <div className="w-full max-w-6xl grid grid-cols-3 gap-6">
           <div className="col-span-2">
             <Card className="shadow-lg">
-              <CardHeader className="border-b border-border">
-                <div className="flex items-center gap-3">
-                  <div className="w-10 h-10 rounded-lg bg-secondary/10 flex items-center justify-center">
-                    <Info className="w-5 h-5 text-secondary" />
+              <CardHeader className="border-b border-border bg-gradient-to-r from-secondary/10 to-primary/10">
+                <div className="flex items-center justify-between">
+                  <div className="flex items-center gap-3">
+                    <div className="w-10 h-10 rounded-lg bg-secondary/20 flex items-center justify-center">
+                      <Info className="w-5 h-5 text-secondary" />
+                    </div>
+                    <div>
+                      <CardTitle className="text-foreground">Checklist</CardTitle>
+                      <p className="text-sm text-muted-foreground">Valide o padrão de entrada e condições para a primeira ligação</p>
+                    </div>
                   </div>
-                  <div>
-                    <CardTitle className="text-foreground">Checklist</CardTitle>
-                    <p className="text-sm text-muted-foreground">Valide o padrão de entrada e condições para a primeira ligação</p>
+                  <div className="w-64">
+                    <Progress value={progress} />
+                    <div className="mt-1 text-xs text-muted-foreground">{progress}% concluído</div>
                   </div>
                 </div>
               </CardHeader>
@@ -79,27 +88,30 @@ export function NewConnectionChecklistPage({ onBack, onNext }: NewConnectionChec
                 )}
 
                 <div className="space-y-4">
-                  <h3 className="text-green-700">Padrão de Entrada</h3>
+                  <div className="flex items-center gap-2">
+                    <Badge variant="default">Padrão de Entrada</Badge>
+                    <span className="text-xs text-muted-foreground">Verifique as condições iniciais</span>
+                  </div>
                   <div className="space-y-3">
                     <div className="space-y-1">
                       <div className="text-sm">Já existe padrão de entrada?</div>
-                      <div className="flex items-center gap-6">
-                        <label className="flex items-center gap-2"><input type="radio" name="padrao_entrada_existente" checked={answers.padrao_entrada_existente === true} onChange={() => setAnswer("padrao_entrada_existente", true)} /><span>Sim</span></label>
-                        <label className="flex items-center gap-2"><input type="radio" name="padrao_entrada_existente" checked={answers.padrao_entrada_existente === false} onChange={() => setAnswer("padrao_entrada_existente", false)} /><span>Não</span></label>
+                      <div className="flex items-center gap-3">
+                        <Button size="sm" variant={answers.padrao_entrada_existente === true ? "default" : "outline"} onClick={() => setAnswer("padrao_entrada_existente", true)}>Sim</Button>
+                        <Button size="sm" variant={answers.padrao_entrada_existente === false ? "destructive" : "outline"} onClick={() => setAnswer("padrao_entrada_existente", false)}>Não</Button>
                       </div>
                     </div>
                     <div className="space-y-1">
                       <div className="text-sm">Está situado a menos de 40m de um poste da concessionária?</div>
-                      <div className="flex items-center gap-6">
-                        <label className="flex items-center gap-2"><input type="radio" name="distancia_poste" checked={answers.distancia_poste === true} onChange={() => setAnswer("distancia_poste", true)} /><span>Sim</span></label>
-                        <label className="flex items-center gap-2"><input type="radio" name="distancia_poste" checked={answers.distancia_poste === false} onChange={() => setAnswer("distancia_poste", false)} /><span>Não</span></label>
+                      <div className="flex items-center gap-3">
+                        <Button size="sm" variant={answers.distancia_poste === true ? "default" : "outline"} onClick={() => setAnswer("distancia_poste", true)}>Sim</Button>
+                        <Button size="sm" variant={answers.distancia_poste === false ? "destructive" : "outline"} onClick={() => setAnswer("distancia_poste", false)}>Não</Button>
                       </div>
                     </div>
                     <div className="space-y-1">
                       <div className="text-sm">Tem poste, portinhola bem engastada e na dimensão adequada?</div>
-                      <div className="flex items-center gap-6">
-                        <label className="flex items-center gap-2"><input type="radio" name="poste_proprio" checked={answers.poste_proprio === true} onChange={() => setAnswer("poste_proprio", true)} /><span>Sim</span></label>
-                        <label className="flex items-center gap-2"><input type="radio" name="poste_proprio" checked={answers.poste_proprio === false} onChange={() => setAnswer("poste_proprio", false)} /><span>Não</span></label>
+                      <div className="flex items-center gap-3">
+                        <Button size="sm" variant={answers.poste_proprio === true ? "default" : "outline"} onClick={() => setAnswer("poste_proprio", true)}>Sim</Button>
+                        <Button size="sm" variant={answers.poste_proprio === false ? "destructive" : "outline"} onClick={() => setAnswer("poste_proprio", false)}>Não</Button>
                       </div>
                     </div>
                   </div>
@@ -108,20 +120,23 @@ export function NewConnectionChecklistPage({ onBack, onNext }: NewConnectionChec
                 <Separator />
 
                 <div className="space-y-4">
-                  <h3 className="text-green-700">Aeração Secundária</h3>
+                  <div className="flex items-center gap-2">
+                    <Badge variant="default">Aeração Secundária</Badge>
+                    <span className="text-xs text-muted-foreground">Fixação e altura</span>
+                  </div>
                   <div className="space-y-3">
                     <div className="space-y-1">
                       <div className="text-sm">Está fixado com parafusos, ou abraçadeiras e isoladores roldana?</div>
-                      <div className="flex items-center gap-6">
-                        <label className="flex items-center gap-2"><input type="radio" name="fixacao_parafusos" checked={answers.fixacao_parafusos === true} onChange={() => setAnswer("fixacao_parafusos", true)} /><span>Sim</span></label>
-                        <label className="flex items-center gap-2"><input type="radio" name="fixacao_parafusos" checked={answers.fixacao_parafusos === false} onChange={() => setAnswer("fixacao_parafusos", false)} /><span>Não</span></label>
+                      <div className="flex items-center gap-3">
+                        <Button size="sm" variant={answers.fixacao_parafusos === true ? "default" : "outline"} onClick={() => setAnswer("fixacao_parafusos", true)}>Sim</Button>
+                        <Button size="sm" variant={answers.fixacao_parafusos === false ? "destructive" : "outline"} onClick={() => setAnswer("fixacao_parafusos", false)}>Não</Button>
                       </div>
                     </div>
                     <div className="space-y-1">
                       <div className="text-sm">Está na altura correta? (3,5 ou 5,0m para travessias de rua)</div>
-                      <div className="flex items-center gap-6">
-                        <label className="flex items-center gap-2"><input type="radio" name="cabo_manutencao" checked={answers.cabo_manutencao === true} onChange={() => setAnswer("cabo_manutencao", true)} /><span>Sim</span></label>
-                        <label className="flex items-center gap-2"><input type="radio" name="cabo_manutencao" checked={answers.cabo_manutencao === false} onChange={() => setAnswer("cabo_manutencao", false)} /><span>Não</span></label>
+                      <div className="flex items-center gap-3">
+                        <Button size="sm" variant={answers.cabo_manutencao === true ? "default" : "outline"} onClick={() => setAnswer("cabo_manutencao", true)}>Sim</Button>
+                        <Button size="sm" variant={answers.cabo_manutencao === false ? "destructive" : "outline"} onClick={() => setAnswer("cabo_manutencao", false)}>Não</Button>
                       </div>
                     </div>
                   </div>
@@ -130,20 +145,23 @@ export function NewConnectionChecklistPage({ onBack, onNext }: NewConnectionChec
                 <Separator />
 
                 <div className="space-y-4">
-                  <h3 className="text-green-700">Caixa de Medição</h3>
+                  <div className="flex items-center gap-2">
+                    <Badge variant="default">Caixa de Medição</Badge>
+                    <span className="text-xs text-muted-foreground">Normas e posição</span>
+                  </div>
                   <div className="space-y-3">
                     <div className="space-y-1">
                       <div className="text-sm">A caixa está dentro das normas de especificações técnicas?</div>
-                      <div className="flex items-center gap-6">
-                        <label className="flex items-center gap-2"><input type="radio" name="caixa_especificacao" checked={answers.caixa_especificacao === true} onChange={() => setAnswer("caixa_especificacao", true)} /><span>Sim</span></label>
-                        <label className="flex items-center gap-2"><input type="radio" name="caixa_especificacao" checked={answers.caixa_especificacao === false} onChange={() => setAnswer("caixa_especificacao", false)} /><span>Não</span></label>
+                      <div className="flex items-center gap-3">
+                        <Button size="sm" variant={answers.caixa_especificacao === true ? "default" : "outline"} onClick={() => setAnswer("caixa_especificacao", true)}>Sim</Button>
+                        <Button size="sm" variant={answers.caixa_especificacao === false ? "destructive" : "outline"} onClick={() => setAnswer("caixa_especificacao", false)}>Não</Button>
                       </div>
                     </div>
                     <div className="space-y-1">
                       <div className="text-sm">Está instalada na posição correta (entre 1,6 e 1,7m)?</div>
-                      <div className="flex items-center gap-6">
-                        <label className="flex items-center gap-2"><input type="radio" name="instalacao_altura" checked={answers.instalacao_altura === true} onChange={() => setAnswer("instalacao_altura", true)} /><span>Sim</span></label>
-                        <label className="flex items-center gap-2"><input type="radio" name="instalacao_altura" checked={answers.instalacao_altura === false} onChange={() => setAnswer("instalacao_altura", false)} /><span>Não</span></label>
+                      <div className="flex items-center gap-3">
+                        <Button size="sm" variant={answers.instalacao_altura === true ? "default" : "outline"} onClick={() => setAnswer("instalacao_altura", true)}>Sim</Button>
+                        <Button size="sm" variant={answers.instalacao_altura === false ? "destructive" : "outline"} onClick={() => setAnswer("instalacao_altura", false)}>Não</Button>
                       </div>
                     </div>
                   </div>
@@ -152,13 +170,15 @@ export function NewConnectionChecklistPage({ onBack, onNext }: NewConnectionChec
                 <Separator />
 
                 <div className="space-y-4">
-                  <h3 className="text-green-700">Condutor de Enlace e Entrada</h3>
+                  <div className="flex items-center gap-2">
+                    <Badge variant="default">Condutor de Enlace e Entrada</Badge>
+                  </div>
                   <div className="space-y-3">
                     <div className="space-y-1">
                       <div className="text-sm">Há sobra de cabo o suficiente para a instalação dos medidores?</div>
-                      <div className="flex items-center gap-6">
-                        <label className="flex items-center gap-2"><input type="radio" name="condutor_suficiente" checked={answers.condutor_suficiente === true} onChange={() => setAnswer("condutor_suficiente", true)} /><span>Sim</span></label>
-                        <label className="flex items-center gap-2"><input type="radio" name="condutor_suficiente" checked={answers.condutor_suficiente === false} onChange={() => setAnswer("condutor_suficiente", false)} /><span>Não</span></label>
+                      <div className="flex items-center gap-3">
+                        <Button size="sm" variant={answers.condutor_suficiente === true ? "default" : "outline"} onClick={() => setAnswer("condutor_suficiente", true)}>Sim</Button>
+                        <Button size="sm" variant={answers.condutor_suficiente === false ? "destructive" : "outline"} onClick={() => setAnswer("condutor_suficiente", false)}>Não</Button>
                       </div>
                     </div>
                   </div>
@@ -167,27 +187,29 @@ export function NewConnectionChecklistPage({ onBack, onNext }: NewConnectionChec
                 <Separator />
 
                 <div className="space-y-4">
-                  <h3 className="text-green-700">Eletrodo de Entrada</h3>
+                  <div className="flex items-center gap-2">
+                    <Badge variant="default">Eletrodo de Entrada</Badge>
+                  </div>
                   <div className="space-y-3">
                     <div className="space-y-1">
                       <div className="text-sm">Tem no mínimo 3 curvas?</div>
-                      <div className="flex items-center gap-6">
-                        <label className="flex items-center gap-2"><input type="radio" name="eletrodo_trama" checked={answers.eletrodo_trama === true} onChange={() => setAnswer("eletrodo_trama", true)} /><span>Sim</span></label>
-                        <label className="flex items-center gap-2"><input type="radio" name="eletrodo_trama" checked={answers.eletrodo_trama === false} onChange={() => setAnswer("eletrodo_trama", false)} /><span>Não</span></label>
+                      <div className="flex items-center gap-3">
+                        <Button size="sm" variant={answers.eletrodo_trama === true ? "default" : "outline"} onClick={() => setAnswer("eletrodo_trama", true)}>Sim</Button>
+                        <Button size="sm" variant={answers.eletrodo_trama === false ? "destructive" : "outline"} onClick={() => setAnswer("eletrodo_trama", false)}>Não</Button>
                       </div>
                     </div>
                     <div className="space-y-1">
                       <div className="text-sm">De material adequado? (PVC ou Aço)</div>
-                      <div className="flex items-center gap-6">
-                        <label className="flex items-center gap-2"><input type="radio" name="tamanho_curvas" checked={answers.tamanho_curvas === true} onChange={() => setAnswer("tamanho_curvas", true)} /><span>Sim</span></label>
-                        <label className="flex items-center gap-2"><input type="radio" name="tamanho_curvas" checked={answers.tamanho_curvas === false} onChange={() => setAnswer("tamanho_curvas", false)} /><span>Não</span></label>
+                      <div className="flex items-center gap-3">
+                        <Button size="sm" variant={answers.tamanho_curvas === true ? "default" : "outline"} onClick={() => setAnswer("tamanho_curvas", true)}>Sim</Button>
+                        <Button size="sm" variant={answers.tamanho_curvas === false ? "destructive" : "outline"} onClick={() => setAnswer("tamanho_curvas", false)}>Não</Button>
                       </div>
                     </div>
                     <div className="space-y-1">
                       <div className="text-sm">O aterramento está adequado?</div>
-                      <div className="flex items-center gap-6">
-                        <label className="flex items-center gap-2"><input type="radio" name="material_adequado" checked={answers.material_adequado === true} onChange={() => setAnswer("material_adequado", true)} /><span>Sim</span></label>
-                        <label className="flex items-center gap-2"><input type="radio" name="material_adequado" checked={answers.material_adequado === false} onChange={() => setAnswer("material_adequado", false)} /><span>Não</span></label>
+                      <div className="flex items-center gap-3">
+                        <Button size="sm" variant={answers.material_adequado === true ? "default" : "outline"} onClick={() => setAnswer("material_adequado", true)}>Sim</Button>
+                        <Button size="sm" variant={answers.material_adequado === false ? "destructive" : "outline"} onClick={() => setAnswer("material_adequado", false)}>Não</Button>
                       </div>
                     </div>
                   </div>
@@ -202,20 +224,20 @@ export function NewConnectionChecklistPage({ onBack, onNext }: NewConnectionChec
 
           <aside className="col-span-1">
             <Card>
-              <CardHeader className="border-b border-border">
+              <CardHeader className="border-b border-border bg-gradient-to-r from-secondary/10 to-primary/10">
                 <CardTitle>Etapas</CardTitle>
               </CardHeader>
               <CardContent className="p-6">
-                <div className="relative">
-                  <div className="absolute left-2 top-0 bottom-0 w-px bg-border" />
-                  <ul className="space-y-4">
+                <div className="space-y-3">
+                  <div className="flex flex-wrap gap-2">
                     {stepLabels.map((label, i) => (
-                      <li key={label} className="flex items-start gap-3">
-                        <div className={`mt-1 w-3 h-3 rounded-full ${i === 0 ? "bg-primary" : "bg-muted"}`} />
-                        <span className={i === 0 ? "text-foreground" : "text-muted-foreground"}>{label}</span>
-                      </li>
+                      <Badge key={label} variant={i === 0 ? "default" : "outline"}>{label}</Badge>
                     ))}
-                  </ul>
+                  </div>
+                  <div className="flex items-center gap-3">
+                    <Progress value={progress} />
+                    <span className="text-xs text-muted-foreground">{progress}%</span>
+                  </div>
                 </div>
               </CardContent>
             </Card>
