@@ -145,7 +145,7 @@ export function NewConnectionInstallationPage({ onBack, onNext, onCancel, custom
 
                 <div className="grid grid-cols-3 gap-4">
                   <div className="space-y-2">
-                    <div className="flex items-center justify-between"><Label htmlFor="declaredPhase">Fase Declarada</Label><span className="text-destructive text-xs">Obrigatório</span></div>
+                    <Label htmlFor="declaredPhase">Fase Declarada <span className="text-destructive">*</span></Label>
                     <Select value={form.declaredPhase} onValueChange={(v) => set("declaredPhase", v)}>
                       <SelectTrigger id="declaredPhase"><SelectValue placeholder="Selecione" /></SelectTrigger>
                       <SelectContent>
@@ -156,7 +156,7 @@ export function NewConnectionInstallationPage({ onBack, onNext, onCancel, custom
                     </Select>
                   </div>
                   <div className="space-y-2">
-                    <div className="flex items-center justify-between"><Label htmlFor="entryType">Tipo de Entrada</Label><span className="text-destructive text-xs">Obrigatório</span></div>
+                    <Label htmlFor="entryType">Tipo de Entrada <span className="text-destructive">*</span></Label>
                     <Select value={form.entryType} onValueChange={(v) => set("entryType", v)}>
                       <SelectTrigger id="entryType"><SelectValue placeholder="Selecione" /></SelectTrigger>
                       <SelectContent>
@@ -166,7 +166,7 @@ export function NewConnectionInstallationPage({ onBack, onNext, onCancel, custom
                     </Select>
                   </div>
                   <div className="space-y-2">
-                    <div className="flex items-center justify-between"><Label htmlFor="supplyVoltage">Tensão de Fornecimento (V)</Label><span className="text-destructive text-xs">Obrigatório</span></div>
+                    <Label htmlFor="supplyVoltage">Tensão de Fornecimento (V) <span className="text-destructive">*</span></Label>
                     <Select value={form.supplyVoltage} onValueChange={(v) => set("supplyVoltage", v)}>
                       <SelectTrigger id="supplyVoltage"><SelectValue placeholder="Selecione" /></SelectTrigger>
                       <SelectContent>
@@ -179,7 +179,7 @@ export function NewConnectionInstallationPage({ onBack, onNext, onCancel, custom
 
                 <div className="grid grid-cols-3 gap-4">
                   <div className="space-y-2">
-                    <div className="flex items-center justify-between"><Label htmlFor="installationType">Tipo Instalação</Label><span className="text-destructive text-xs">Obrigatório</span></div>
+                    <Label htmlFor="installationType">Tipo Instalação <span className="text-destructive">*</span></Label>
                     <Select value={form.installationType} onValueChange={(v) => set("installationType", v)}>
                       <SelectTrigger id="installationType"><SelectValue placeholder="Selecione" /></SelectTrigger>
                       <SelectContent>
