@@ -27,7 +27,7 @@ export function NewConnectionIntroPage({ onBack, onContinue }: NewConnectionIntr
       />
 
       <main className="flex items-center justify-center min-h-[calc(100vh-73px)] p-6">
-        <div className="w-full max-w-5xl">
+        <div className="w-full max-w-3xl mx-auto">
           <Card className="shadow-lg">
             <CardHeader className="border-b border-border">
               <div className="flex items-center gap-3">
@@ -41,8 +41,8 @@ export function NewConnectionIntroPage({ onBack, onContinue }: NewConnectionIntr
               </div>
             </CardHeader>
 
-            <CardContent className="p-8">
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-10">
+            <CardContent className="p-6">
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
                 <div>
                   <h3 className="text-green-700 mb-4">Pessoa Física</h3>
                   <div className="space-y-4">

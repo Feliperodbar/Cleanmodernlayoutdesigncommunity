@@ -171,17 +171,32 @@ export function NewConnectionWizardPage({ onBack, onFinish }: NewConnectionWizar
         <Button variant="outline" className="gap-2" onClick={onBack}>Voltar</Button>
       } />
       <main className="flex items-start justify-center min-h-[calc(100vh-73px)] p-6">
-        <div className="w-full max-w-5xl">
-          <div className="mb-6 space-y-3">
-            <div className="flex flex-wrap gap-2">
+        <div className="w-full max-w-3xl mx-auto">
+          <div className="mb-6 space-y-4">
+            <div className="flex items-center justify-center">
               {steps.map((label, i) => (
-                <Badge key={label} asChild variant={i === stepIndex ? "default" : "outline"}>
-                  <button type="button" onClick={() => setStepIndex(i)} aria-selected={i === stepIndex} className="cursor-pointer">
-                    {label}
+                <div key={label} className="flex items-center">
+                  <button
+                    type="button"
+                    onClick={() => setStepIndex(i)}
+                    aria-selected={i === stepIndex}
+                    className={`size-8 rounded-full flex items-center justify-center transition-colors ${
+                      i < stepIndex
+                        ? "bg-secondary text-secondary-foreground"
+                        : i === stepIndex
+                        ? "bg-primary text-primary-foreground"
+                        : "bg-muted text-foreground"
+                    }`}
+                  >
+                    {i + 1}
                   </button>
-                </Badge>
+                  {i < steps.length - 1 && (
+                    <div className={`w-10 h-1 mx-2 rounded-full ${i < stepIndex ? "bg-secondary" : "bg-border"}`} />
+                  )}
+                </div>
               ))}
             </div>
+            <div className="text-center text-sm text-muted-foreground">{steps[stepIndex]}</div>
             <div className="flex items-center gap-3">
               <Progress value={Math.round(((stepIndex + 1) / steps.length) * 100)} />
               <span className="text-sm text-muted-foreground">Passo {stepIndex + 1} de {steps.length}</span>
@@ -200,7 +215,7 @@ export function NewConnectionWizardPage({ onBack, onFinish }: NewConnectionWizar
                 </div>
               </div>
             </CardHeader>
-            <CardContent className="p-8">
+            <CardContent className="p-6">
               {stepIndex === 0 && (
                 <div className="space-y-6">
                   <div className="space-y-2">
