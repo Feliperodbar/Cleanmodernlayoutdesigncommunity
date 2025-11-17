@@ -1,5 +1,6 @@
 import { useState } from "react";
 import { AppHeader } from "./AppHeader";
+import type { Customer } from "../data/customers";
 import { Card, CardContent, CardHeader, CardTitle, CardFooter } from "./ui/card";
 import { Button } from "./ui/button";
 import { Input } from "./ui/input";
@@ -12,6 +13,7 @@ type NewConnectionInstallationPageProps = {
   onBack: () => void;
   onNext: () => void;
   onCancel: () => void;
+  customer?: Customer | null;
 };
 
 const stepLabels = [
@@ -24,9 +26,10 @@ const stepLabels = [
   "Cadastrar Serviços Adicionais",
 ];
 
-export function NewConnectionInstallationPage({ onBack, onNext, onCancel }: NewConnectionInstallationPageProps) {
+export function NewConnectionInstallationPage({ onBack, onNext, onCancel, customer }: NewConnectionInstallationPageProps) {
   const [form, setForm] = useState({
     category: "",
+    residenceType: "",
     description: "",
     whiteTariff: undefined as undefined | boolean,
     declaredPhase: "",
@@ -43,6 +46,7 @@ export function NewConnectionInstallationPage({ onBack, onNext, onCancel }: NewC
   const currentStep = 3;
   const requiredKeys: (keyof typeof form)[] = [
     "category",
+    ...(form.category === "residencial" ? ["residenceType"] : []),
     "whiteTariff",
     "entryType",
     "supplyVoltage",
@@ -71,6 +75,18 @@ export function NewConnectionInstallationPage({ onBack, onNext, onCancel }: NewC
                 </div>
               </CardHeader>
               <CardContent className="p-6 space-y-6">
+                {customer && (
+                  <div className="grid grid-cols-2 gap-4">
+                    <div>
+                      <div className="text-xs text-muted-foreground">Número do Protocolo</div>
+                      <div className="text-sm text-foreground">{customer.lastProtocol ?? "—"}</div>
+                    </div>
+                    <div>
+                      <div className="text-xs text-muted-foreground">Cliente</div>
+                      <div className="text-sm text-foreground">{customer.name}</div>
+                    </div>
+                  </div>
+                )}
                 <div className="grid grid-cols-3 gap-4">
                   <button type="button" className={`rounded-lg border p-4 flex flex-col items-center gap-2 ${form.category === "residencial" ? "ring-2 ring-primary border-primary" : "hover:bg-muted"}`} onClick={() => set("category", "residencial")}>
                     <Home className="w-6 h-6 text-secondary" />
@@ -85,6 +101,22 @@ export function NewConnectionInstallationPage({ onBack, onNext, onCancel }: NewC
                     <span>Rural</span>
                   </button>
                 </div>
+
+                {form.category === "residencial" && (
+                  <div className="space-y-2">
+                    <div className="text-sm text-muted-foreground">Selecione o tipo de residência</div>
+                    <div className="grid grid-cols-2 gap-4">
+                      <button type="button" className={`rounded-lg border p-4 flex flex-col items-center gap-2 ${form.residenceType === "casa" ? "ring-2 ring-primary border-primary" : "hover:bg-muted"}`} onClick={() => set("residenceType", "casa")}>
+                        <Home className="w-6 h-6 text-secondary" />
+                        <span>Casa</span>
+                      </button>
+                      <button type="button" className={`rounded-lg border p-4 flex flex-col items-center gap-2 ${form.residenceType === "apartamento" ? "ring-2 ring-primary border-primary" : "hover:bg-muted"}`} onClick={() => set("residenceType", "apartamento")}>
+                        <Building2 className="w-6 h-6 text-secondary" />
+                        <span>Apartamento</span>
+                      </button>
+                    </div>
+                  </div>
+                )}
 
                 <div className="space-y-2">
                   <Label htmlFor="description">Descrição</Label>

@@ -41,6 +41,7 @@ export default function App() {
       <NewConnectionChecklistPage
         onBack={() => setCurrentPage('service')}
         onNext={() => setCurrentPage('new_connection_address')}
+        customer={selectedCustomer}
       />
     );
   }
@@ -50,6 +51,7 @@ export default function App() {
         onBack={() => setCurrentPage('new_connection_checklist')}
         onNext={() => setCurrentPage('new_connection_installation')}
         onCancel={() => setCurrentPage('service')}
+        customer={selectedCustomer}
       />
     );
   }
@@ -59,6 +61,7 @@ export default function App() {
         onBack={() => setCurrentPage('new_connection_address')}
         onNext={() => setCurrentPage('service')}
         onCancel={() => setCurrentPage('service')}
+        customer={selectedCustomer}
       />
     );
   }

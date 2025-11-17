@@ -1,5 +1,6 @@
 import { useState } from "react";
 import { AppHeader } from "./AppHeader";
+import type { Customer } from "../data/customers";
 import { Card, CardContent, CardHeader, CardTitle, CardFooter } from "./ui/card";
 import { Button } from "./ui/button";
 import { Input } from "./ui/input";
@@ -13,6 +14,7 @@ type NewConnectionAddressPageProps = {
   onBack: () => void;
   onNext: () => void;
   onCancel: () => void;
+  customer?: Customer | null;
 };
 
 const stepLabels = [
@@ -25,7 +27,7 @@ const stepLabels = [
   "Cadastrar Serviços Adicionais",
 ];
 
-export function NewConnectionAddressPage({ onBack, onNext, onCancel }: NewConnectionAddressPageProps) {
+export function NewConnectionAddressPage({ onBack, onNext, onCancel, customer }: NewConnectionAddressPageProps) {
   const [form, setForm] = useState({
     cep: "",
     address: "",
@@ -123,6 +125,18 @@ export function NewConnectionAddressPage({ onBack, onNext, onCancel }: NewConnec
                 </div>
               </CardHeader>
               <CardContent className="p-8 space-y-6">
+                {customer && (
+                  <div className="grid grid-cols-2 gap-4">
+                    <div>
+                      <div className="text-xs text-muted-foreground">Número do Protocolo</div>
+                      <div className="text-sm text-foreground">{customer.lastProtocol ?? "—"}</div>
+                    </div>
+                    <div>
+                      <div className="text-xs text-muted-foreground">Cliente</div>
+                      <div className="text-sm text-foreground">{customer.name}</div>
+                    </div>
+                  </div>
+                )}
                 <div className="grid grid-cols-4 gap-4">
                   <div className="space-y-2"><Label htmlFor="cep">CEP</Label><Input id="cep" className="h-10" value={form.cep} onChange={async (e) => { const v = formatCep(e.target.value); set("cep", v); await fetchViaCep(v); }} placeholder="00000-000" /></div>
                   <div className="col-span-3 space-y-2"><Label htmlFor="address">Endereço</Label><Input id="address" className="h-10" value={form.address} onChange={(e) => set("address", e.target.value)} placeholder="Rua, Avenida..." /></div>

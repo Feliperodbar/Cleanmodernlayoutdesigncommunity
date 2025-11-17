@@ -1,4 +1,5 @@
 import { useMemo, useState } from "react";
+import type { Customer } from "../data/customers";
 import { AppHeader } from "./AppHeader";
 import { Card, CardContent, CardHeader, CardTitle, CardFooter } from "./ui/card";
 import { Button } from "./ui/button";
@@ -11,6 +12,7 @@ import { Progress } from "./ui/progress";
 type NewConnectionChecklistPageProps = {
   onBack: () => void;
   onNext: () => void;
+  customer?: Customer | null;
 };
 
 const stepLabels = [
@@ -23,7 +25,7 @@ const stepLabels = [
   "Cadastrar Serviços Adicionais",
 ];
 
-export function NewConnectionChecklistPage({ onBack, onNext }: NewConnectionChecklistPageProps) {
+export function NewConnectionChecklistPage({ onBack, onNext, customer }: NewConnectionChecklistPageProps) {
   const [answers, setAnswers] = useState<Record<string, boolean | undefined>>({});
   const setAnswer = (key: string, value: boolean) => setAnswers((a) => ({ ...a, [key]: value }));
 
@@ -73,6 +75,18 @@ export function NewConnectionChecklistPage({ onBack, onNext }: NewConnectionChec
                 </div>
               </CardHeader>
               <CardContent className="p-6 space-y-6">
+                {customer && (
+                  <div className="grid grid-cols-2 gap-4">
+                    <div>
+                      <div className="text-xs text-muted-foreground">Número do Protocolo</div>
+                      <div className="text-sm text-foreground">{customer.lastProtocol ?? "—"}</div>
+                    </div>
+                    <div>
+                      <div className="text-xs text-muted-foreground">Cliente</div>
+                      <div className="text-sm text-foreground">{customer.name}</div>
+                    </div>
+                  </div>
+                )}
                 <Alert>
                   <AlertDescription>Necessário acesso livre para inspeção do padrão e finalização da ligação nova</AlertDescription>
                 </Alert>
