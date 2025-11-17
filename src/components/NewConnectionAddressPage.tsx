@@ -27,16 +27,12 @@ const stepLabels = [
 
 export function NewConnectionAddressPage({ onBack, onNext, onCancel }: NewConnectionAddressPageProps) {
   const [form, setForm] = useState({
-    street: "",
+    cep: "",
+    address: "",
     neighborhood: "",
-    locality: "",
     city: "",
     state: "",
     number: "",
-    block: "",
-    quadra: "",
-    lote: "",
-    complement: "",
     reference: "",
     contactName: "",
     contactPhone: "",
@@ -47,21 +43,53 @@ export function NewConnectionAddressPage({ onBack, onNext, onCancel }: NewConnec
 
   const set = (k: keyof typeof form, v: string | boolean) => setForm({ ...form, [k]: v } as any);
   const currentStep = 1;
-  const answered = Object.values(form).filter((v) => String(v).length > 0 || v === true).length;
-  const progress = Math.min(100, Math.round((answered / 16) * 100));
+  const requiredKeys: (keyof typeof form)[] = [
+    "cep",
+    "address",
+    "neighborhood",
+    "city",
+    "state",
+    "number",
+    "reference",
+    "applicant",
+    "contactName",
+    "contactPhone",
+    "voltage",
+  ];
+  const answered = requiredKeys.filter((k) => String(form[k]).length > 0).length + (form.confirmMunicipalVoltage ? 1 : 0);
+  const progress = Math.min(100, Math.round((answered / (requiredKeys.length + 1)) * 100));
+
+  const formatCep = (value: string) => {
+    const numbers = value.replace(/\D/g, "");
+    return numbers.slice(0, 8).replace(/(\d{5})(\d)/, "$1-$2");
+  };
+
+  const fetchViaCep = async (raw: string) => {
+    const digits = raw.replace(/\D/g, "");
+    if (digits.length !== 8) return;
+    try {
+      const res = await fetch(`https://viacep.com.br/ws/${digits}/json/`);
+      const data = await res.json();
+      if (!data?.erro) {
+        setForm((prev) => ({
+          ...prev,
+          address: data.logradouro || prev.address,
+          neighborhood: data.bairro || prev.neighborhood,
+          city: data.localidade || prev.city,
+          state: data.uf || prev.state,
+        }));
+      }
+    } catch {}
+  };
 
   const clearAddress = () => {
     setForm({
-      street: "",
+      cep: "",
+      address: "",
       neighborhood: "",
-      locality: "",
       city: "",
       state: "",
       number: "",
-      block: "",
-      quadra: "",
-      lote: "",
-      complement: "",
       reference: "",
       contactName: "",
       contactPhone: "",
@@ -90,13 +118,13 @@ export function NewConnectionAddressPage({ onBack, onNext, onCancel }: NewConnec
                   </div>
                 </div>
               </CardHeader>
-              <CardContent className="p-6 space-y-6">
-                <div className="grid grid-cols-4 gap-4">
-                  <div className="col-span-2 space-y-2"><Label htmlFor="street">Rua</Label><Input id="street" value={form.street} onChange={(e) => set("street", e.target.value)} /></div>
-                  <div className="space-y-2"><Label htmlFor="neighborhood">Bairro</Label><Input id="neighborhood" value={form.neighborhood} onChange={(e) => set("neighborhood", e.target.value)} /></div>
-                  <div className="space-y-2"><Label htmlFor="locality">Localidade</Label><Input id="locality" value={form.locality} onChange={(e) => set("locality", e.target.value)} /></div>
+              <CardContent className="p-6 space-y-5">
+                <div className="grid grid-cols-4 gap-3">
+                  <div className="space-y-2"><Label htmlFor="cep">CEP</Label><Input id="cep" value={form.cep} onChange={async (e) => { const v = formatCep(e.target.value); set("cep", v); await fetchViaCep(v); }} placeholder="00000-000" /></div>
+                  <div className="col-span-3 space-y-2"><Label htmlFor="address">Endereço</Label><Input id="address" value={form.address} onChange={(e) => set("address", e.target.value)} placeholder="Rua, Avenida..." /></div>
                 </div>
-                <div className="grid grid-cols-4 gap-4">
+                <div className="grid grid-cols-4 gap-3">
+                  <div className="space-y-2"><Label htmlFor="neighborhood">Bairro</Label><Input id="neighborhood" value={form.neighborhood} onChange={(e) => set("neighborhood", e.target.value)} /></div>
                   <div className="space-y-2"><Label htmlFor="city">Município</Label><Input id="city" value={form.city} onChange={(e) => set("city", e.target.value)} /></div>
                   <div className="space-y-2"><Label htmlFor="state">Estado</Label>
                     <Select value={form.state} onValueChange={(v) => set("state", v)}>
@@ -105,28 +133,22 @@ export function NewConnectionAddressPage({ onBack, onNext, onCancel }: NewConnec
                     </Select>
                   </div>
                   <div className="space-y-2"><Label htmlFor="number">Nº</Label><Input id="number" value={form.number} onChange={(e) => set("number", e.target.value)} /></div>
-                  <div className="space-y-2"><Label htmlFor="block">Bloco</Label><Input id="block" value={form.block} onChange={(e) => set("block", e.target.value)} /></div>
                 </div>
-                <div className="grid grid-cols-4 gap-4">
-                  <div className="space-y-2"><Label htmlFor="quadra">Quadra</Label><Input id="quadra" value={form.quadra} onChange={(e) => set("quadra", e.target.value)} /></div>
-                  <div className="space-y-2"><Label htmlFor="lote">Lote</Label><Input id="lote" value={form.lote} onChange={(e) => set("lote", e.target.value)} /></div>
-                  <div className="col-span-2 space-y-2"><Label htmlFor="complement">Suplemento</Label><Input id="complement" value={form.complement} onChange={(e) => set("complement", e.target.value)} /></div>
-                </div>
-                <div className="grid grid-cols-2 gap-4">
+                <div className="grid grid-cols-2 gap-3">
                   <div className="space-y-2"><Label htmlFor="reference">Ponto de referência</Label><Input id="reference" value={form.reference} onChange={(e) => set("reference", e.target.value)} /></div>
                   <div className="space-y-2"><Label htmlFor="applicant">Solicitante</Label><Input id="applicant" value={form.applicant} onChange={(e) => set("applicant", e.target.value)} /></div>
                 </div>
-                <div className="grid grid-cols-2 gap-4">
+                <div className="grid grid-cols-2 gap-3">
                   <div className="space-y-2"><Label htmlFor="contactName">Nome da pessoa de contato</Label><Input id="contactName" value={form.contactName} onChange={(e) => set("contactName", e.target.value)} /></div>
                   <div className="space-y-2"><Label htmlFor="contactPhone">Telefone da pessoa de contato</Label><Input id="contactPhone" value={form.contactPhone} onChange={(e) => set("contactPhone", e.target.value)} placeholder="(00) 00000-0000" /></div>
                 </div>
                 <Separator />
-                <div className="grid grid-cols-2 gap-6">
+                <div className="grid grid-cols-2 gap-5">
                   <div className="space-y-3">
                     <div className="text-green-700">Tensão de fornecimento (V)</div>
                     <div className="flex items-center gap-3"><label className="flex items-center gap-2"><input type="radio" name="voltage" checked={form.voltage === "220"} onChange={() => set("voltage", "220")} /><span>220 V</span></label><label className="flex items-center gap-2"><input type="radio" name="voltage" checked={form.voltage === "380"} onChange={() => set("voltage", "380")} /><span>380 V</span></label></div>
                     <label className="flex items-center gap-2"><input type="checkbox" checked={form.confirmMunicipalVoltage} onChange={(e) => set("confirmMunicipalVoltage", e.target.checked)} /><span>Confirma a tensão de fornecimento do município</span></label>
-                    <a href="#" className="text-secondary underline text-sm">Consultar Sistema Técnico</a>
+                    <Button variant="outline" className="mt-1">Consultar Sistema Técnico</Button>
                   </div>
                   <div className="space-y-3">
                     <div className="text-green-700">Informações KAFFA</div>
@@ -136,7 +158,7 @@ export function NewConnectionAddressPage({ onBack, onNext, onCancel }: NewConnec
               </CardContent>
               <CardFooter className="border-t border-border justify-between">
                 <Button variant="outline" onClick={onBack}>Voltar</Button>
-                <Button onClick={onNext} disabled={!form.street || !form.city || !form.state || !form.number}>Avançar</Button>
+                <Button onClick={onNext} disabled={!form.address || !form.city || !form.state || !form.number || !form.cep}>Avançar</Button>
               </CardFooter>
             </Card>
           </div>
@@ -153,8 +175,12 @@ export function NewConnectionAddressPage({ onBack, onNext, onCancel }: NewConnec
                     <ul className="space-y-4">
                       {stepLabels.map((label, i) => (
                         <li key={label} className="flex items-start gap-2">
-                          {i === currentStep ? <CheckCircle2 className="mt-0.5 w-4 h-4 text-primary" /> : <Circle className="mt-0.5 w-4 h-4 text-muted-foreground" />}
-                          <span className={i === currentStep ? "text-primary font-semibold" : "text-muted-foreground"}>{label}</span>
+                          {i <= currentStep ? (
+                            <CheckCircle2 className="mt-0.5 w-4 h-4 text-primary" />
+                          ) : (
+                            <Circle className="mt-0.5 w-4 h-4 text-muted-foreground" />
+                          )}
+                          <span className={i <= currentStep ? (i === currentStep ? "text-primary font-semibold" : "text-primary") : "text-muted-foreground"}>{label}</span>
                         </li>
                       ))}
                     </ul>

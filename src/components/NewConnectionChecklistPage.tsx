@@ -239,12 +239,12 @@ export function NewConnectionChecklistPage({ onBack, onNext }: NewConnectionChec
                     <ul className="space-y-4">
                       {stepLabels.map((label, i) => (
                         <li key={label} className="flex items-start gap-2">
-                          {i === currentStep ? (
+                          {i <= currentStep ? (
                             <CheckCircle2 className="mt-0.5 w-4 h-4 text-primary" />
                           ) : (
                             <Circle className="mt-0.5 w-4 h-4 text-muted-foreground" />
                           )}
-                          <span className={i === currentStep ? "text-primary font-semibold" : "text-muted-foreground"}>{label}</span>
+                          <span className={i <= currentStep ? (i === currentStep ? "text-primary font-semibold" : "text-primary") : "text-muted-foreground"}>{label}</span>
                         </li>
                       ))}
                     </ul>
