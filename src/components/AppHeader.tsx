@@ -19,6 +19,7 @@ export function AppHeader({ title, subtitle, center, actions, onLogoClick }: App
           </button>
           <div>
             {title && <h1 className="text-foreground">{title}</h1>}
+            {subtitle && <p className="text-sm text-muted-foreground">{subtitle}</p>}
           </div>
         </div>
         {center && <div className="flex-1 max-w-xl mx-8">{center}</div>}

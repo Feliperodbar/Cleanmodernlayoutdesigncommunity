@@ -1,6 +1,6 @@
 import { useState, useEffect } from "react";
 import { AppHeader } from "./AppHeader";
-import { Card, CardContent, CardHeader, CardTitle } from "./ui/card";
+import { Card, CardContent, CardHeader, CardTitle, CardFooter } from "./ui/card";
 import { Button } from "./ui/button";
 import { Input } from "./ui/input";
 import { Label } from "./ui/label";
@@ -11,6 +11,8 @@ import { Alert, AlertDescription } from "./ui/alert";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, DialogFooter } from "./ui/dialog";
 import { ImageWithFallback } from "./figma/ImageWithFallback";
 import { User, MapPin, Info, Star } from "lucide-react";
+import { Badge } from "./ui/badge";
+import { Progress } from "./ui/progress";
 
 type NewConnectionWizardPageProps = {
   onBack: () => void;
@@ -165,24 +167,21 @@ export function NewConnectionWizardPage({ onBack, onFinish }: NewConnectionWizar
 
   return (
     <div className="min-h-screen bg-background">
-      <AppHeader title="Ligação nova" actions={
-        <Button variant="outline" className="gap-2 text-secondary border-secondary/20 hover:bg-secondary/5" onClick={onBack}>Voltar</Button>
+      <AppHeader title="Ligação nova" subtitle={`Etapa atual: ${steps[stepIndex]}`} actions={
+        <Button variant="outline" className="gap-2" onClick={onBack}>Voltar</Button>
       } />
       <main className="flex items-start justify-center min-h-[calc(100vh-73px)] p-6">
         <div className="w-full max-w-5xl">
-          <div className="flex items-center justify-between mb-6">
-            <div className="flex items-center gap-4">
+          <div className="mb-6 space-y-3">
+            <div className="flex flex-wrap gap-2">
               {steps.map((label, i) => (
-                <div key={label} className="flex items-center">
-                  <div className={`flex items-center gap-2 ${i <= stepIndex ? "text-foreground" : "text-muted-foreground"}`}>
-                    <div className={`w-3 h-3 rounded-full ${i <= stepIndex ? "bg-secondary" : "bg-border"}`} />
-                    <span className="text-sm">{label}</span>
-                  </div>
-                  {i < steps.length - 1 && <div className="w-8 h-px bg-border mx-2" />}
-                </div>
+                <Badge key={label} variant={i === stepIndex ? "default" : "outline"}>{label}</Badge>
               ))}
             </div>
-            <span className="text-secondary">Passo {stepIndex + 1} de {steps.length}</span>
+            <div className="flex items-center gap-3">
+              <Progress value={Math.round(((stepIndex + 1) / steps.length) * 100)} />
+              <span className="text-sm text-muted-foreground">Passo {stepIndex + 1} de {steps.length}</span>
+            </div>
           </div>
 
           <Card className="shadow-lg">
@@ -513,12 +512,11 @@ export function NewConnectionWizardPage({ onBack, onFinish }: NewConnectionWizar
                   )
                 )
               )}
-
-              <div className="flex items-center justify-between mt-8">
-                <Button variant="outline" className="text-secondary border-secondary/20 hover:bg-secondary/5" onClick={goPrev}>Voltar</Button>
-                <Button className="bg-primary hover:bg-primary/90" onClick={goNext} disabled={!canContinue()}>{stepIndex === 5 ? "Pular" : stepIndex === steps.length - 1 ? "Sair" : "Continuar"}</Button>
-              </div>
             </CardContent>
+            <CardFooter className="border-t border-border justify-between">
+              <Button variant="outline" onClick={goPrev}>Voltar</Button>
+              <Button onClick={goNext} disabled={!canContinue()}>{stepIndex === 5 ? "Pular" : stepIndex === steps.length - 1 ? "Sair" : "Continuar"}</Button>
+            </CardFooter>
           </Card>
         </div>
       </main>

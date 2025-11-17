@@ -1,6 +1,6 @@
 import { ArrowLeft, FileText, Home, Plug, ShieldCheck, Building2 } from "lucide-react";
 import { AppHeader } from "./AppHeader";
-import { Card, CardContent, CardHeader, CardTitle } from "./ui/card";
+import { Card, CardContent, CardHeader, CardTitle, CardFooter } from "./ui/card";
 import { Button } from "./ui/button";
 
 interface NewConnectionIntroPageProps {
@@ -13,10 +13,11 @@ export function NewConnectionIntroPage({ onBack, onContinue }: NewConnectionIntr
     <div className="min-h-screen bg-background">
       <AppHeader
         title="Ligação nova"
+        subtitle="Confira os requisitos antes de iniciar"
         actions={
           <Button
             variant="outline"
-            className="gap-2 text-secondary border-secondary/20 hover:bg-secondary/5"
+            className="gap-2"
             onClick={onBack}
           >
             <ArrowLeft className="w-4 h-4" />
@@ -130,20 +131,11 @@ export function NewConnectionIntroPage({ onBack, onContinue }: NewConnectionIntr
                   </div>
                 </div>
               </div>
-
-              <div className="flex items-center justify-between mt-8">
-                <Button
-                  variant="outline"
-                  className="text-secondary border-secondary/20 hover:bg-secondary/5"
-                  onClick={onBack}
-                >
-                  Voltar
-                </Button>
-                <Button className="bg-primary hover:bg-primary/90" onClick={onContinue}>
-                  Continuar
-                </Button>
-              </div>
             </CardContent>
+            <CardFooter className="border-t border-border justify-between">
+              <Button variant="outline" onClick={onBack}>Voltar</Button>
+              <Button onClick={onContinue}>Continuar</Button>
+            </CardFooter>
           </Card>
         </div>
       </main>
