@@ -27,7 +27,7 @@ export function NewConnectionIntroPage({ onBack, onContinue }: NewConnectionIntr
       />
 
       <main className="flex items-center justify-center min-h-[calc(100vh-73px)] p-6">
-        <div className="w-full max-w-5xl">
+        <div className="w-full max-w-3xl mx-auto">
           <Card className="shadow-lg">
             <CardHeader className="border-b border-border">
               <div className="flex items-center gap-3">
