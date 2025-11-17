@@ -7,6 +7,7 @@ import { Input } from "./ui/input";
 import { Label } from "./ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "./ui/select";
 import { Progress } from "./ui/progress";
+import { Alert, AlertDescription } from "./ui/alert";
 import { CheckCircle2, Circle, Home, Building2, Tractor } from "lucide-react";
 
 type NewConnectionInstallationPageProps = {
@@ -88,17 +89,17 @@ export function NewConnectionInstallationPage({ onBack, onNext, onCancel, custom
                   </div>
                 )}
                 <div className="grid grid-cols-3 gap-4">
-                  <button type="button" className={`rounded-lg border p-4 flex flex-col items-center gap-2 ${form.category === "residencial" ? "ring-2 ring-primary border-primary" : "hover:bg-muted"}`} onClick={() => set("category", "residencial")}>
-                    <Home className="w-6 h-6 text-secondary" />
-                    <span>Residencial</span>
+                  <button type="button" className={`rounded-lg border p-4 flex flex-col items-center gap-2 ${form.category === "residencial" ? "ring-2 ring-primary border-primary bg-primary/10" : "hover:bg-muted"}`} onClick={() => set("category", "residencial")}>
+                    <Home className={`w-6 h-6 ${form.category === "residencial" ? "text-primary" : "text-secondary"}`} />
+                    <span className={form.category === "residencial" ? "text-primary font-medium" : undefined}>Residencial</span>
                   </button>
-                  <button type="button" className={`rounded-lg border p-4 flex flex-col items-center gap-2 ${form.category === "comercial" ? "ring-2 ring-primary border-primary" : "hover:bg-muted"}`} onClick={() => set("category", "comercial")}>
-                    <Building2 className="w-6 h-6 text-secondary" />
-                    <span>Comercial</span>
+                  <button type="button" className={`rounded-lg border p-4 flex flex-col items-center gap-2 ${form.category === "comercial" ? "ring-2 ring-primary border-primary bg-primary/10" : "hover:bg-muted"}`} onClick={() => set("category", "comercial")}>
+                    <Building2 className={`w-6 h-6 ${form.category === "comercial" ? "text-primary" : "text-secondary"}`} />
+                    <span className={form.category === "comercial" ? "text-primary font-medium" : undefined}>Comercial</span>
                   </button>
-                  <button type="button" className={`rounded-lg border p-4 flex flex-col items-center gap-2 ${form.category === "rural" ? "ring-2 ring-primary border-primary" : "hover:bg-muted"}`} onClick={() => set("category", "rural")}>
-                    <Tractor className="w-6 h-6 text-secondary" />
-                    <span>Rural</span>
+                  <button type="button" className={`rounded-lg border p-4 flex flex-col items-center gap-2 ${form.category === "rural" ? "ring-2 ring-primary border-primary bg-primary/10" : "hover:bg-muted"}`} onClick={() => set("category", "rural")}>
+                    <Tractor className={`w-6 h-6 ${form.category === "rural" ? "text-primary" : "text-secondary"}`} />
+                    <span className={form.category === "rural" ? "text-primary font-medium" : undefined}>Rural</span>
                   </button>
                 </div>
 
@@ -106,17 +107,22 @@ export function NewConnectionInstallationPage({ onBack, onNext, onCancel, custom
                   <div className="space-y-2">
                     <div className="text-sm text-muted-foreground">Selecione o tipo de residência</div>
                     <div className="grid grid-cols-2 gap-4">
-                      <button type="button" className={`rounded-lg border p-4 flex flex-col items-center gap-2 ${form.residenceType === "casa" ? "ring-2 ring-primary border-primary" : "hover:bg-muted"}`} onClick={() => set("residenceType", "casa")}>
-                        <Home className="w-6 h-6 text-secondary" />
-                        <span>Casa</span>
+                      <button type="button" className={`rounded-lg border p-4 flex flex-col items-center gap-2 ${form.residenceType === "casa" ? "ring-2 ring-primary border-primary bg-primary/10" : "hover:bg-muted"}`} onClick={() => set("residenceType", "casa")}>
+                        <Home className={`w-6 h-6 ${form.residenceType === "casa" ? "text-primary" : "text-secondary"}`} />
+                        <span className={form.residenceType === "casa" ? "text-primary font-medium" : undefined}>Casa</span>
                       </button>
-                      <button type="button" className={`rounded-lg border p-4 flex flex-col items-center gap-2 ${form.residenceType === "apartamento" ? "ring-2 ring-primary border-primary" : "hover:bg-muted"}`} onClick={() => set("residenceType", "apartamento")}>
-                        <Building2 className="w-6 h-6 text-secondary" />
-                        <span>Apartamento</span>
+                      <button type="button" className={`rounded-lg border p-4 flex flex-col items-center gap-2 ${form.residenceType === "apartamento" ? "ring-2 ring-primary border-primary bg-primary/10" : "hover:bg-muted"}`} onClick={() => set("residenceType", "apartamento")}>
+                        <Building2 className={`w-6 h-6 ${form.residenceType === "apartamento" ? "text-primary" : "text-secondary"}`} />
+                        <span className={form.residenceType === "apartamento" ? "text-primary font-medium" : undefined}>Apartamento</span>
                       </button>
                     </div>
                   </div>
                 )}
+
+                <div className="space-y-2">
+                  <Label htmlFor="description">Descrição</Label>
+                  <Input id="description" value={form.description} onChange={(e) => set("description", e.target.value)} placeholder="Detalhes da instalação" />
+                </div>
 
                 <div className="space-y-2">
                   <Label htmlFor="description">Descrição</Label>
@@ -129,6 +135,20 @@ export function NewConnectionInstallationPage({ onBack, onNext, onCancel, custom
                     <label className="flex items-center gap-2"><input type="radio" name="whiteTariff" checked={form.whiteTariff === true} onChange={() => set("whiteTariff", true)} /><span>Sim</span></label>
                     <label className="flex items-center gap-2"><input type="radio" name="whiteTariff" checked={form.whiteTariff === false} onChange={() => set("whiteTariff", false)} /><span>Não</span></label>
                   </div>
+                  {form.whiteTariff === true && (
+                    <div className="mt-2 space-y-2">
+                      <Alert>
+                        <AlertDescription>
+                          Ao optar pela tarifa branca o cliente fica ciente que terá preços diferentes de acordo com horários (horário de ponta, fora de ponta e intermediário), sendo que o consumo nestes horários pode afetar o valor da fatura de energia elétrica.
+                        </AlertDescription>
+                      </Alert>
+                      <ul className="list-disc list-inside text-sm text-muted-foreground">
+                        <li><span className="font-medium">Ponta</span> (das 17:30:00 às 20:29:59)</li>
+                        <li><span className="font-medium">Intermediário</span> (das 15:30:00 às 17:29:59)</li>
+                        <li><span className="font-medium">Fora de ponta</span> (das 20:30:00 às 15:29:59)</li>
+                      </ul>
+                    </div>
+                  )}
                 </div>
 
                 <div className="grid grid-cols-3 gap-4">
