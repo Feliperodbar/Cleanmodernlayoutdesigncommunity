@@ -543,10 +543,16 @@ export function CustomerServiceLayout({
                       </button>
                     ))}
                   </div>
-                </div>
-              </div>
             </div>
-            
+            </div>
+            </div>
+
+            <div className="mb-6">
+              <Button className="h-12 bg-primary hover:bg-primary/90 gap-2">
+                <Power className="w-4 h-4" />
+                Ligação Nova
+              </Button>
+            </div>
 
             {/* UC Cards */}
             <div className="space-y-4">
@@ -564,7 +570,13 @@ export function CustomerServiceLayout({
                     <DropdownMenu.Item className="px-3 py-2 text-sm hover:bg-muted" onClick={() => setAddressFilter("inactive")}>Inativas</DropdownMenu.Item>
                   </DropdownMenu.Content>
                 </DropdownMenu.Root>
-                <Input placeholder="Filtrar UC..." className="w-64 bg-card" />
+                <div className="relative w-[28rem]">
+                  <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-secondary/60" />
+                  <Input
+                    placeholder="Filtrar UC por número, endereço ou cidade"
+                    className="pl-10 bg-input-background ring-2 ring-secondary/20 focus-visible:ring-secondary w-full"
+                  />
+                </div>
               </div>
 
               {filteredAddresses.map((address) => (
@@ -583,22 +595,14 @@ export function CustomerServiceLayout({
                             <p className="text-foreground">
                               {address.ucNumber}
                             </p>
-                            <Badge
-                              variant={
-                                address.status === "active"
-                                  ? "default"
-                                  : "secondary"
-                              }
-                              className={
-                                address.status === "active"
-                                  ? "bg-primary/10 text-primary hover:bg-primary/10"
-                                  : "bg-destructive/10 text-destructive hover:bg-destructive/10"
-                              }
+                            <Button
+                              size="sm"
+                              variant={address.status === "active" ? "default" : "destructive"}
+                              className="h-7 px-3 rounded-md"
+                              type="button"
                             >
-                              {address.status === "active"
-                                ? "Ativo"
-                                : "Inativo"}
-                            </Badge>
+                              {address.status === "active" ? "Ativo" : "Inativo"}
+                            </Button>
                           </div>
                           <p className="text-sm text-muted-foreground">
                             {address.address}
