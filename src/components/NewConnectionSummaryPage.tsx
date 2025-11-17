@@ -32,7 +32,7 @@ export function NewConnectionSummaryPage({ onBack, onFinish, onCancel, customer 
   return (
     <div className="min-h-screen bg-background">
       <AppHeader title="Ligação nova" subtitle="Resumo da Solicitação" actions={<Button variant="destructive" onClick={onCancel}>Cancelar</Button>} />
-      <main className="flex items-start justify-center min-h-[calc(100vh-73px)] p-6">
+      <main className="flex items-start justify-center min-h-[calc(100vh-73px)] p-8">
         <div className="w-full max-w-6xl grid grid-cols-3 gap-6">
           <div className="col-span-2">
             <Card className="shadow-lg">
@@ -48,7 +48,7 @@ export function NewConnectionSummaryPage({ onBack, onFinish, onCancel, customer 
                   </div>
                 </div>
               </CardHeader>
-              <CardContent className="p-6 space-y-6">
+              <CardContent className="p-8 space-y-6">
                 {customer && (
                   <div className="grid grid-cols-2 gap-4">
                     <div>
@@ -67,15 +67,15 @@ export function NewConnectionSummaryPage({ onBack, onFinish, onCancel, customer 
                     <div className="text-sm font-medium text-foreground">Endereço</div>
                     <div className="space-y-2">
                       <div className="grid grid-cols-2 gap-3">
-                        <div className="space-y-1"><Label>CEP</Label><Input placeholder="00000-000" /></div>
-                        <div className="space-y-1"><Label>Nº</Label><Input placeholder="" /></div>
+                        <div className="space-y-1"><Label>CEP</Label><Input readOnly placeholder="00000-000" /></div>
+                        <div className="space-y-1"><Label>Nº</Label><Input readOnly placeholder="" /></div>
                       </div>
-                      <div className="space-y-1"><Label>Endereço</Label><Input placeholder="Rua, Avenida..." /></div>
+                      <div className="space-y-1"><Label>Endereço</Label><Input readOnly placeholder="Rua, Avenida..." /></div>
                       <div className="grid grid-cols-2 gap-3">
-                        <div className="space-y-1"><Label>Bairro</Label><Input /></div>
-                        <div className="space-y-1"><Label>Município/UF</Label><Input /></div>
+                        <div className="space-y-1"><Label>Bairro</Label><Input readOnly /></div>
+                        <div className="space-y-1"><Label>Município/UF</Label><Input readOnly /></div>
                       </div>
-                      <div className="space-y-1"><Label>Ponto de referência</Label><Input /></div>
+                      <div className="space-y-1"><Label>Ponto de referência</Label><Input readOnly /></div>
                     </div>
                   </div>
 
@@ -83,11 +83,11 @@ export function NewConnectionSummaryPage({ onBack, onFinish, onCancel, customer 
                     <div className="text-sm font-medium text-foreground">Contato</div>
                     <div className="space-y-2">
                       <div className="grid grid-cols-2 gap-3">
-                        <div className="space-y-1"><Label>Solicitante</Label><Input /></div>
-                        <div className="space-y-1"><Label>Telefone</Label><Input placeholder="(00) 00000-0000" /></div>
+                        <div className="space-y-1"><Label>Solicitante</Label><Input readOnly /></div>
+                        <div className="space-y-1"><Label>Telefone</Label><Input readOnly placeholder="(00) 00000-0000" /></div>
                       </div>
-                      <div className="space-y-1"><Label>Nome da pessoa de contato</Label><Input /></div>
-                      <div className="space-y-1"><Label>Email</Label><Input type="email" /></div>
+                      <div className="space-y-1"><Label>Nome da pessoa de contato</Label><Input readOnly /></div>
+                      <div className="space-y-1"><Label>Email</Label><Input readOnly type="email" /></div>
                     </div>
                   </div>
                 </div>
@@ -96,12 +96,12 @@ export function NewConnectionSummaryPage({ onBack, onFinish, onCancel, customer 
                   <div className="space-y-3">
                     <div className="text-sm font-medium text-foreground">Instalação</div>
                     <div className="grid grid-cols-2 gap-3">
-                      <div className="space-y-1"><Label>Categoria</Label><Input placeholder="Residencial / Comercial / Rural" /></div>
-                      <div className="space-y-1"><Label>Tipo de residência</Label><Input placeholder="Casa / Apartamento" /></div>
-                      <div className="space-y-1"><Label>Fase declarada</Label><Input /></div>
-                      <div className="space-y-1"><Label>Tipo de entrada</Label><Input /></div>
-                      <div className="space-y-1"><Label>Tensão de fornecimento (V)</Label><Input /></div>
-                      <div className="space-y-1"><Label>Tipo instalação</Label><Input /></div>
+                      <div className="space-y-1"><Label>Categoria</Label><Input readOnly placeholder="Residencial / Comercial / Rural" /></div>
+                      <div className="space-y-1"><Label>Tipo de residência</Label><Input readOnly placeholder="Casa / Apartamento" /></div>
+                      <div className="space-y-1"><Label>Fase declarada</Label><Input readOnly /></div>
+                      <div className="space-y-1"><Label>Tipo de entrada</Label><Input readOnly /></div>
+                      <div className="space-y-1"><Label>Tensão de fornecimento (V)</Label><Input readOnly /></div>
+                      <div className="space-y-1"><Label>Tipo instalação</Label><Input readOnly /></div>
                     </div>
                   </div>
 
@@ -111,14 +111,14 @@ export function NewConnectionSummaryPage({ onBack, onFinish, onCancel, customer 
                       <div className="space-y-1"><Label>Total selecionado (W)</Label><Input readOnly value={"0"} /></div>
                       <div className="space-y-1"><Label>Carga instalada (kW)</Label><Input readOnly value={"0"} /></div>
                       <div className="space-y-1"><Label>Demanda calculada (kVA)</Label><Input readOnly value={"0"} /></div>
-                      <div className="space-y-1"><Label>Medidor recomendado</Label><Input placeholder="" /></div>
+                      <div className="space-y-1"><Label>Medidor recomendado</Label><Input readOnly placeholder="" /></div>
                     </div>
                   </div>
                 </div>
 
                 <div className="space-y-2">
                   <Label>Observações</Label>
-                  <Input placeholder="Detalhes adicionais" />
+                  <Input readOnly placeholder="Detalhes adicionais" />
                 </div>
 
                 <label className="flex items-center gap-2">
@@ -129,7 +129,7 @@ export function NewConnectionSummaryPage({ onBack, onFinish, onCancel, customer 
               </CardContent>
               <CardFooter className="border-t border-border justify-between">
                 <Button variant="outline" onClick={onBack}>Anterior</Button>
-                <Button onClick={onFinish} disabled={!confirmed}>Finalizar</Button>
+                <Button onClick={onFinish} disabled={!confirmed}>Próximo</Button>
               </CardFooter>
             </Card>
           </div>

@@ -7,10 +7,11 @@ import { NewConnectionAddressPage } from './components/NewConnectionAddressPage'
 import { NewConnectionInstallationPage } from './components/NewConnectionInstallationPage';
 import { NewConnectionEquipmentPage } from './components/NewConnectionEquipmentPage';
 import { NewConnectionSummaryPage } from './components/NewConnectionSummaryPage';
+import { NewConnectionServicesPage } from './components/NewConnectionServicesPage';
 import type { Customer } from './data/customers';
 
 export default function App() {
-  const [currentPage, setCurrentPage] = useState<'search' | 'service' | 'register' | 'new_connection_checklist' | 'new_connection_address' | 'new_connection_installation' | 'new_connection_equipment' | 'new_connection_summary'>('search');
+  const [currentPage, setCurrentPage] = useState<'search' | 'service' | 'register' | 'new_connection_checklist' | 'new_connection_address' | 'new_connection_installation' | 'new_connection_equipment' | 'new_connection_summary' | 'new_connection_services'>('search');
   const [selectedCustomer, setSelectedCustomer] = useState<Customer | null>(null);
   const [registerInitialDocument, setRegisterInitialDocument] = useState<string | undefined>(undefined);
 
@@ -81,7 +82,17 @@ export default function App() {
     return (
       <NewConnectionSummaryPage
         onBack={() => setCurrentPage('new_connection_equipment')}
-        onFinish={() => setCurrentPage('service')}
+        onFinish={() => setCurrentPage('new_connection_services')}
+        onCancel={() => setCurrentPage('service')}
+        customer={selectedCustomer}
+      />
+    );
+  }
+  if (currentPage === 'new_connection_services') {
+    return (
+      <NewConnectionServicesPage
+        onBack={() => setCurrentPage('new_connection_summary')}
+        onConfirm={() => setCurrentPage('service')}
         onCancel={() => setCurrentPage('service')}
         customer={selectedCustomer}
       />
