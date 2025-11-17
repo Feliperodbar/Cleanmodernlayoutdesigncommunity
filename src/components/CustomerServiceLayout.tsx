@@ -44,12 +44,14 @@ import * as DropdownMenu from "@radix-ui/react-dropdown-menu";
 
 interface CustomerServiceLayoutProps {
   onNewService?: () => void;
+  onNewConnection?: () => void;
   customer?: Customer | null;
   onSelectCustomer?: (customer: Customer) => void;
 }
 
 export function CustomerServiceLayout({
   onNewService,
+  onNewConnection,
   customer,
   onSelectCustomer,
 }: CustomerServiceLayoutProps) {
@@ -548,7 +550,7 @@ export function CustomerServiceLayout({
             </div>
 
             <div className="mb-6">
-              <Button className="h-12 bg-primary hover:bg-primary/90 gap-2">
+              <Button className="h-12 bg-primary hover:bg-primary/90 gap-2" onClick={onNewConnection}>
                 <Power className="w-4 h-4" />
                 Ligação Nova
               </Button>
