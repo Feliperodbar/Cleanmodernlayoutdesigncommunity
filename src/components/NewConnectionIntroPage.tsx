@@ -27,15 +27,15 @@ export function NewConnectionIntroPage({ onBack, onContinue }: NewConnectionIntr
       />
 
       <main className="flex items-center justify-center min-h-[calc(100vh-73px)] p-6">
-        <div className="w-full max-w-3xl mx-auto">
+        <div className="w-full max-w-5xl">
           <Card className="shadow-lg">
             <CardHeader className="border-b border-border">
               <div className="flex items-center gap-3">
                 <div className="w-12 h-12 bg-secondary/10 rounded-lg flex items-center justify-center">
-                  {React.createElement(Plug, { className: "w-6 h-6 text-secondary" })}
+                  <Plug className="w-6 h-6 text-secondary" />
                 </div>
                 <div>
-                  <CardTitle className="text-foreground text-center">Um serviço Neoenergia para sua primeira ligação</CardTitle>
+                  <CardTitle className="text-foreground">Um serviço Neoenergia para sua primeira ligação</CardTitle>
                   <p className="text-sm text-muted-foreground">Saiba quais documentos e informações serão solicitadas nas próximas etapas</p>
                 </div>
               </div>

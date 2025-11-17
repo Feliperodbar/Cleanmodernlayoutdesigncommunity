@@ -11,6 +11,8 @@ import { Alert, AlertDescription } from "./ui/alert";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, DialogFooter } from "./ui/dialog";
 import { ImageWithFallback } from "./figma/ImageWithFallback";
 import { User, MapPin, Info, Star } from "lucide-react";
+import { Badge } from "./ui/badge";
+import { Progress } from "./ui/progress";
 
 type NewConnectionWizardPageProps = {
   onBack: () => void;
@@ -168,23 +170,27 @@ export function NewConnectionWizardPage({ onBack, onFinish }: NewConnectionWizar
       <AppHeader title="Ligação nova" subtitle={`Etapa atual: ${steps[stepIndex]}`} actions={
         <Button variant="outline" className="gap-2" onClick={onBack}>Voltar</Button>
       } />
-      <main className="flex items-center justify-center min-h-[calc(100vh-73px)] p-6">
-        <div className="w-full max-w-3xl mx-auto">
-          <div className="mb-6">
-            <div className="flex items-center justify-center gap-3">
+      <main className="flex items-start justify-center min-h-[calc(100vh-73px)] p-6">
+        <div className="w-full max-w-5xl">
+          <div className="mb-6 space-y-3">
+            <div className="flex flex-wrap gap-2">
               {steps.map((label, i) => (
-                <div key={label} className="flex items-center">
-                  <div className={`w-8 h-8 rounded-full flex items-center justify-center text-sm ${i <= stepIndex ? "bg-secondary text-white" : "bg-border text-muted-foreground"}`}>{i + 1}</div>
-                  {i < steps.length - 1 && <div className={`w-10 h-[2px] mx-2 ${i < stepIndex ? "bg-secondary" : "bg-border"}`} />}
-                </div>
+                <Badge key={label} asChild variant={i === stepIndex ? "default" : "outline"}>
+                  <button type="button" onClick={() => setStepIndex(i)} aria-selected={i === stepIndex} className="cursor-pointer">
+                    {label}
+                  </button>
+                </Badge>
               ))}
             </div>
-            <p className="mt-2 text-center text-sm text-muted-foreground">Passo {stepIndex + 1} de {steps.length} — {steps[stepIndex]}</p>
+            <div className="flex items-center gap-3">
+              <Progress value={Math.round(((stepIndex + 1) / steps.length) * 100)} />
+              <span className="text-sm text-muted-foreground">Passo {stepIndex + 1} de {steps.length}</span>
+            </div>
           </div>
 
           <Card className="shadow-lg">
             <CardHeader className="border-b border-border">
-              <div className="flex items-center justify-center gap-3 text-center">
+              <div className="flex items-center gap-3">
                 <div className="w-12 h-12 bg-secondary/10 rounded-lg flex items-center justify-center">
                   {stepIndex === 0 ? <User className="w-6 h-6 text-secondary" /> : <MapPin className="w-6 h-6 text-secondary" />}
                 </div>
