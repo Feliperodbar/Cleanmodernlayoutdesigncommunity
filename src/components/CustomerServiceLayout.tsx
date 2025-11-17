@@ -758,6 +758,3 @@ export function CustomerServiceLayout({
     </div>
   );
 }
-  useEffect(() => {
-    setExpandedUC(null);
-  }, [selectedCustomer]);
