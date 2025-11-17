@@ -5,10 +5,12 @@ import { RegisterCustomerPage } from './components/RegisterCustomerPage';
 import { NewConnectionChecklistPage } from './components/NewConnectionChecklistPage';
 import { NewConnectionAddressPage } from './components/NewConnectionAddressPage';
 import { NewConnectionInstallationPage } from './components/NewConnectionInstallationPage';
+import { NewConnectionEquipmentPage } from './components/NewConnectionEquipmentPage';
+import { NewConnectionSummaryPage } from './components/NewConnectionSummaryPage';
 import type { Customer } from './data/customers';
 
 export default function App() {
-  const [currentPage, setCurrentPage] = useState<'search' | 'service' | 'register' | 'new_connection_checklist' | 'new_connection_address' | 'new_connection_installation'>('search');
+  const [currentPage, setCurrentPage] = useState<'search' | 'service' | 'register' | 'new_connection_checklist' | 'new_connection_address' | 'new_connection_installation' | 'new_connection_equipment' | 'new_connection_summary'>('search');
   const [selectedCustomer, setSelectedCustomer] = useState<Customer | null>(null);
   const [registerInitialDocument, setRegisterInitialDocument] = useState<string | undefined>(undefined);
 
@@ -59,7 +61,27 @@ export default function App() {
     return (
       <NewConnectionInstallationPage
         onBack={() => setCurrentPage('new_connection_address')}
-        onNext={() => setCurrentPage('service')}
+        onNext={() => setCurrentPage('new_connection_equipment')}
+        onCancel={() => setCurrentPage('service')}
+        customer={selectedCustomer}
+      />
+    );
+  }
+  if (currentPage === 'new_connection_equipment') {
+    return (
+      <NewConnectionEquipmentPage
+        onBack={() => setCurrentPage('new_connection_installation')}
+        onNext={() => setCurrentPage('new_connection_summary')}
+        onCancel={() => setCurrentPage('service')}
+        customer={selectedCustomer}
+      />
+    );
+  }
+  if (currentPage === 'new_connection_summary') {
+    return (
+      <NewConnectionSummaryPage
+        onBack={() => setCurrentPage('new_connection_equipment')}
+        onFinish={() => setCurrentPage('service')}
         onCancel={() => setCurrentPage('service')}
         customer={selectedCustomer}
       />
