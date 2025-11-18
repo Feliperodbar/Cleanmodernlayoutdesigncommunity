@@ -237,14 +237,6 @@ export function SearchPage({ onSearchComplete, onRegisterNew, onQuickNewConnecti
                   )}
                 </div>
 
-                {searchTerm.length < 2 && (
-                  
-                )}
-                {searchTerm.trim().length >= 2 && /[a-zA-Z]/.test(searchTerm) && !/\d/.test(searchTerm) && searchTerm.trim().split(/\s+/).filter(Boolean).length < 2 && (
-                  <p className="text-xs text-muted-foreground text-center">
-                    Digite nome e sobrenome para mostrar opções
-                  </p>
-                )}
               </div>
 
               <div className="mt-10 space-y-4">
