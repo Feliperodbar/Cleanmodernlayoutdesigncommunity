@@ -10,7 +10,6 @@ import {
   Settings,
   ChevronDown,
   ChevronUp,
-  Power,
   DollarSign,
   Clock,
   MapPin,
@@ -19,8 +18,6 @@ import {
   Building2,
   ChevronRight,
   Loader2,
-  Receipt,
-  AlertTriangle,
 } from "lucide-react";
 import { Button } from "./ui/button";
 // Removido ThemeToggle (dark mode desativado)
@@ -480,24 +477,7 @@ export function CustomerServiceLayout({
               </div>
             </div>
 
-            <div className="grid grid-cols-2 md:grid-cols-4 gap-3 mb-6">
-              <Button className="h-12 w-full justify-start gap-2" onClick={() => onNewConnection?.(selectedDistributor)}>
-                <Power className="w-4 h-4" />
-                <span>Ligação Nova</span>
-              </Button>
-              <Button className="h-12 w-full justify-start gap-2" variant="outline" onClick={() => handleServiceClick("2ª Via de Fatura") }>
-                <Receipt className="w-4 h-4" />
-                <span>Segunda Via de Boleto</span>
-              </Button>
-              <Button className="h-12 w-full justify-start gap-2" variant="outline" onClick={() => handleServiceClick("Falta de Energia") }>
-                <AlertTriangle className="w-4 h-4" />
-                <span>Falta de Energia</span>
-              </Button>
-              <Button className="h-12 w-full justify-start gap-2" variant="outline" onClick={onNewService}>
-                <User className="w-4 h-4" />
-                <span>Atualização Cadastral</span>
-              </Button>
-            </div>
+            
 
             <div className="mb-6">
               <div className="flex items-start gap-3">
@@ -570,12 +550,7 @@ export function CustomerServiceLayout({
             </div>
             </div>
 
-            <div className="mb-6">
-              <Button className="h-12 bg-primary hover:bg-primary/90 gap-2" onClick={() => onNewConnection?.(selectedDistributor)}>
-                <Power className="w-4 h-4" />
-                Ligação Nova
-              </Button>
-            </div>
+            
 
             {/* UC Cards */}
             <div className="space-y-4">

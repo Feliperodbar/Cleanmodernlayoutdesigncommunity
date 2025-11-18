@@ -1,5 +1,5 @@
 import { useState, useEffect, useRef } from 'react';
-import { Search, Zap, User as UserIcon, FileText, Phone, CreditCard, Clock, ChevronRight, Loader2 } from 'lucide-react';
+import { Search, Zap, User as UserIcon, FileText, Phone, CreditCard, Clock, ChevronRight, Loader2, Power, Receipt, AlertTriangle } from 'lucide-react';
 import { ImageWithFallback } from './figma/ImageWithFallback';
 import { Input } from './ui/input';
 import { getHighlightedParts } from './ui/utils';
@@ -8,15 +8,21 @@ import { Avatar, AvatarFallback } from './ui/avatar';
 import { Badge } from './ui/badge';
 import { customers, findCustomers, Customer } from '../data/customers';
 import { AppHeader } from './AppHeader';
+import { Button } from './ui/button';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from './ui/select';
 
 interface SearchPageProps {
   onSearchComplete: (customer: Customer) => void;
   onRegisterNew: (initialDocument: string) => void;
+  onQuickNewConnection: (distributor: string) => void;
+  onQuickSecondBill: () => void;
+  onQuickOutage: () => void;
+  onQuickUpdate: () => void;
 }
 
 // Using shared Customer type from data module
 
-export function SearchPage({ onSearchComplete, onRegisterNew }: SearchPageProps) {
+export function SearchPage({ onSearchComplete, onRegisterNew, onQuickNewConnection, onQuickSecondBill, onQuickOutage, onQuickUpdate }: SearchPageProps) {
   const [searchTerm, setSearchTerm] = useState('');
   const [logoError, setLogoError] = useState(false);
   const [suggestions, setSuggestions] = useState<Customer[]>([]);
@@ -24,6 +30,13 @@ export function SearchPage({ onSearchComplete, onRegisterNew }: SearchPageProps)
   const [loading, setLoading] = useState(false);
   const debounceRef = useRef<number | null>(null);
   const [activeIndex, setActiveIndex] = useState(-1);
+  const distributors = [
+    'Neoenergia Elektro',
+    'Neoenergia Coelba',
+    'Neoenergia Cosern',
+    'Neoenergia Pernambuco',
+  ];
+  const [selectedDistributor, setSelectedDistributor] = useState<string>('Neoenergia Cosern');
 
   // Dados compartilhados importados de src/data/customers
 
@@ -236,7 +249,39 @@ export function SearchPage({ onSearchComplete, onRegisterNew }: SearchPageProps)
                 )}
               </div>
 
-              
+              <div className="mt-10 space-y-4">
+                <div className="flex items-center justify-between">
+                  <div className="text-sm text-muted-foreground">Distribuidora para Ligação Nova</div>
+                  <div className="w-64">
+                    <Select value={selectedDistributor} onValueChange={(v) => setSelectedDistributor(v)}>
+                      <SelectTrigger><SelectValue placeholder="Selecione" /></SelectTrigger>
+                      <SelectContent>
+                        {distributors.map((d) => (
+                          <SelectItem key={d} value={d}>{d}</SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
+                  </div>
+                </div>
+                <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
+                  <Button className="h-12 w-full justify-start gap-2" onClick={() => onQuickNewConnection(selectedDistributor)}>
+                    <Power className="w-4 h-4" />
+                    <span>Ligação Nova</span>
+                  </Button>
+                  <Button className="h-12 w-full justify-start gap-2" variant="outline" onClick={onQuickSecondBill}>
+                    <Receipt className="w-4 h-4" />
+                    <span>Segunda Via de Boleto</span>
+                  </Button>
+                  <Button className="h-12 w-full justify-start gap-2" variant="outline" onClick={onQuickOutage}>
+                    <AlertTriangle className="w-4 h-4" />
+                    <span>Falta de Energia</span>
+                  </Button>
+                  <Button className="h-12 w-full justify-start gap-2" variant="outline" onClick={onQuickUpdate}>
+                    <UserIcon className="w-4 h-4" />
+                    <span>Atualização Cadastral</span>
+                  </Button>
+                </div>
+              </div>
             </CardContent>
           </Card>
 

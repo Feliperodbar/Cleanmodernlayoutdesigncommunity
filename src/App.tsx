@@ -22,6 +22,7 @@ export default function App() {
   const [newConnectionInstallationData, setNewConnectionInstallationData] = useState<NewConnectionInstallationData | null>(null);
   const [newConnectionEquipmentData, setNewConnectionEquipmentData] = useState<NewConnectionEquipmentData | null>(null);
   const [newConnectionSelectedDistributor, setNewConnectionSelectedDistributor] = useState<string | null>(null);
+  const [pendingAction, setPendingAction] = useState<'new_connection' | 'second_invoice' | 'outage' | 'update' | null>(null);
 
   const generateUCNumber = (distributor: string | null): string => {
     const map: Record<string, string> = {
@@ -62,12 +63,22 @@ export default function App() {
       <SearchPage 
         onSearchComplete={(customer) => {
           setSelectedCustomer(customer);
-          setCurrentPage('service');
+          if (pendingAction === 'new_connection') {
+            setPendingAction(null);
+            setCurrentPage('new_connection_checklist');
+          } else {
+            setPendingAction(null);
+            setCurrentPage('service');
+          }
         }}
         onRegisterNew={(initialDocument) => {
           setRegisterInitialDocument(initialDocument);
           setCurrentPage('register');
         }}
+        onQuickNewConnection={(dist) => { setNewConnectionSelectedDistributor(dist); setPendingAction('new_connection'); }}
+        onQuickSecondBill={() => { setPendingAction('second_invoice'); }}
+        onQuickOutage={() => { setPendingAction('outage'); }}
+        onQuickUpdate={() => { setPendingAction('update'); }}
       />
     );
   }
