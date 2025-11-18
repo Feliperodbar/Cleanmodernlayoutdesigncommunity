@@ -8,12 +8,46 @@ import { NewConnectionInstallationPage } from './components/NewConnectionInstall
 import { NewConnectionEquipmentPage } from './components/NewConnectionEquipmentPage';
 import { NewConnectionSummaryPage } from './components/NewConnectionSummaryPage';
 import { NewConnectionServicesPage } from './components/NewConnectionServicesPage';
-import type { Customer } from './data/customers';
+import type { Customer, Address } from './data/customers';
+import type { NewConnectionAddressData } from './components/NewConnectionAddressPage';
+import type { NewConnectionInstallationData } from './components/NewConnectionInstallationPage';
+import type { NewConnectionEquipmentData } from './components/NewConnectionEquipmentPage';
+import { getAllPersistedCustomers, updatePersistedCustomer, addPersistedCustomer } from './data/db';
 
 export default function App() {
   const [currentPage, setCurrentPage] = useState<'search' | 'service' | 'register' | 'new_connection_checklist' | 'new_connection_address' | 'new_connection_installation' | 'new_connection_equipment' | 'new_connection_summary' | 'new_connection_services'>('search');
   const [selectedCustomer, setSelectedCustomer] = useState<Customer | null>(null);
   const [registerInitialDocument, setRegisterInitialDocument] = useState<string | undefined>(undefined);
+  const [newConnectionAddressData, setNewConnectionAddressData] = useState<NewConnectionAddressData | null>(null);
+  const [newConnectionInstallationData, setNewConnectionInstallationData] = useState<NewConnectionInstallationData | null>(null);
+  const [newConnectionEquipmentData, setNewConnectionEquipmentData] = useState<NewConnectionEquipmentData | null>(null);
+
+  const generateUCNumber = (): string => {
+    const prefix = '007';
+    let tail = '';
+    while (tail.length < 9) {
+      tail += Math.floor(Math.random() * 10).toString();
+    }
+    return prefix + tail;
+  };
+
+  const createNewUCAddress = (): Address | null => {
+    if (!newConnectionAddressData) return null;
+    const ucNumber = generateUCNumber();
+    const id = `${Date.now()}-${Math.random().toString(36).slice(2, 8)}`;
+    const line = `${newConnectionAddressData.address}${newConnectionAddressData.number ? ", " + newConnectionAddressData.number : ""}${newConnectionAddressData.neighborhood ? ", " + newConnectionAddressData.neighborhood : ""}`;
+    return {
+      id,
+      ucNumber,
+      address: line,
+      city: newConnectionAddressData.city,
+      cep: newConnectionAddressData.cep,
+      status: 'inactive',
+      lastBill: '-',
+      dueDate: '-',
+      consumption: '-',
+    };
+  };
 
   if (currentPage === 'search') {
     return (
@@ -52,7 +86,7 @@ export default function App() {
     return (
       <NewConnectionAddressPage
         onBack={() => setCurrentPage('new_connection_checklist')}
-        onNext={() => setCurrentPage('new_connection_installation')}
+        onNext={(data) => { setNewConnectionAddressData(data); setCurrentPage('new_connection_installation'); }}
         onCancel={() => setCurrentPage('service')}
         customer={selectedCustomer}
       />
@@ -62,7 +96,7 @@ export default function App() {
     return (
       <NewConnectionInstallationPage
         onBack={() => setCurrentPage('new_connection_address')}
-        onNext={() => setCurrentPage('new_connection_equipment')}
+        onNext={(data) => { setNewConnectionInstallationData(data); setCurrentPage('new_connection_equipment'); }}
         onCancel={() => setCurrentPage('service')}
         customer={selectedCustomer}
       />
@@ -72,7 +106,7 @@ export default function App() {
     return (
       <NewConnectionEquipmentPage
         onBack={() => setCurrentPage('new_connection_installation')}
-        onNext={() => setCurrentPage('new_connection_summary')}
+        onNext={(data) => { setNewConnectionEquipmentData(data); setCurrentPage('new_connection_summary'); }}
         onCancel={() => setCurrentPage('service')}
         customer={selectedCustomer}
       />
@@ -85,6 +119,9 @@ export default function App() {
         onFinish={() => setCurrentPage('new_connection_services')}
         onCancel={() => setCurrentPage('service')}
         customer={selectedCustomer}
+        address={newConnectionAddressData}
+        installation={newConnectionInstallationData}
+        equipment={newConnectionEquipmentData}
       />
     );
   }
@@ -92,7 +129,36 @@ export default function App() {
     return (
       <NewConnectionServicesPage
         onBack={() => setCurrentPage('new_connection_summary')}
-        onConfirm={() => setCurrentPage('service')}
+        onConfirm={() => {
+          const addr = createNewUCAddress();
+          if (addr && selectedCustomer) {
+            const persisted = getAllPersistedCustomers();
+            const exists = persisted.find((c) => c.id === selectedCustomer.id);
+            if (exists) {
+              const updated = updatePersistedCustomer(selectedCustomer.id, { addresses: [addr, ...exists.addresses] });
+              if (updated) {
+                setSelectedCustomer(updated);
+              }
+            } else {
+              const clone: Omit<Customer, 'id'> = {
+                name: selectedCustomer.name,
+                cpf: selectedCustomer.cpf,
+                rg: selectedCustomer.rg,
+                birthDate: selectedCustomer.birthDate,
+                sex: selectedCustomer.sex,
+                email: selectedCustomer.email,
+                phone: selectedCustomer.phone,
+                addresses: [addr, ...selectedCustomer.addresses],
+                lastProtocol: selectedCustomer.lastProtocol,
+                lastService: selectedCustomer.lastService,
+                timestamp: new Date().toLocaleString(),
+              };
+              const persistedNew = addPersistedCustomer(clone);
+              setSelectedCustomer(persistedNew);
+            }
+          }
+          setCurrentPage('service');
+        }}
         onCancel={() => setCurrentPage('service')}
         customer={selectedCustomer}
       />

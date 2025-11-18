@@ -9,9 +9,17 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from ".
 import { Progress } from "./ui/progress";
 import { CheckCircle2, Circle, Home } from "lucide-react";
 
+export type NewConnectionEquipmentData = {
+  totalW: number;
+  installedKW: number;
+  demandKVA: number;
+  resLevel: 0 | 1 | 2 | 3;
+  hasTechnicalDoc?: boolean;
+};
+
 type NewConnectionEquipmentPageProps = {
   onBack: () => void;
-  onNext: () => void;
+  onNext: (data: NewConnectionEquipmentData) => void;
   onCancel: () => void;
   customer?: Customer | null;
 };
@@ -208,7 +216,7 @@ export function NewConnectionEquipmentPage({ onBack, onNext, onCancel, customer 
               </CardContent>
               <CardFooter className="border-t border-border justify-between">
                 <Button variant="outline" onClick={onBack}>Anterior</Button>
-                <Button onClick={onNext}>Avançar</Button>
+                <Button onClick={() => onNext({ totalW, installedKW, demandKVA, resLevel, hasTechnicalDoc })}>Avançar</Button>
               </CardFooter>
             </Card>
           </div>

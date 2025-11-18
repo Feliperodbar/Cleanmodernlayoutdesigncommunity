@@ -10,9 +10,26 @@ import { Separator } from "./ui/separator";
 import { Progress } from "./ui/progress";
 import { CheckCircle2, Circle } from "lucide-react";
 
+export type NewConnectionAddressData = {
+  cep: string;
+  address: string;
+  neighborhood: string;
+  city: string;
+  state: string;
+  number: string;
+  reference: string;
+  contactName: string;
+  contactPhone: string;
+  applicant: string;
+  voltage: string;
+  neighborMeter: string;
+  nearestPole: string;
+  confirmMunicipalVoltage: boolean;
+};
+
 type NewConnectionAddressPageProps = {
   onBack: () => void;
-  onNext: () => void;
+  onNext: (data: NewConnectionAddressData) => void;
   onCancel: () => void;
   customer?: Customer | null;
 };
@@ -28,7 +45,7 @@ const stepLabels = [
 ];
 
 export function NewConnectionAddressPage({ onBack, onNext, onCancel, customer }: NewConnectionAddressPageProps) {
-  const [form, setForm] = useState({
+  const [form, setForm] = useState<NewConnectionAddressData>({
     cep: "",
     address: "",
     neighborhood: "",
@@ -192,7 +209,7 @@ export function NewConnectionAddressPage({ onBack, onNext, onCancel, customer }:
               </CardContent>
               <CardFooter className="border-t border-border justify-between">
                 <Button variant="outline" onClick={onBack}>Voltar</Button>
-                <Button onClick={onNext} disabled={!form.address || !form.city || !form.state || !form.number || !form.cep}>Avançar</Button>
+                <Button onClick={() => onNext(form)} disabled={!form.address || !form.city || !form.state || !form.number || !form.cep}>Avançar</Button>
               </CardFooter>
             </Card>
           </div>

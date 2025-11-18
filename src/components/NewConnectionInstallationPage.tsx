@@ -10,9 +10,24 @@ import { Progress } from "./ui/progress";
 import { Alert, AlertDescription } from "./ui/alert";
 import { CheckCircle2, Circle, Home, Building2, Tractor } from "lucide-react";
 
+export type NewConnectionInstallationData = {
+  category: string;
+  residenceType: string;
+  description: string;
+  whiteTariff: undefined | boolean;
+  declaredPhase: string;
+  entryType: string;
+  supplyVoltage: string;
+  installationType: string;
+  sector: string;
+  sectorDescription: string;
+  sectorSystem: string;
+  tariffCategory: string;
+};
+
 type NewConnectionInstallationPageProps = {
   onBack: () => void;
-  onNext: () => void;
+  onNext: (data: NewConnectionInstallationData) => void;
   onCancel: () => void;
   customer?: Customer | null;
 };
@@ -28,11 +43,11 @@ const stepLabels = [
 ];
 
 export function NewConnectionInstallationPage({ onBack, onNext, onCancel, customer }: NewConnectionInstallationPageProps) {
-  const [form, setForm] = useState({
+  const [form, setForm] = useState<NewConnectionInstallationData>({
     category: "",
     residenceType: "",
     description: "",
-    whiteTariff: undefined as undefined | boolean,
+    whiteTariff: undefined,
     declaredPhase: "",
     entryType: "",
     supplyVoltage: "",
@@ -216,7 +231,7 @@ export function NewConnectionInstallationPage({ onBack, onNext, onCancel, custom
               </CardContent>
               <CardFooter className="border-t border-border justify-between">
                 <Button variant="outline" onClick={onBack}>Voltar</Button>
-                <Button onClick={onNext} disabled={!requiredKeys.every((k) => form[k] !== "" && form[k] !== undefined)}>Avançar</Button>
+                <Button onClick={() => onNext(form)} disabled={!requiredKeys.every((k) => form[k] !== "" && form[k] !== undefined)}>Avançar</Button>
               </CardFooter>
             </Card>
           </div>

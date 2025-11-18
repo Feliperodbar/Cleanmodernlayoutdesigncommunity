@@ -1,6 +1,9 @@
 import { useState } from "react";
 import { AppHeader } from "./AppHeader";
 import type { Customer } from "../data/customers";
+import type { NewConnectionAddressData } from "./NewConnectionAddressPage";
+import type { NewConnectionInstallationData } from "./NewConnectionInstallationPage";
+import type { NewConnectionEquipmentData } from "./NewConnectionEquipmentPage";
 import { Card, CardContent, CardHeader, CardTitle, CardFooter } from "./ui/card";
 import { Button } from "./ui/button";
 import { Input } from "./ui/input";
@@ -13,6 +16,9 @@ type NewConnectionSummaryPageProps = {
   onFinish: () => void;
   onCancel: () => void;
   customer?: Customer | null;
+  address?: NewConnectionAddressData | null;
+  installation?: NewConnectionInstallationData | null;
+  equipment?: NewConnectionEquipmentData | null;
 };
 
 const stepLabels = [
@@ -25,7 +31,7 @@ const stepLabels = [
   "Cadastrar Serviços Adicionais",
 ];
 
-export function NewConnectionSummaryPage({ onBack, onFinish, onCancel, customer }: NewConnectionSummaryPageProps) {
+export function NewConnectionSummaryPage({ onBack, onFinish, onCancel, customer, address, installation, equipment }: NewConnectionSummaryPageProps) {
   const currentStep = 5;
   const [confirmed, setConfirmed] = useState(false);
 
@@ -67,15 +73,15 @@ export function NewConnectionSummaryPage({ onBack, onFinish, onCancel, customer 
                     <div className="text-sm font-medium text-foreground">Endereço</div>
                     <div className="space-y-2">
                       <div className="grid grid-cols-2 gap-3">
-                        <div className="space-y-1"><Label>CEP</Label><Input readOnly placeholder="00000-000" /></div>
-                        <div className="space-y-1"><Label>Nº</Label><Input readOnly placeholder="" /></div>
+                        <div className="space-y-1"><Label>CEP</Label><Input readOnly value={address?.cep ?? ""} placeholder="00000-000" /></div>
+                        <div className="space-y-1"><Label>Nº</Label><Input readOnly value={address?.number ?? ""} /></div>
                       </div>
-                      <div className="space-y-1"><Label>Endereço</Label><Input readOnly placeholder="Rua, Avenida..." /></div>
+                      <div className="space-y-1"><Label>Endereço</Label><Input readOnly value={address?.address ?? ""} placeholder="Rua, Avenida..." /></div>
                       <div className="grid grid-cols-2 gap-3">
-                        <div className="space-y-1"><Label>Bairro</Label><Input readOnly /></div>
-                        <div className="space-y-1"><Label>Município/UF</Label><Input readOnly /></div>
+                        <div className="space-y-1"><Label>Bairro</Label><Input readOnly value={address?.neighborhood ?? ""} /></div>
+                        <div className="space-y-1"><Label>Município/UF</Label><Input readOnly value={address ? `${address.city}${address.state ? `/${address.state}` : ""}` : ""} /></div>
                       </div>
-                      <div className="space-y-1"><Label>Ponto de referência</Label><Input readOnly /></div>
+                      <div className="space-y-1"><Label>Ponto de referência</Label><Input readOnly value={address?.reference ?? ""} /></div>
                     </div>
                   </div>
 
@@ -83,11 +89,11 @@ export function NewConnectionSummaryPage({ onBack, onFinish, onCancel, customer 
                     <div className="text-sm font-medium text-foreground">Contato</div>
                     <div className="space-y-2">
                       <div className="grid grid-cols-2 gap-3">
-                        <div className="space-y-1"><Label>Solicitante</Label><Input readOnly /></div>
-                        <div className="space-y-1"><Label>Telefone</Label><Input readOnly placeholder="(00) 00000-0000" /></div>
+                        <div className="space-y-1"><Label>Solicitante</Label><Input readOnly value={address?.applicant ?? ""} /></div>
+                        <div className="space-y-1"><Label>Telefone</Label><Input readOnly value={address?.contactPhone ?? ""} placeholder="(00) 00000-0000" /></div>
                       </div>
-                      <div className="space-y-1"><Label>Nome da pessoa de contato</Label><Input readOnly /></div>
-                      <div className="space-y-1"><Label>Email</Label><Input readOnly type="email" /></div>
+                      <div className="space-y-1"><Label>Nome da pessoa de contato</Label><Input readOnly value={address?.contactName ?? ""} /></div>
+                      <div className="space-y-1"><Label>Email</Label><Input readOnly type="email" value={customer?.email ?? ""} /></div>
                     </div>
                   </div>
                 </div>
@@ -96,21 +102,21 @@ export function NewConnectionSummaryPage({ onBack, onFinish, onCancel, customer 
                   <div className="space-y-3">
                     <div className="text-sm font-medium text-foreground">Instalação</div>
                     <div className="grid grid-cols-2 gap-3">
-                      <div className="space-y-1"><Label>Categoria</Label><Input readOnly placeholder="Residencial / Comercial / Rural" /></div>
-                      <div className="space-y-1"><Label>Tipo de residência</Label><Input readOnly placeholder="Casa / Apartamento" /></div>
-                      <div className="space-y-1"><Label>Fase declarada</Label><Input readOnly /></div>
-                      <div className="space-y-1"><Label>Tipo de entrada</Label><Input readOnly /></div>
-                      <div className="space-y-1"><Label>Tensão de fornecimento (V)</Label><Input readOnly /></div>
-                      <div className="space-y-1"><Label>Tipo instalação</Label><Input readOnly /></div>
+                      <div className="space-y-1"><Label>Categoria</Label><Input readOnly value={installation?.category ?? ""} placeholder="Residencial / Comercial / Rural" /></div>
+                      <div className="space-y-1"><Label>Tipo de residência</Label><Input readOnly value={installation?.residenceType ?? ""} placeholder="Casa / Apartamento" /></div>
+                      <div className="space-y-1"><Label>Fase declarada</Label><Input readOnly value={installation?.declaredPhase ?? ""} /></div>
+                      <div className="space-y-1"><Label>Tipo de entrada</Label><Input readOnly value={installation?.entryType ?? ""} /></div>
+                      <div className="space-y-1"><Label>Tensão de fornecimento (V)</Label><Input readOnly value={installation?.supplyVoltage ?? ""} /></div>
+                      <div className="space-y-1"><Label>Tipo instalação</Label><Input readOnly value={installation?.installationType ?? ""} /></div>
                     </div>
                   </div>
 
                   <div className="space-y-3">
                     <div className="text-sm font-medium text-foreground">Equipamentos</div>
                     <div className="grid grid-cols-2 gap-3">
-                      <div className="space-y-1"><Label>Total selecionado (W)</Label><Input readOnly value={"0"} /></div>
-                      <div className="space-y-1"><Label>Carga instalada (kW)</Label><Input readOnly value={"0"} /></div>
-                      <div className="space-y-1"><Label>Demanda calculada (kVA)</Label><Input readOnly value={"0"} /></div>
+                      <div className="space-y-1"><Label>Total selecionado (W)</Label><Input readOnly value={equipment ? String(equipment.totalW) : "0"} /></div>
+                      <div className="space-y-1"><Label>Carga instalada (kW)</Label><Input readOnly value={equipment ? equipment.installedKW.toFixed(2) : "0"} /></div>
+                      <div className="space-y-1"><Label>Demanda calculada (kVA)</Label><Input readOnly value={equipment ? equipment.demandKVA.toFixed(2) : "0"} /></div>
                       <div className="space-y-1"><Label>Medidor recomendado</Label><Input readOnly placeholder="" /></div>
                     </div>
                   </div>
