@@ -10,6 +10,7 @@ export interface Address {
   lastBill: string;
   dueDate: string;
   consumption: string;
+  distributor?: string;
 }
 
 export interface Customer {

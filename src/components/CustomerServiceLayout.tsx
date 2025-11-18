@@ -44,7 +44,7 @@ import * as DropdownMenu from "@radix-ui/react-dropdown-menu";
 
 interface CustomerServiceLayoutProps {
   onNewService?: () => void;
-  onNewConnection?: () => void;
+  onNewConnection?: (distributor: string) => void;
   customer?: Customer | null;
   onSelectCustomer?: (customer: Customer) => void;
 }
@@ -91,10 +91,12 @@ export function CustomerServiceLayout({
     return uc.length >= 3 ? prefix + uc.slice(3) : prefix + uc;
   };
 
-  const addresses = selectedCustomer.addresses.map((addr) => ({
-    ...addr,
-    ucNumber: computeUCForDistributor(addr.ucNumber, selectedDistributor),
-  }));
+  const addresses = selectedCustomer.addresses
+    .filter((addr) => !addr.distributor || addr.distributor === selectedDistributor)
+    .map((addr) => ({
+      ...addr,
+      ucNumber: addr.distributor ? addr.ucNumber : computeUCForDistributor(addr.ucNumber, selectedDistributor),
+    }));
 
   const filteredAddresses = addresses.filter((a) => {
     if (addressFilter === "active") return a.status === "active";
@@ -550,7 +552,7 @@ export function CustomerServiceLayout({
             </div>
 
             <div className="mb-6">
-              <Button className="h-12 bg-primary hover:bg-primary/90 gap-2" onClick={onNewConnection}>
+              <Button className="h-12 bg-primary hover:bg-primary/90 gap-2" onClick={() => onNewConnection?.(selectedDistributor)}>
                 <Power className="w-4 h-4" />
                 Ligação Nova
               </Button>

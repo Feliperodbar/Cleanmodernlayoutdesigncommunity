@@ -21,9 +21,16 @@ export default function App() {
   const [newConnectionAddressData, setNewConnectionAddressData] = useState<NewConnectionAddressData | null>(null);
   const [newConnectionInstallationData, setNewConnectionInstallationData] = useState<NewConnectionInstallationData | null>(null);
   const [newConnectionEquipmentData, setNewConnectionEquipmentData] = useState<NewConnectionEquipmentData | null>(null);
+  const [newConnectionSelectedDistributor, setNewConnectionSelectedDistributor] = useState<string | null>(null);
 
-  const generateUCNumber = (): string => {
-    const prefix = '007';
+  const generateUCNumber = (distributor: string | null): string => {
+    const map: Record<string, string> = {
+      'Neoenergia Elektro': '101',
+      'Neoenergia Coelba': '102',
+      'Neoenergia Cosern': '103',
+      'Neoenergia Pernambuco': '104',
+    };
+    const prefix = distributor && map[distributor] ? map[distributor] : '105';
     let tail = '';
     while (tail.length < 9) {
       tail += Math.floor(Math.random() * 10).toString();
@@ -33,7 +40,7 @@ export default function App() {
 
   const createNewUCAddress = (): Address | null => {
     if (!newConnectionAddressData) return null;
-    const ucNumber = generateUCNumber();
+    const ucNumber = generateUCNumber(newConnectionSelectedDistributor);
     const id = `${Date.now()}-${Math.random().toString(36).slice(2, 8)}`;
     const line = `${newConnectionAddressData.address}${newConnectionAddressData.number ? ", " + newConnectionAddressData.number : ""}${newConnectionAddressData.neighborhood ? ", " + newConnectionAddressData.neighborhood : ""}`;
     return {
@@ -46,6 +53,7 @@ export default function App() {
       lastBill: '-',
       dueDate: '-',
       consumption: '-',
+      distributor: newConnectionSelectedDistributor ?? undefined,
     };
   };
 
@@ -168,7 +176,7 @@ export default function App() {
     <CustomerServiceLayout 
       customer={selectedCustomer}
       onNewService={() => setCurrentPage('search')}
-      onNewConnection={() => setCurrentPage('new_connection_checklist')}
+      onNewConnection={(dist) => { setNewConnectionSelectedDistributor(dist); setCurrentPage('new_connection_checklist'); }}
       onSelectCustomer={(customer) => setSelectedCustomer(customer)}
     />
   );
