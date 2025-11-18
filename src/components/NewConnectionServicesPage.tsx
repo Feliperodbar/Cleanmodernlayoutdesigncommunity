@@ -8,7 +8,7 @@ import { Label } from "./ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "./ui/select";
 import { Progress } from "./ui/progress";
 import { Alert, AlertDescription } from "./ui/alert";
-import { CheckCircle2, Circle, CalendarDays, Receipt, CreditCard } from "lucide-react";
+import { CheckCircle2, Circle, CalendarDays, Receipt, CreditCard, MessageCircle } from "lucide-react";
 
 type NewConnectionServicesPageProps = {
   onBack: () => void;
@@ -98,7 +98,7 @@ export function NewConnectionServicesPage({ onBack, onConfirm, onCancel, custome
                     <span className={service === "debito_automatico" ? "text-primary font-medium" : undefined}>Débito Automático</span>
                   </button>
                   <button type="button" className={`rounded-lg border p-4 flex flex-col items-center gap-2 ${service === "whatsapp" ? "ring-2 ring-primary border-primary bg-primary/10" : "hover:bg-muted"}`} onClick={() => setService("whatsapp" as any)}>
-                    <Receipt className={`w-6 h-6 ${service === "whatsapp" ? "text-primary" : "text-secondary"}`} />
+                    <MessageCircle className={`w-6 h-6 ${service === "whatsapp" ? "text-primary" : "text-secondary"}`} />
                     <span className={service === "whatsapp" ? "text-primary font-medium" : undefined}>Avisos WhatsApp</span>
                   </button>
                 </div>
