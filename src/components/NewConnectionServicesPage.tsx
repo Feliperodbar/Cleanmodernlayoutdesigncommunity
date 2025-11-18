@@ -35,6 +35,8 @@ export function NewConnectionServicesPage({ onBack, onConfirm, onCancel, custome
   const [digitalEmail, setDigitalEmail] = useState("");
   const [debitYes, setDebitYes] = useState<boolean | undefined>(undefined);
   const [bank, setBank] = useState("");
+  const [whatsappYes, setWhatsappYes] = useState<boolean | undefined>(undefined);
+  const [whatsappPhone, setWhatsappPhone] = useState(customer?.phone ?? "");
   const progress = 100;
 
   return (
@@ -82,7 +84,7 @@ export function NewConnectionServicesPage({ onBack, onConfirm, onCancel, custome
                   <AlertDescription>Solicitação gerada com sucesso. Prazo de atendimento 19/02/2025</AlertDescription>
                 </Alert>
 
-                <div className="grid grid-cols-3 gap-4">
+                <div className="grid grid-cols-4 gap-4">
                   <button type="button" className={`rounded-lg border p-4 flex flex-col items-center gap-2 ${service === "data_certa" ? "ring-2 ring-primary border-primary bg-primary/10" : "hover:bg-muted"}`} onClick={() => setService("data_certa")}>
                     <CalendarDays className={`w-6 h-6 ${service === "data_certa" ? "text-primary" : "text-secondary"}`} />
                     <span className={service === "data_certa" ? "text-primary font-medium" : undefined}>Data Certa</span>
@@ -94,6 +96,10 @@ export function NewConnectionServicesPage({ onBack, onConfirm, onCancel, custome
                   <button type="button" className={`rounded-lg border p-4 flex flex-col items-center gap-2 ${service === "debito_automatico" ? "ring-2 ring-primary border-primary bg-primary/10" : "hover:bg-muted"}`} onClick={() => setService("debito_automatico")}>
                     <CreditCard className={`w-6 h-6 ${service === "debito_automatico" ? "text-primary" : "text-secondary"}`} />
                     <span className={service === "debito_automatico" ? "text-primary font-medium" : undefined}>Débito Automático</span>
+                  </button>
+                  <button type="button" className={`rounded-lg border p-4 flex flex-col items-center gap-2 ${service === "whatsapp" ? "ring-2 ring-primary border-primary bg-primary/10" : "hover:bg-muted"}`} onClick={() => setService("whatsapp" as any)}>
+                    <Receipt className={`w-6 h-6 ${service === "whatsapp" ? "text-primary" : "text-secondary"}`} />
+                    <span className={service === "whatsapp" ? "text-primary font-medium" : undefined}>Avisos WhatsApp</span>
                   </button>
                 </div>
 
@@ -151,6 +157,23 @@ export function NewConnectionServicesPage({ onBack, onConfirm, onCancel, custome
                           ))}
                         </SelectContent>
                       </Select>
+                    </div>
+                  </div>
+                )}
+
+                {service === "whatsapp" && (
+                  <div className="space-y-3">
+                    <div className="text-sm font-medium text-foreground">Avisos via WhatsApp</div>
+                    <div className="space-y-2">
+                      <div className="text-sm">Deseja ativar avisos via WhatsApp?</div>
+                      <div className="flex items-center gap-3">
+                        <label className="flex items-center gap-2"><input type="radio" name="whatsappYes" checked={whatsappYes === true} onChange={() => setWhatsappYes(true)} /><span>Sim</span></label>
+                        <label className="flex items-center gap-2"><input type="radio" name="whatsappYes" checked={whatsappYes === false} onChange={() => setWhatsappYes(false)} /><span>Não</span></label>
+                      </div>
+                    </div>
+                    <div className="space-y-2">
+                      <Label>Telefone</Label>
+                      <Input value={whatsappPhone} onChange={(e) => setWhatsappPhone(e.target.value)} placeholder="(00) 00000-0000" />
                     </div>
                   </div>
                 )}

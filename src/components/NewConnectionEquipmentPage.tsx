@@ -98,24 +98,24 @@ export function NewConnectionEquipmentPage({ onBack, onNext, onCancel, customer 
                     </div>
                   </div>
                 )}
-
-                <div className="space-y-2">
-                  <div className="text-sm">Cliente possui documento de responsabilidade técnica?</div>
-                  <div className="flex items-center gap-3">
-                    <label className="flex items-center gap-2"><input type="radio" name="techDoc" checked={hasTechnicalDoc === true} onChange={() => setHasTechnicalDoc(true)} /><span>Sim</span></label>
-                    <label className="flex items-center gap-2"><input type="radio" name="techDoc" checked={hasTechnicalDoc === false} onChange={() => setHasTechnicalDoc(false)} /><span>Não</span></label>
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                  <div className="space-y-2">
+                    <div className="text-sm">Cliente possui documento de responsabilidade técnica?</div>
+                    <div className="flex items-center gap-3">
+                      <label className="flex items-center gap-2"><input type="radio" name="techDoc" checked={hasTechnicalDoc === true} onChange={() => setHasTechnicalDoc(true)} /><span>Sim</span></label>
+                      <label className="flex items-center gap-2"><input type="radio" name="techDoc" checked={hasTechnicalDoc === false} onChange={() => setHasTechnicalDoc(false)} /><span>Não</span></label>
+                    </div>
                   </div>
-                </div>
-
-                <div className="grid grid-cols-4 gap-4">
-                  {[0,1,2,3].map((n) => (
-                    <button key={n} type="button" className={`rounded-lg border p-4 flex flex-col items-center gap-2 ${resLevel === n ? "ring-2 ring-primary border-primary bg-primary/10" : "hover:bg-muted"}`} onClick={() => setResLevel(n as 0|1|2|3)}>
-                      <Home className={`w-6 h-6 ${resLevel === n ? "text-primary" : "text-secondary"}`} />
-                      <span className={resLevel === n ? "text-primary font-medium" : undefined}>{`Residencial ${n}`}</span>
-                      <span className="text-xs text-muted-foreground">Limite de carga</span>
-                      <span className="text-sm text-foreground">{limits[n as 0|1|2|3]}W</span>
-                    </button>
-                  ))}
+                  <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+                    {[0,1,2,3].map((n) => (
+                      <button key={n} type="button" className={`rounded-lg border p-4 flex flex-col items-center gap-2 ${resLevel === n ? "ring-2 ring-primary border-primary bg-primary/10" : "hover:bg-muted"}`} onClick={() => setResLevel(n as 0|1|2|3)}>
+                        <Home className={`w-6 h-6 ${resLevel === n ? "text-primary" : "text-secondary"}`} />
+                        <span className={resLevel === n ? "text-primary font-medium" : undefined}>{`Residencial ${n}`}</span>
+                        <span className="text-xs text-muted-foreground">Limite de carga</span>
+                        <span className="text-sm text-foreground">{limits[n as 0|1|2|3]}W</span>
+                      </button>
+                    ))}
+                  </div>
                 </div>
 
                 <div className="flex flex-wrap gap-2">

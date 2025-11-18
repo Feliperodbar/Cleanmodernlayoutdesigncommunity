@@ -96,7 +96,7 @@ export function NewConnectionChecklistPage({ onBack, onNext, customer }: NewConn
                     <Badge variant="default">Padrão de Entrada</Badge>
                     <span className="text-xs text-muted-foreground">Verifique as condições iniciais</span>
                   </div>
-                  <div className="space-y-4">
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                     <div className="space-y-2">
                       <div className="text-sm">Já existe padrão de entrada?</div>
                       <div className="flex items-center gap-2">
@@ -111,7 +111,7 @@ export function NewConnectionChecklistPage({ onBack, onNext, customer }: NewConn
                         <Button size="sm" variant={answers.distancia_poste === false ? "destructive" : "outline"} onClick={() => setAnswer("distancia_poste", false)}>Não</Button>
                       </div>
                     </div>
-                    <div className="space-y-2">
+                    <div className="space-y-2 md:col-span-2">
                       <div className="text-sm">Tem poste, portinhola bem engastada e na dimensão adequada?</div>
                       <div className="flex items-center gap-2">
                         <Button size="sm" variant={answers.poste_proprio === true ? "default" : "outline"} onClick={() => setAnswer("poste_proprio", true)}>Sim</Button>
@@ -128,7 +128,7 @@ export function NewConnectionChecklistPage({ onBack, onNext, customer }: NewConn
                     <Badge variant="default">Aeração Secundária</Badge>
                     <span className="text-xs text-muted-foreground">Fixação e altura</span>
                   </div>
-                  <div className="space-y-4">
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                     <div className="space-y-2">
                       <div className="text-sm">Está fixado com parafusos, ou abraçadeiras e isoladores roldana?</div>
                       <div className="flex items-center gap-2">
@@ -153,7 +153,7 @@ export function NewConnectionChecklistPage({ onBack, onNext, customer }: NewConn
                     <Badge variant="default">Caixa de Medição</Badge>
                     <span className="text-xs text-muted-foreground">Normas e posição</span>
                   </div>
-                  <div className="space-y-4">
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                     <div className="space-y-2">
                       <div className="text-sm">A caixa está dentro das normas de especificações técnicas?</div>
                       <div className="flex items-center gap-2">
@@ -177,8 +177,8 @@ export function NewConnectionChecklistPage({ onBack, onNext, customer }: NewConn
                   <div className="flex items-center gap-2">
                     <Badge variant="default">Condutor de Enlace e Entrada</Badge>
                   </div>
-                  <div className="space-y-4">
-                    <div className="space-y-2">
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <div className="space-y-2 md:col-span-2">
                       <div className="text-sm">Há sobra de cabo o suficiente para a instalação dos medidores?</div>
                       <div className="flex items-center gap-2">
                         <Button size="sm" variant={answers.condutor_suficiente === true ? "default" : "outline"} onClick={() => setAnswer("condutor_suficiente", true)}>Sim</Button>
@@ -194,7 +194,7 @@ export function NewConnectionChecklistPage({ onBack, onNext, customer }: NewConn
                   <div className="flex items-center gap-2">
                     <Badge variant="default">Eletrodo de Entrada</Badge>
                   </div>
-                  <div className="space-y-4">
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                     <div className="space-y-2">
                       <div className="text-sm">Tem no mínimo 3 curvas?</div>
                       <div className="flex items-center gap-2">
@@ -209,7 +209,7 @@ export function NewConnectionChecklistPage({ onBack, onNext, customer }: NewConn
                         <Button size="sm" variant={answers.tamanho_curvas === false ? "destructive" : "outline"} onClick={() => setAnswer("tamanho_curvas", false)}>Não</Button>
                       </div>
                     </div>
-                    <div className="space-y-2">
+                    <div className="space-y-2 md:col-span-2">
                       <div className="text-sm">O aterramento está adequado?</div>
                       <div className="flex items-center gap-2">
                         <Button size="sm" variant={answers.material_adequado === true ? "default" : "outline"} onClick={() => setAnswer("material_adequado", true)}>Sim</Button>
