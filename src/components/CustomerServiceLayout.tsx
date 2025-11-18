@@ -10,6 +10,7 @@ import {
   Settings,
   ChevronDown,
   ChevronUp,
+  Power,
   DollarSign,
   Clock,
   MapPin,
@@ -550,7 +551,12 @@ export function CustomerServiceLayout({
             </div>
             </div>
 
-            
+            <div className="mb-6">
+              <Button className="h-12 bg-primary hover:bg-primary/90 gap-2" onClick={() => onNewConnection?.(selectedDistributor)}>
+                <Power className="w-4 h-4" />
+                Ligação Nova
+              </Button>
+            </div>
 
             {/* UC Cards */}
             <div className="space-y-4">

@@ -9,7 +9,7 @@ import { Badge } from './ui/badge';
 import { customers, findCustomers, Customer } from '../data/customers';
 import { AppHeader } from './AppHeader';
 import { Button } from './ui/button';
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from './ui/select';
+import { AlertDialog, AlertDialogContent, AlertDialogHeader, AlertDialogTitle } from './ui/alert-dialog';
 
 interface SearchPageProps {
   onSearchComplete: (customer: Customer) => void;
@@ -36,7 +36,7 @@ export function SearchPage({ onSearchComplete, onRegisterNew, onQuickNewConnecti
     'Neoenergia Cosern',
     'Neoenergia Pernambuco',
   ];
-  const [selectedDistributor, setSelectedDistributor] = useState<string>('Neoenergia Cosern');
+  const [showDistDialog, setShowDistDialog] = useState(false);
 
   // Dados compartilhados importados de src/data/customers
 
@@ -250,21 +250,8 @@ export function SearchPage({ onSearchComplete, onRegisterNew, onQuickNewConnecti
               </div>
 
               <div className="mt-10 space-y-4">
-                <div className="flex items-center justify-between">
-                  <div className="text-sm text-muted-foreground">Distribuidora para Ligação Nova</div>
-                  <div className="w-64">
-                    <Select value={selectedDistributor} onValueChange={(v) => setSelectedDistributor(v)}>
-                      <SelectTrigger><SelectValue placeholder="Selecione" /></SelectTrigger>
-                      <SelectContent>
-                        {distributors.map((d) => (
-                          <SelectItem key={d} value={d}>{d}</SelectItem>
-                        ))}
-                      </SelectContent>
-                    </Select>
-                  </div>
-                </div>
                 <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
-                  <Button className="h-12 w-full justify-start gap-2" onClick={() => onQuickNewConnection(selectedDistributor)}>
+                  <Button className="h-12 w-full justify-start gap-2" onClick={() => setShowDistDialog(true)}>
                     <Power className="w-4 h-4" />
                     <span>Ligação Nova</span>
                   </Button>
@@ -281,6 +268,20 @@ export function SearchPage({ onSearchComplete, onRegisterNew, onQuickNewConnecti
                     <span>Atualização Cadastral</span>
                   </Button>
                 </div>
+                <AlertDialog open={showDistDialog} onOpenChange={setShowDistDialog}>
+                  <AlertDialogContent>
+                    <AlertDialogHeader>
+                      <AlertDialogTitle>Selecione a distribuidora</AlertDialogTitle>
+                    </AlertDialogHeader>
+                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                      {distributors.map((d) => (
+                        <Button key={d} variant="outline" className="justify-start" onClick={() => { onQuickNewConnection(d); setShowDistDialog(false); }}>
+                          {d}
+                        </Button>
+                      ))}
+                    </div>
+                  </AlertDialogContent>
+                </AlertDialog>
               </div>
             </CardContent>
           </Card>
