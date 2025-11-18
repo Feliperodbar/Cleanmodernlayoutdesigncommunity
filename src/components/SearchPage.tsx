@@ -9,7 +9,7 @@ import { Badge } from './ui/badge';
 import { customers, findCustomers, Customer } from '../data/customers';
 import { AppHeader } from './AppHeader';
 import { Button } from './ui/button';
-import { AlertDialog, AlertDialogContent, AlertDialogHeader, AlertDialogTitle } from './ui/alert-dialog';
+import { Dialog, DialogContent, DialogHeader, DialogTitle } from './ui/dialog';
 
 interface SearchPageProps {
   onSearchComplete: (customer: Customer) => void;
@@ -238,9 +238,7 @@ export function SearchPage({ onSearchComplete, onRegisterNew, onQuickNewConnecti
                 </div>
 
                 {searchTerm.length < 2 && (
-                  <p className="text-xs text-muted-foreground text-center">
-                    Digite pelo menos 2 caracteres para buscar
-                  </p>
+                  
                 )}
                 {searchTerm.trim().length >= 2 && /[a-zA-Z]/.test(searchTerm) && !/\d/.test(searchTerm) && searchTerm.trim().split(/\s+/).filter(Boolean).length < 2 && (
                   <p className="text-xs text-muted-foreground text-center">
@@ -268,11 +266,11 @@ export function SearchPage({ onSearchComplete, onRegisterNew, onQuickNewConnecti
                     <span>Atualização Cadastral</span>
                   </Button>
                 </div>
-                <AlertDialog open={showDistDialog} onOpenChange={setShowDistDialog}>
-                  <AlertDialogContent>
-                    <AlertDialogHeader>
-                      <AlertDialogTitle>Selecione a distribuidora</AlertDialogTitle>
-                    </AlertDialogHeader>
+                <Dialog open={showDistDialog} onOpenChange={setShowDistDialog}>
+                  <DialogContent className="z-[1000]">
+                    <DialogHeader>
+                      <DialogTitle>Selecione a distribuidora</DialogTitle>
+                    </DialogHeader>
                     <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                       {distributors.map((d) => (
                         <Button key={d} variant="outline" className="justify-start" onClick={() => { onQuickNewConnection(d); setShowDistDialog(false); }}>
@@ -280,8 +278,8 @@ export function SearchPage({ onSearchComplete, onRegisterNew, onQuickNewConnecti
                         </Button>
                       ))}
                     </div>
-                  </AlertDialogContent>
-                </AlertDialog>
+                  </DialogContent>
+                </Dialog>
               </div>
             </CardContent>
           </Card>
