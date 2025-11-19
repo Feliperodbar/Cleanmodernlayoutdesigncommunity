@@ -1,0 +1,164 @@
+<template>
+    <div class="slds-card">
+        <div class="slds-card__header">
+            <div class="slds-grid slds-grid_align-spread slds-grid_vertical-align-center">
+                <div class="slds-col">
+                    <h2 class="slds-card__header-title">
+                        <span class="slds-text-heading_medium">Nova Conexão - {customerName}</span>
+                    </h2>
+                </div>
+                <div class="slds-col slds-no-flex">
+                    <div class="slds-progress slds-progress_horizontal">
+                        <ol class="slds-progress__list">
+                            <template for:each={steps} for:item="step">
+                                <li key={step.id} class="slds-progress__item">
+                                    <button class="slds-button slds-progress__marker" 
+                                            aria-current={step.active}
+                                            disabled={step.active}>
+                                        <span class="slds-assistive-text">{step.label}</span>
+                                    </button>
+                                </li>
+                            </template>
+                        </ol>
+                        <div class="slds-progress-bar slds-progress-bar_x-small" aria-valuemin="0" aria-valuemax="100" aria-valuenow={currentStep}>
+                            <span class="slds-progress-bar__value" style={progressBarStyle}></span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <div class="slds-card__body slds-card__body_inner">
+            <!-- Step 1: Checklist -->
+            <template if:true={isStep1}>
+                <div class="slds-m-vertical_medium">
+                    <h3 class="slds-text-heading_medium slds-m-bottom_medium">Checklist de Documentos</h3>
+                    <div class="slds-form-element">
+                        <div class="slds-form-element__control">
+                            <div class="slds-checkbox">
+                                <input type="checkbox" id="document1" class="slds-input" />
+                                <label class="slds-checkbox__label" for="document1">
+                                    <span class="slds-checkbox_faux"></span>
+                                    <span class="slds-form-element__label">Documento de Identidade</span>
+                                </label>
+                            </div>
+                            <div class="slds-checkbox">
+                                <input type="checkbox" id="document2" class="slds-input" />
+                                <label class="slds-checkbox__label" for="document2">
+                                    <span class="slds-checkbox_faux"></span>
+                                    <span class="slds-form-element__label">Comprovante de Residência</span>
+                                </label>
+                            </div>
+                            <div class="slds-checkbox">
+                                <input type="checkbox" id="document3" class="slds-input" />
+                                <label class="slds-checkbox__label" for="document3">
+                                    <span class="slds-checkbox_faux"></span>
+                                    <span class="slds-form-element__label">CPF</span>
+                                </label>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </template>
+
+            <!-- Step 2: Address -->
+            <template if:true={isStep2}>
+                <c-new-connection-address 
+                    onaddressdata={handleAddressData}
+                    onnext={handleNext}
+                    onback={handleBack}
+                    oncancel={handleCancel}>
+                </c-new-connection-address>
+            </template>
+
+            <!-- Step 3: Installation -->
+            <template if:true={isStep3}>
+                <c-new-connection-installation 
+                    oninstallationdata={handleInstallationData}
+                    onnext={handleNext}
+                    onback={handleBack}
+                    oncancel={handleCancel}>
+                </c-new-connection-installation>
+            </template>
+
+            <!-- Step 4: Equipment -->
+            <template if:true={isStep4}>
+                <c-new-connection-equipment 
+                    onequipmentdata={handleEquipmentData}
+                    onnext={handleNext}
+                    onback={handleBack}
+                    oncancel={handleCancel}>
+                </c-new-connection-equipment>
+            </template>
+
+            <!-- Step 5: Summary -->
+            <template if:true={isStep5}>
+                <c-new-connection-summary 
+                    address-data={addressData}
+                    installation-data={installationData}
+                    equipment-data={equipmentData}
+                    onconfirm={handleConfirmConnection}
+                    onback={handleBack}
+                    oncancel={handleCancel}>
+                </c-new-connection-summary>
+            </template>
+
+            <!-- Step 6: Confirmation -->
+            <template if:true={isStep6}>
+                <div class="slds-m-vertical_medium">
+                    <div class="slds-illustration slds-illustration_large">
+                        <div class="slds-text-longform">
+                            <h3 class="slds-text-heading_medium">Conexão Criada com Sucesso!</h3>
+                            <p class="slds-text-body_regular">A nova conexão foi registrada no sistema.</p>
+                        </div>
+                    </div>
+                </div>
+            </template>
+
+            <!-- Navigation Buttons -->
+            <template if:false={isStep2}>
+                <template if:false={isStep3}>
+                    <template if:false={isStep4}>
+                        <template if:false={isStep5}>
+                            <template if:false={isStep6}>
+                                <div class="slds-grid slds-grid_align-center slds-m-top_large">
+                                    <div class="slds-col slds-size_1-of-1 slds-medium-size_1-of-2">
+                                        <lightning-button variant="neutral" 
+                                                        label="Voltar" 
+                                                        title="Voltar"
+                                                        onclick={handleBack}
+                                                        disabled={currentStep === 1}
+                                                        class="slds-m-bottom_small">
+                                        </lightning-button>
+                                    </div>
+                                    <div class="slds-col slds-size_1-of-1 slds-medium-size_1-of-2">
+                                        <lightning-button variant="brand" 
+                                                        label="Próximo" 
+                                                        title="Próximo"
+                                                        onclick={handleNext}
+                                                        disabled={!canGoNext}
+                                                        class="slds-m-bottom_small">
+                                        </lightning-button>
+                                    </div>
+                                </div>
+                            </template>
+                        </template>
+                    </template>
+                </template>
+            </template>
+
+            <template if:true={isStep6}>
+                <div class="slds-grid slds-grid_align-center slds-m-top_large">
+                    <div class="slds-col slds-size_1-of-1 slds-medium-size_1-of-2">
+                        <lightning-button variant="brand" 
+                                        label="Finalizar" 
+                                        title="Finalizar"
+                                        onclick={handleCancel}
+                                        class="slds-m-bottom_small">
+                        </lightning-button>
+                    </div>
+                </div>
+            </template>
+        </div>
+    </div>
+</template>

@@ -1,0 +1,165 @@
+<template>
+    <div class="slds-card">
+        <div class="slds-card__header">
+            <div class="slds-grid slds-grid_align-spread slds-grid_vertical-align-center">
+                <div class="slds-col">
+                    <h2 class="slds-card__header-title">
+                        <span class="slds-text-heading_medium">Atendimento ao Cliente</span>
+                    </h2>
+                </div>
+                <div class="slds-col slds-no-flex">
+                    <lightning-button-group>
+                        <lightning-button variant="brand" 
+                                        label="Nova Conexão" 
+                                        title="Nova Conexão"
+                                        onclick={handleNewConnection}>
+                        </lightning-button>
+                        <lightning-button variant="neutral" 
+                                        label="Novo Atendimento" 
+                                        title="Novo Atendimento"
+                                        onclick={handleNewService}>
+                        </lightning-button>
+                    </lightning-button-group>
+                </div>
+            </div>
+        </div>
+        
+        <div class="slds-card__body slds-card__body_inner">
+            <template if:true={customerInfo}>
+                <!-- Customer Info -->
+                <div class="slds-grid slds-grid_vertical slds-m-bottom_large">
+                    <div class="slds-col">
+                        <div class="slds-media slds-media_center">
+                            <div class="slds-media__figure">
+                                <lightning-icon icon-name="standard:person_account" size="large"></lightning-icon>
+                            </div>
+                            <div class="slds-media__body">
+                                <h1 class="slds-text-heading_large">{customerInfo.Name}</h1>
+                                <p class="slds-text-body_regular">CPF: {customerInfo.CPF__c}</p>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="slds-col slds-m-top_medium">
+                        <div class="slds-grid slds-grid_vertical-align-center slds-wrap">
+                            <div class="slds-col slds-size_1-of-1 slds-medium-size_1-of-2 slds-large-size_1-of-4">
+                                <p><strong>RG:</strong> {customerInfo.RG__c}</p>
+                            </div>
+                            <div class="slds-col slds-size_1-of-1 slds-medium-size_1-of-2 slds-large-size_1-of-4">
+                                <p><strong>Data de Nascimento:</strong> {customerInfo.BirthDateFormatted}</p>
+                            </div>
+                            <div class="slds-col slds-size_1-of-1 slds-medium-size_1-of-2 slds-large-size_1-of-4">
+                                <p><strong>Sexo:</strong> {customerInfo.Sex__c}</p>
+                            </div>
+                            <div class="slds-col slds-size_1-of-1 slds-medium-size_1-of-2 slds-large-size_1-of-4">
+                                <p><strong>Último Atendimento:</strong> {customerInfo.LastServiceFormatted}</p>
+                            </div>
+                        </div>
+                        <div class="slds-grid slds-grid_vertical-align-center slds-wrap slds-m-top_small">
+                            <div class="slds-col slds-size_1-of-1 slds-medium-size_1-of-2">
+                                <p><strong>Email:</strong> {customerInfo.Email__c}</p>
+                            </div>
+                            <div class="slds-col slds-size_1-of-1 slds-medium-size_1-of-2">
+                                <p><strong>Telefone:</strong> {customerInfo.Phone__c}</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Tabs -->
+                <lightning-tabset active-tab-value={activeTab}>
+                    <lightning-tab label="Visão Geral" value="overview">
+                        <div class="slds-m-vertical_medium">
+                            <div class="slds-grid slds-grid_vertical-align-center slds-m-bottom_small">
+                                <div class="slds-col">
+                                    <h3 class="slds-text-heading_medium">Endereços</h3>
+                                </div>
+                                <div class="slds-col slds-no-flex">
+                                    <span class="slds-badge slds-badge_brand">{addresses.length} Total</span>
+                                </div>
+                            </div>
+                            
+                            <template if:true={activeAddresses}>
+                                <div class="slds-m-bottom_medium">
+                                    <h4 class="slds-text-heading_small slds-m-bottom_small">Ativos</h4>
+                                    <div class="slds-grid slds-grid_vertical">
+                                        <template for:each={activeAddresses} for:item="address">
+                                            <div key={address.Id} class="slds-col slds-m-bottom_small">
+                                                <div class="slds-box slds-theme_shade">
+                                                    <div class="slds-media">
+                                                        <div class="slds-media__figure">
+                                                            <lightning-icon icon-name="utility:home" size="small"></lightning-icon>
+                                                        </div>
+                                                        <div class="slds-media__body">
+                                                            <h5 class="slds-text-heading_small">{address.UCNumber__c}</h5>
+                                                            <p class="slds-text-body_small">{address.Address__c}</p>
+                                                            <p class="slds-text-body_small">{address.City__c} - CEP: {address.CEP__c}</p>
+                                                            <div class="slds-m-top_small">
+                                                                <span class="slds-badge slds-theme_success">Ativo</span>
+                                                                <span class="slds-m-left_small slds-text-body_small">Distribuidora: {address.Distributor__c}</span>
+                                                            </div>
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        </template>
+                                    </div>
+                                </div>
+                            </template>
+                            
+                            <template if:true={inactiveAddresses}>
+                                <div>
+                                    <h4 class="slds-text-heading_small slds-m-bottom_small">Inativos</h4>
+                                    <div class="slds-grid slds-grid_vertical">
+                                        <template for:each={inactiveAddresses} for:item="address">
+                                            <div key={address.Id} class="slds-col slds-m-bottom_small">
+                                                <div class="slds-box">
+                                                    <div class="slds-media">
+                                                        <div class="slds-media__figure">
+                                                            <lightning-icon icon-name="utility:home" size="small"></lightning-icon>
+                                                        </div>
+                                                        <div class="slds-media__body">
+                                                            <h5 class="slds-text-heading_small">{address.UCNumber__c}</h5>
+                                                            <p class="slds-text-body_small">{address.Address__c}</p>
+                                                            <p class="slds-text-body_small">{address.City__c} - CEP: {address.CEP__c}</p>
+                                                            <div class="slds-m-top_small">
+                                                                <span class="slds-badge slds-theme_warning">Inativo</span>
+                                                                <span class="slds-m-left_small slds-text-body_small">Distribuidora: {address.Distributor__c}</span>
+                                                            </div>
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        </template>
+                                    </div>
+                                </div>
+                            </template>
+                        </div>
+                    </lightning-tab>
+                    
+                    <lightning-tab label="Histórico de Atendimentos" value="history">
+                        <div class="slds-m-vertical_medium">
+                            <div class="slds-illustration slds-illustration_small">
+                                <div class="slds-text-longform">
+                                    <h3 class="slds-text-heading_medium">Histórico de Atendimentos</h3>
+                                    <p class="slds-text-body_regular">Funcionalidade em desenvolvimento...</p>
+                                </div>
+                            </div>
+                        </div>
+                    </lightning-tab>
+                </lightning-tabset>
+            </template>
+            
+            <template if:false={customerInfo}>
+                <div class="slds-align_absolute-center slds-m-vertical_large">
+                    <div class="slds-illustration slds-illustration_large">
+                        <div class="slds-text-longform">
+                            <h3 class="slds-text-heading_medium">Nenhum cliente selecionado</h3>
+                            <p class="slds-text-body_regular">Por favor, selecione um cliente para visualizar os detalhes do atendimento.</p>
+                        </div>
+                    </div>
+                </div>
+            </template>
+        </div>
+    </div>
+</template>

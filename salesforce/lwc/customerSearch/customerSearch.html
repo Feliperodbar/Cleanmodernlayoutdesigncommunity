@@ -1,0 +1,107 @@
+<template>
+    <div class="slds-card">
+        <div class="slds-card__header">
+            <h2 class="slds-card__header-title">
+                <span class="slds-text-heading_medium">Busca de Clientes</span>
+            </h2>
+        </div>
+        <div class="slds-card__body slds-card__body_inner">
+            <!-- Search Input -->
+            <div class="slds-form-element">
+                <label class="slds-form-element__label" for="search-input">
+                    <abbr class="slds-required" title="required">*</abbr>Buscar Cliente
+                </label>
+                <div class="slds-form-element__control">
+                    <div class="slds-input-has-icon slds-input-has-icon_left">
+                        <lightning-icon icon-name="utility:search" 
+                                      alternative-text="Search" 
+                                      class="slds-input__icon slds-icon-text-default">
+                        </lightning-icon>
+                        <input type="text" 
+                               id="search-input"
+                               class="slds-input" 
+                               placeholder="Digite nome, CPF ou email..."
+                               value={searchTerm}
+                               onkeyup={handleSearchTermChange} />
+                    </div>
+                </div>
+            </div>
+
+            <!-- Quick Actions -->
+            <div class="slds-grid slds-grid_align-center slds-m-top_medium">
+                <div class="slds-col slds-size_1-of-1 slds-medium-size_1-of-2 slds-large-size_1-of-4">
+                    <lightning-button variant="brand" 
+                                    label="Nova Conexão"
+                                    title="Nova Conexão"
+                                    onclick={handleQuickAction}
+                                    data-action="new_connection"
+                                    class="slds-m-bottom_small">
+                    </lightning-button>
+                </div>
+                <div class="slds-col slds-size_1-of-1 slds-medium-size_1-of-2 slds-large-size_1-of-4">
+                    <lightning-button variant="brand" 
+                                    label="Registrar Cliente"
+                                    title="Registrar Cliente"
+                                    onclick={handleRegisterNew}
+                                    class="slds-m-bottom_small">
+                    </lightning-button>
+                </div>
+            </div>
+
+            <!-- Search Results -->
+            <template if:true={showResults}>
+                <template if:true={isSearching}>
+                    <div class="slds-align_absolute-center slds-m-vertical_large">
+                        <lightning-spinner alternative-text="Carregando..." size="medium"></lightning-spinner>
+                    </div>
+                </template>
+                
+                <template if:false={isSearching}>
+                    <template if:true={hasResults}>
+                        <div class="slds-m-top_medium">
+                            <h3 class="slds-text-heading_small slds-m-bottom_small">Resultados da Busca</h3>
+                            <div class="slds-scrollable_y" style="max-height: 400px;">
+                                <template for:each={customers} for:item="customer">
+                                    <div key={customer.Id} class="slds-item slds-m-bottom_small">
+                                        <article class="slds-tile slds-tile_board">
+                                            <h3 class="slds-tile__title slds-truncate">
+                                                <a href="#" onclick={handleCustomerSelect} data-id={customer.Id}>
+                                                    {customer.Name}
+                                                </a>
+                                            </h3>
+                                            <div class="slds-tile__detail">
+                                                <p class="slds-truncate">
+                                                    <lightning-icon icon-name="standard:user" size="x-small" class="slds-m-right_x-small"></lightning-icon>
+                                                    CPF: {customer.CPF__c}
+                                                </p>
+                                                <p class="slds-truncate">
+                                                    <lightning-icon icon-name="standard:email" size="x-small" class="slds-m-right_x-small"></lightning-icon>
+                                                    {customer.Email__c}
+                                                </p>
+                                                <p class="slds-truncate">
+                                                    <lightning-icon icon-name="standard:phone" size="x-small" class="slds-m-right_x-small"></lightning-icon>
+                                                    {customer.Phone__c}
+                                                </p>
+                                            </div>
+                                        </article>
+                                    </div>
+                                </template>
+                            </div>
+                        </div>
+                    </template>
+                    
+                    <template if:true={noResults}>
+                        <div class="slds-align_absolute-center slds-m-vertical_large">
+                            <div class="slds-illustration slds-illustration_small">
+                                <div class="slds-text-longform">
+                                    <h3 class="slds-text-heading_medium">Nenhum cliente encontrado</h3>
+                                    <p class="slds-text-body_regular">Tente ajustar sua busca ou registre um novo cliente.</p>
+                                </div>
+                            </div>
+                        </div>
+                    </template>
+                </template>
+            </template>
+        </div>
+    </div>
+</template>
