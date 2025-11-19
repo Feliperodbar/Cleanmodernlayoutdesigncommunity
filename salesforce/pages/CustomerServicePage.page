@@ -1,5 +1,57 @@
 <apex:page controller="CustomerServiceController" sidebar="false" showHeader="false" standardStylesheets="false">
     <apex:stylesheet value="{!URLFOR($Resource.TailwindCSS, 'tailwind.min.css')}"/>
+    <apex:includeScript value="https://cdn.tailwindcss.com"/>
+    
+    <style>
+        .quick-action-button {
+            background-color: #ffffff;
+            border: 1px solid #d1d5db;
+            border-radius: 0.5rem;
+            padding: 1rem;
+            min-height: 80px;
+            transition: all 0.2s ease-in-out;
+            box-shadow: 0 1px 2px 0 rgba(0, 0, 0, 0.05);
+            width: 100%;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+        }
+        
+        .quick-action-button:hover {
+            background-color: #f9fafb;
+            border-color: #9ca3af;
+            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+            transform: translateY(-1px);
+        }
+        
+        .quick-action-button:active {
+            transform: translateY(0);
+            box-shadow: 0 1px 2px 0 rgba(0, 0, 0, 0.05);
+        }
+        
+        .search-input-enhanced {
+            min-height: 2.75rem;
+            padding: 0.75rem 1rem 0.75rem 2.75rem;
+        }
+        
+        .icon-gray {
+            color: #6b7280;
+        }
+        
+        .icon-gray:hover {
+            color: #374151;
+        }
+        
+        .text-dark {
+            color: #374151;
+            font-weight: 500;
+        }
+        
+        .text-dark:hover {
+            color: #1f2937;
+        }
+    </style>
     
     <div class="min-h-screen bg-gray-100">
         <!-- Header -->
@@ -23,18 +75,20 @@
                 <!-- Search Panel -->
                 <div class="lg:col-span-1">
                     <div class="bg-white rounded-lg shadow p-6">
-                        <h2 class="text-lg font-semibold text-gray-900 mb-4">Buscar Cliente</h2>
+                        <!-- Header -->
+                        <div class="text-center mb-8">
+                            <h2 class="text-2xl font-bold text-gray-900 mb-2">Painel de Atendimento</h2>
+                            <p class="text-gray-600">Identificar cliente</p>
+                        </div>
                         
-                        <div class="mb-4">
-                            <label for="searchInput" class="block text-sm font-medium text-gray-700 mb-2">
-                                Nome, CPF ou Email
-                            </label>
+                        <!-- Search Input -->
+                        <div class="mb-8">
                             <div class="relative">
                                 <input type="text" 
                                        id="searchInput" 
-                                       class="w-full pl-10 pr-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                                       placeholder="Digite para buscar..."/>
-                                <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                                       class="w-full pl-10 pr-3 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent search-input-enhanced"
+                                       placeholder="Digite UC, CPF, Nome ou Protocolo..."/>
+                                <div class="absolute left-0 top-0 h-full flex items-center pl-3 pointer-events-none">
                                     <svg class="h-5 w-5 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"></path>
                                     </svg>
@@ -42,12 +96,53 @@
                             </div>
                         </div>
 
-                        <div class="space-y-3">
-                            <button class="w-full bg-blue-600 text-white py-3 px-4 rounded-md hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 transition-colors duration-200">
-                                Nova Conexão
+                        <!-- Quick Actions Grid 2x2 -->
+                        <div class="grid grid-cols-2 gap-4 mb-6">
+                            <!-- Ligação Nova -->
+                            <button class="quick-action-button" onclick="handleQuickAction('new_connection')">
+                                <div class="flex flex-col items-center justify-center">
+                                    <svg class="w-8 h-8 mb-2 icon-gray" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z"></path>
+                                    </svg>
+                                    <span class="text-sm text-dark">Ligação Nova</span>
+                                </div>
                             </button>
-                            <button class="w-full bg-green-600 text-white py-3 px-4 rounded-md hover:bg-green-700 focus:outline-none focus:ring-2 focus:ring-green-500 transition-colors duration-200">
-                                Registrar Cliente
+                            
+                            <!-- Segunda Via de Boleto -->
+                            <button class="quick-action-button" onclick="handleQuickAction('second_invoice')">
+                                <div class="flex flex-col items-center justify-center">
+                                    <svg class="w-8 h-8 mb-2 icon-gray" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path>
+                                    </svg>
+                                    <span class="text-sm text-dark">Segunda Via de Boleto</span>
+                                </div>
+                            </button>
+                            
+                            <!-- Falta de Energia -->
+                            <button class="quick-action-button" onclick="handleQuickAction('outage')">
+                                <div class="flex flex-col items-center justify-center">
+                                    <svg class="w-8 h-8 mb-2 icon-gray" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-2.5L13.732 4c-.77-.833-1.964-.833-2.732 0L4.082 16.5c-.77.833.192 2.5 1.732 2.5z"></path>
+                                    </svg>
+                                    <span class="text-sm text-dark">Falta de Energia</span>
+                                </div>
+                            </button>
+                            
+                            <!-- Atualização Cadastral -->
+                            <button class="quick-action-button" onclick="handleQuickAction('update')">
+                                <div class="flex flex-col items-center justify-center">
+                                    <svg class="w-8 h-8 mb-2 icon-gray" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"></path>
+                                    </svg>
+                                    <span class="text-sm text-dark">Atualização Cadastral</span>
+                                </div>
+                            </button>
+                        </div>
+                        
+                        <!-- Advanced Search Link -->
+                        <div class="text-center">
+                            <button class="text-sm text-gray-500 hover:text-gray-700 transition-colors duration-200" onclick="handleAdvancedSearch()">
+                                Busca Avançada
                             </button>
                         </div>
                     </div>
@@ -74,6 +169,30 @@
     </div>
 
     <script>
+        function handleQuickAction(action) {
+            console.log('Quick action clicked:', action);
+            // Implement action handling here
+            
+            switch(action) {
+                case 'new_connection':
+                    alert('Nova Conexão selecionada');
+                    break;
+                case 'second_invoice':
+                    alert('Segunda Via de Boleto selecionada');
+                    break;
+                case 'outage':
+                    alert('Falta de Energia selecionada');
+                    break;
+                case 'update':
+                    alert('Atualização Cadastral selecionada');
+                    break;
+            }
+        }
+        
+        function handleAdvancedSearch() {
+            alert('Busca Avançada selecionada');
+        }
+
         // Basic JavaScript for search functionality
         document.addEventListener('DOMContentLoaded', function() {
             const searchInput = document.getElementById('searchInput');

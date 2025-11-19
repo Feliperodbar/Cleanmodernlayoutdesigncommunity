@@ -168,6 +168,86 @@
     border-color: #0284c7;
 }
 
+/* Quick Action Buttons - Standardized styling */
+.quick-action-button {
+    background-color: #ffffff;
+    border: 1px solid #d1d5db;
+    border-radius: 0.5rem;
+    padding: 1rem;
+    min-height: 80px;
+    transition: all 0.2s ease-in-out;
+    box-shadow: 0 1px 2px 0 rgba(0, 0, 0, 0.05);
+}
+
+.quick-action-button:hover {
+    background-color: #f9fafb;
+    border-color: #9ca3af;
+    box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+    transform: translateY(-1px);
+}
+
+.quick-action-button:active {
+    transform: translateY(0);
+    box-shadow: 0 1px 2px 0 rgba(0, 0, 0, 0.05);
+}
+
+.quick-action-button .slds-icon {
+    color: #6b7280;
+    transition: color 0.2s ease-in-out;
+}
+
+.quick-action-button:hover .slds-icon {
+    color: #374151;
+}
+
+.quick-action-button span {
+    color: #374151;
+    font-weight: 500;
+    transition: color 0.2s ease-in-out;
+}
+
+.quick-action-button:hover span {
+    color: #1f2937;
+}
+
+/* Enhanced spacing for search panel */
+.slds-input_height {
+    min-height: 2.75rem;
+    padding: 0.75rem 1rem;
+}
+
+.slds-m-top_x-large {
+    margin-top: 2.5rem;
+}
+
+.slds-m-bottom_medium {
+    margin-bottom: 1rem;
+}
+
+/* Responsive adjustments for mobile */
+@media (max-width: 480px) {
+    .quick-action-button {
+        min-height: 70px;
+        padding: 0.75rem;
+    }
+    
+    .quick-action-button .slds-icon {
+        --slds-c-icon-size: 1.5rem;
+    }
+}
+
+/* Search input enhancements */
+.slds-input-has-icon .slds-input {
+    padding-left: 2.75rem;
+    padding-right: 1rem;
+}
+
+.slds-input-has-icon_left .slds-input__icon {
+    left: 1rem;
+    top: 50%;
+    transform: translateY(-50%);
+}
+
 /* Form enhancements */
 .slds-form-element__label {
     font-weight: 500;
