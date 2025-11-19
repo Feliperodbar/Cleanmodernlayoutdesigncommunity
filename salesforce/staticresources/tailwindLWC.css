@@ -112,6 +112,51 @@
     padding: 1.5rem;
 }
 
+/* Button group spacing for mobile */
+@media (max-width: 767px) {
+    .slds-button-group-row lightning-button {
+        display: block;
+        margin-bottom: 0.5rem;
+        width: 100%;
+    }
+    
+    .slds-button-group-row lightning-button:last-child {
+        margin-bottom: 0;
+    }
+    
+    .slds-button_stretch {
+        width: 100%;
+        justify-content: center;
+    }
+}
+
+/* Enhanced spacing for quick action buttons */
+.slds-grid_vertical lightning-button {
+    margin-bottom: 0.75rem;
+}
+
+.slds-grid_vertical lightning-button:last-child {
+    margin-bottom: 0;
+}
+
+/* Better responsive behavior for button groups */
+.slds-button-group-row {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.5rem;
+}
+
+@media (max-width: 767px) {
+    .slds-button-group-row {
+        flex-direction: column;
+    }
+    
+    .slds-button-group-row .slds-m-right_small {
+        margin-right: 0;
+        margin-bottom: 0.5rem;
+    }
+}
+
 /* Button enhancements */
 .slds-button_brand {
     background-color: #0ea5e9;

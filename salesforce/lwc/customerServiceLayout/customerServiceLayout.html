@@ -1,18 +1,19 @@
 <template>
     <div class="slds-card">
         <div class="slds-card__header">
-            <div class="slds-grid slds-grid_align-spread slds-grid_vertical-align-center">
-                <div class="slds-col">
+            <div class="slds-grid slds-grid_align-spread slds-grid_vertical-align-center slds-wrap">
+                <div class="slds-col slds-size_1-of-1 slds-medium-size_1-of-2">
                     <h2 class="slds-card__header-title">
                         <span class="slds-text-heading_medium">Atendimento ao Cliente</span>
                     </h2>
                 </div>
-                <div class="slds-col slds-no-flex">
-                    <lightning-button-group>
+                <div class="slds-col slds-size_1-of-1 slds-medium-size_1-of-2 slds-text-align_right">
+                    <lightning-button-group class="slds-button-group-row">
                         <lightning-button variant="brand" 
                                         label="Nova Conexão" 
                                         title="Nova Conexão"
-                                        onclick={handleNewConnection}>
+                                        onclick={handleNewConnection}
+                                        class="slds-m-right_small">
                         </lightning-button>
                         <lightning-button variant="neutral" 
                                         label="Novo Atendimento" 

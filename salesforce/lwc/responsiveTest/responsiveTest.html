@@ -1,0 +1,59 @@
+<!-- Teste de Responsividade - Exemplo de Preview -->
+<div class="slds-grid slds-grid_vertical slds-m-top_medium">
+    <div class="slds-text-align_center slds-m-bottom_medium">
+        <h3 class="slds-text-heading_medium">Preview dos Botões de Ação</h3>
+        <p class="slds-text-body_small slds-text-color_weak">Teste de responsividade em diferentes tamanhos de tela</p>
+    </div>
+    
+    <!-- Desktop View -->
+    <div class="slds-box slds-theme_shade slds-m-bottom_medium">
+        <h4 class="slds-text-heading_small slds-m-bottom_small">Desktop (1024px+)</h4>
+        <div class="slds-grid slds-grid_align-spread slds-grid_vertical-align-center">
+            <div class="slds-col slds-size_1-of-2">
+                <h5 class="slds-text-heading_small">Título do Card</h5>
+            </div>
+            <div class="slds-col slds-size_1-of-2 slds-text-align_right">
+                <lightning-button-group>
+                    <lightning-button variant="brand" label="Nova Conexão"></lightning-button>
+                    <lightning-button variant="neutral" label="Novo Atendimento"></lightning-button>
+                </lightning-button-group>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Tablet View -->
+    <div class="slds-box slds-theme_shade slds-m-bottom_medium">
+        <h4 class="slds-text-heading_small slds-m-bottom_small">Tablet (768px - 1023px)</h4>
+        <div class="slds-grid slds-grid_vertical">
+            <div class="slds-col slds-size_1-of-1 slds-medium-size_1-of-2 slds-m-bottom_small">
+                <h5 class="slds-text-heading_small">Título do Card</h5>
+            </div>
+            <div class="slds-col slds-size_1-of-1 slds-medium-size_1-of-2 slds-text-align_right">
+                <lightning-button-group>
+                    <lightning-button variant="brand" label="Nova Conexão"></lightning-button>
+                    <lightning-button variant="neutral" label="Novo Atendimento"></lightning-button>
+                </lightning-button-group>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Mobile View -->
+    <div class="slds-box slds-theme_shade">
+        <h4 class="slds-text-heading_small slds-m-bottom_small">Mobile (&lt; 768px)</h4>
+        <div class="slds-grid slds-grid_vertical">
+            <div class="slds-col slds-size_1-of-1 slds-m-bottom_small">
+                <h5 class="slds-text-heading_small">Título do Card</h5>
+            </div>
+            <div class="slds-col slds-size_1-of-1">
+                <div class="slds-grid slds-grid_vertical">
+                    <div class="slds-col slds-m-bottom_small">
+                        <lightning-button variant="brand" label="Nova Conexão" class="slds-button_stretch"></lightning-button>
+                    </div>
+                    <div class="slds-col">
+                        <lightning-button variant="neutral" label="Novo Atendimento" class="slds-button_stretch"></lightning-button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>

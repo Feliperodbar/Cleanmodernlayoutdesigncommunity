@@ -28,22 +28,22 @@
             </div>
 
             <!-- Quick Actions -->
-            <div class="slds-grid slds-grid_align-center slds-m-top_medium">
-                <div class="slds-col slds-size_1-of-1 slds-medium-size_1-of-2 slds-large-size_1-of-4">
+            <div class="slds-grid slds-grid_align-center slds-m-top_medium slds-grid_vertical">
+                <div class="slds-col slds-size_1-of-1 slds-medium-size_1-of-1 slds-large-size_1-of-2 slds-m-bottom_small">
                     <lightning-button variant="brand" 
                                     label="Nova Conexão"
                                     title="Nova Conexão"
                                     onclick={handleQuickAction}
                                     data-action="new_connection"
-                                    class="slds-m-bottom_small">
+                                    class="slds-button_stretch">
                     </lightning-button>
                 </div>
-                <div class="slds-col slds-size_1-of-1 slds-medium-size_1-of-2 slds-large-size_1-of-4">
+                <div class="slds-col slds-size_1-of-1 slds-medium-size_1-of-1 slds-large-size_1-of-2">
                     <lightning-button variant="brand" 
                                     label="Registrar Cliente"
                                     title="Registrar Cliente"
                                     onclick={handleRegisterNew}
-                                    class="slds-m-bottom_small">
+                                    class="slds-button_stretch">
                     </lightning-button>
                 </div>
             </div>
