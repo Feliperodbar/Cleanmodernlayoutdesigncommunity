@@ -37,6 +37,8 @@ import {
 // Removidos componentes de AlertDialog (confirmação não será usada)
 // Switch removido conforme nova especificação
 import { customers, findCustomers } from "../data/customers";
+import type { ServiceStatus } from "../data/customers";
+import { updatePersistedCustomer, getAllPersistedCustomers } from "../data/db";
 import { getHighlightedParts } from "./ui/utils";
 import type { Customer } from "../data/customers";
 import { AppHeader } from "./AppHeader";
@@ -61,7 +63,9 @@ export function CustomerServiceLayout({
   const [suggestions, setSuggestions] = useState<Customer[]>([]);
   const [showSuggestions, setShowSuggestions] = useState(false);
   const [loading, setLoading] = useState(false);
-  const [addressFilter, setAddressFilter] = useState<"all" | "active" | "inactive">("all");
+  const [addressFilter, setAddressFilter] = useState<
+    "all" | "active" | "inactive"
+  >("all");
   const debounceRef = useRef<number | null>(null);
   const [activeIndex, setActiveIndex] = useState(-1);
   // Removidos estados de serviços e diálogo de confirmação
@@ -77,8 +81,57 @@ export function CustomerServiceLayout({
     () => customer ?? customers[0],
     [customer]
   );
-         
+
   const baseAddress = selectedCustomer.addresses[0];
+
+  const [addressStates, setAddressStates] = useState<
+    Record<string, ServiceStatus>
+  >({});
+
+  useEffect(() => {
+    const init: Record<string, ServiceStatus> = {};
+    selectedCustomer.addresses
+      .filter((addr) => addr.distributor === selectedDistributor)
+      .forEach((a) => {
+        init[a.id] = a.status;
+      });
+    setAddressStates(init);
+  }, [selectedCustomer, selectedDistributor]);
+
+  const toggleAddressStatus = (
+    addressId: string,
+    nextState?: ServiceStatus
+  ) => {
+    setAddressStates((prev) => {
+      const current =
+        prev[addressId] ??
+        addresses.find((a) => a.id === addressId)?.status ??
+        "inactive";
+      const next: ServiceStatus = nextState
+        ? nextState
+        : current === "active"
+        ? "inactive"
+        : "active";
+      const updated = { ...prev, [addressId]: next };
+
+      try {
+        const persisted = getAllPersistedCustomers();
+        const exists = persisted.find((c) => c.id === selectedCustomer.id);
+        if (exists) {
+          const updatedAddresses = exists.addresses.map((a) =>
+            a.id === addressId ? { ...a, status: next } : a
+          );
+          updatePersistedCustomer(selectedCustomer.id, {
+            addresses: updatedAddresses,
+          });
+        }
+      } catch (e) {
+        // ignore persistence errors
+      }
+
+      return updated;
+    });
+  };
 
   const computeUCForDistributor = (uc: string, dist: string) => {
     const prefixes: Record<string, string> = {
@@ -92,10 +145,14 @@ export function CustomerServiceLayout({
   };
 
   const addresses = selectedCustomer.addresses
-    .filter((addr) => !addr.distributor || addr.distributor === selectedDistributor)
+    .filter(
+      (addr) => !addr.distributor || addr.distributor === selectedDistributor
+    )
     .map((addr) => ({
       ...addr,
-      ucNumber: addr.distributor ? addr.ucNumber : computeUCForDistributor(addr.ucNumber, selectedDistributor),
+      ucNumber: addr.distributor
+        ? addr.ucNumber
+        : computeUCForDistributor(addr.ucNumber, selectedDistributor),
     }));
 
   const filteredAddresses = addresses.filter((a) => {
@@ -478,8 +535,6 @@ export function CustomerServiceLayout({
               </div>
             </div>
 
-            
-
             <div className="mb-6">
               <div className="flex items-start gap-3">
                 <div className="flex-1">
@@ -547,12 +602,15 @@ export function CustomerServiceLayout({
                       </button>
                     ))}
                   </div>
-            </div>
-            </div>
+                </div>
+              </div>
             </div>
 
             <div className="mb-6">
-              <Button className="h-12 bg-primary hover:bg-primary/90 gap-2" onClick={() => onNewConnection?.(selectedDistributor)}>
+              <Button
+                className="h-12 bg-primary hover:bg-primary/90 gap-2"
+                onClick={() => onNewConnection?.(selectedDistributor)}
+              >
                 <Power className="w-4 h-4" />
                 Ligação Nova
               </Button>
@@ -563,15 +621,35 @@ export function CustomerServiceLayout({
               <div className="flex items-center justify-between mb-6">
                 <DropdownMenu.Root>
                   <DropdownMenu.Trigger asChild>
-                    <button type="button" className="flex items-center gap-2 text-foreground hover:text-primary">
-                      <span>Unidades Consumidoras ({filteredAddresses.length})</span>
+                    <button
+                      type="button"
+                      className="flex items-center gap-2 text-foreground hover:text-primary"
+                    >
+                      <span>
+                        Unidades Consumidoras ({filteredAddresses.length})
+                      </span>
                       <ChevronDown className="w-4 h-4" />
                     </button>
                   </DropdownMenu.Trigger>
                   <DropdownMenu.Content className="bg-card border border-border rounded-md p-1 shadow-lg">
-                    <DropdownMenu.Item className="px-3 py-2 text-sm hover:bg-muted" onClick={() => setAddressFilter("all")}>Todas</DropdownMenu.Item>
-                    <DropdownMenu.Item className="px-3 py-2 text-sm hover:bg-muted" onClick={() => setAddressFilter("active")}>Ativas</DropdownMenu.Item>
-                    <DropdownMenu.Item className="px-3 py-2 text-sm hover:bg-muted" onClick={() => setAddressFilter("inactive")}>Inativas</DropdownMenu.Item>
+                    <DropdownMenu.Item
+                      className="px-3 py-2 text-sm hover:bg-muted"
+                      onClick={() => setAddressFilter("all")}
+                    >
+                      Todas
+                    </DropdownMenu.Item>
+                    <DropdownMenu.Item
+                      className="px-3 py-2 text-sm hover:bg-muted"
+                      onClick={() => setAddressFilter("active")}
+                    >
+                      Ativas
+                    </DropdownMenu.Item>
+                    <DropdownMenu.Item
+                      className="px-3 py-2 text-sm hover:bg-muted"
+                      onClick={() => setAddressFilter("inactive")}
+                    >
+                      Inativas
+                    </DropdownMenu.Item>
                   </DropdownMenu.Content>
                 </DropdownMenu.Root>
                 <div className="relative w-[28rem]">
@@ -599,14 +677,31 @@ export function CustomerServiceLayout({
                             <p className="text-foreground">
                               {address.ucNumber}
                             </p>
-                            <Button
-                              size="sm"
-                              variant={address.status === "active" ? "default" : "destructive"}
-                              className="h-7 px-3 rounded-md"
-                              type="button"
-                            >
-                              {address.status === "active" ? "Ativo" : "Inativo"}
-                            </Button>
+                            <div className="flex items-center gap-2">
+                              {(() => {
+                                const isActive =
+                                  (addressStates[address.id] ??
+                                    address.status) === "active";
+                                return (
+                                  <Button
+                                    size="sm"
+                                    className="h-8 px-3 rounded-md text-sm transition-colors flex items-center justify-center"
+                                    style={{
+                                      backgroundColor: isActive
+                                        ? "#059669"
+                                        : "#e11d48",
+                                      color: "#ffffff",
+                                    }}
+                                    onClick={(e) => {
+                                      e.stopPropagation();
+                                      toggleAddressStatus(address.id);
+                                    }}
+                                  >
+                                    {isActive ? "Ativo" : "Inativo"}
+                                  </Button>
+                                );
+                              })()}
+                            </div>
                           </div>
                           <p className="text-sm text-muted-foreground">
                             {address.address}

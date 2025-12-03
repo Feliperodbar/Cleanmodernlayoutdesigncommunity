@@ -1,11 +1,16 @@
 import { useMemo, useState } from "react";
 import type { Customer } from "../data/customers";
 import { AppHeader } from "./AppHeader";
-import { Card, CardContent, CardHeader, CardTitle, CardFooter } from "./ui/card";
+import {
+  Card,
+  CardContent,
+  CardHeader,
+  CardTitle,
+  CardFooter,
+} from "./ui/card";
 import { Button } from "./ui/button";
 import { Alert, AlertDescription } from "./ui/alert";
-import { Separator } from "./ui/separator";
-import { Info, CheckCircle2, Circle } from "lucide-react";
+import { CheckCircle2, Circle } from "lucide-react";
 import { Badge } from "./ui/badge";
 import { Progress } from "./ui/progress";
 
@@ -15,242 +20,427 @@ type NewConnectionChecklistPageProps = {
   customer?: Customer | null;
 };
 
-const stepLabels = [
-  "Checklist",
-  "Dados de Endereço e Local de Consumo",
-  "Validar Endereço",
-  "Características da Instalação",
-  "Seleção de Equipamentos Elétricos",
-  "Resumo da Solicitação",
-  "Cadastrar Serviços Adicionais",
-];
+export function NewConnectionChecklistPage({
+  onBack,
+  onNext,
+  customer,
+}: NewConnectionChecklistPageProps) {
+  const initialAnswers: Record<string, boolean | null> = {
+    padrao_entrada_existente: null,
+    distancia_poste: null,
+    poste_proprio: null,
+    fixacao_parafusos: null,
+    cabo_manutencao: null,
+    caixa_especificacao: null,
+    instalacao_altura: null,
+    condutor_suficiente: null,
+    eletrodo_trama: null,
+    tamanho_curvas: null,
+    material_adequado: null,
+  };
 
-export function NewConnectionChecklistPage({ onBack, onNext, customer }: NewConnectionChecklistPageProps) {
-  const [answers, setAnswers] = useState<Record<string, boolean | undefined>>({});
-  const setAnswer = (key: string, value: boolean) => setAnswers((a) => ({ ...a, [key]: value }));
+  const [answers, setAnswers] = useState(initialAnswers);
+  const setAnswer = (key: keyof typeof initialAnswers, value: boolean) => {
+    setAnswers((prev) => ({ ...prev, [key]: value }));
+  };
 
-  const requiredKeys = useMemo(
-    () => [
-      "padrao_entrada_existente",
-      "distancia_poste",
-      "poste_proprio",
-      "fixacao_parafusos",
-      "cabo_manutencao",
-      "caixa_especificacao",
-      "instalacao_altura",
-      "condutor_suficiente",
-      "eletrodo_trama",
-      "tamanho_curvas",
-      "material_adequado",
-    ],
-    [],
-  );
+  const [currentStep, setCurrentStep] = useState(0);
 
-  const incomplete = requiredKeys.some((k) => answers[k] === undefined);
-  const progress = Math.round(((requiredKeys.filter((k) => answers[k] !== undefined).length) / requiredKeys.length) * 100);
-  const currentStep = 0;
+  const stepLabels = ["Padrão", "Poste & Fixação", "Caixa & Condutor"];
+
+  const totalQuestions = Object.keys(initialAnswers).length;
+  const answeredCount = Object.values(answers).filter((v) => v !== null).length;
+  const progress = Math.round((answeredCount / totalQuestions) * 100);
+  const incomplete = answeredCount < totalQuestions;
+
+  const stepPanels = useMemo(() => {
+    return [
+      <div className="space-y-4">
+        <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+          <div className="bg-card/50 p-3 rounded-md">
+            <div className="flex items-center gap-2 mb-2">
+              <Badge variant="default">Padrão</Badge>
+              <span className="text-xs text-muted-foreground">Entrada</span>
+            </div>
+            <div className="space-y-2 text-sm">
+              <div className="flex items-center justify-between">
+                <span>Já existe padrão de entrada?</span>
+                <div className="flex items-center gap-2">
+                  <Button
+                    size="sm"
+                    variant={
+                      answers.padrao_entrada_existente === true
+                        ? "default"
+                        : "outline"
+                    }
+                    onClick={() => setAnswer("padrao_entrada_existente", true)}
+                  >
+                    Sim
+                  </Button>
+                  <Button
+                    size="sm"
+                    variant={
+                      answers.padrao_entrada_existente === false
+                        ? "destructive"
+                        : "outline"
+                    }
+                    onClick={() => setAnswer("padrao_entrada_existente", false)}
+                  >
+                    Não
+                  </Button>
+                </div>
+              </div>
+
+              <div className="flex items-center justify-between">
+                <span>Distância &lt; 40m do poste?</span>
+                <div className="flex items-center gap-2">
+                  <Button
+                    size="sm"
+                    variant={
+                      answers.distancia_poste === true ? "default" : "outline"
+                    }
+                    onClick={() => setAnswer("distancia_poste", true)}
+                  >
+                    Sim
+                  </Button>
+                  <Button
+                    size="sm"
+                    variant={
+                      answers.distancia_poste === false
+                        ? "destructive"
+                        : "outline"
+                    }
+                    onClick={() => setAnswer("distancia_poste", false)}
+                  >
+                    Não
+                  </Button>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>,
+      <div className="space-y-4">
+        <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+          <div className="bg-card/50 p-3 rounded-md">
+            <div className="flex items-center gap-2 mb-2">
+              <Badge variant="default">Poste</Badge>
+              <span className="text-xs text-muted-foreground">Condição</span>
+            </div>
+            <div className="space-y-2 text-sm">
+              <div className="flex items-center justify-between">
+                <span>Poste e portinhola adequados?</span>
+                <div className="flex items-center gap-2">
+                  <Button
+                    size="sm"
+                    variant={
+                      answers.poste_proprio === true ? "default" : "outline"
+                    }
+                    onClick={() => setAnswer("poste_proprio", true)}
+                  >
+                    Sim
+                  </Button>
+                  <Button
+                    size="sm"
+                    variant={
+                      answers.poste_proprio === false
+                        ? "destructive"
+                        : "outline"
+                    }
+                    onClick={() => setAnswer("poste_proprio", false)}
+                  >
+                    Não
+                  </Button>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <div className="bg-card/50 p-3 rounded-md">
+            <div className="flex items-center gap-2 mb-2">
+              <Badge variant="default">Fixação</Badge>
+            </div>
+            <div className="space-y-2 text-sm">
+              <div className="flex items-center justify-between">
+                <span>Fixação com parafusos/abraçadeiras?</span>
+                <div className="flex items-center gap-2">
+                  <Button
+                    size="sm"
+                    variant={
+                      answers.fixacao_parafusos === true ? "default" : "outline"
+                    }
+                    onClick={() => setAnswer("fixacao_parafusos", true)}
+                  >
+                    Sim
+                  </Button>
+                  <Button
+                    size="sm"
+                    variant={
+                      answers.fixacao_parafusos === false
+                        ? "destructive"
+                        : "outline"
+                    }
+                    onClick={() => setAnswer("fixacao_parafusos", false)}
+                  >
+                    Não
+                  </Button>
+                </div>
+              </div>
+              <div className="flex items-center justify-between">
+                <span>Altura correta (3,5 / 5,0m)?</span>
+                <div className="flex items-center gap-2">
+                  <Button
+                    size="sm"
+                    variant={
+                      answers.cabo_manutencao === true ? "default" : "outline"
+                    }
+                    onClick={() => setAnswer("cabo_manutencao", true)}
+                  >
+                    Sim
+                  </Button>
+                  <Button
+                    size="sm"
+                    variant={
+                      answers.cabo_manutencao === false
+                        ? "destructive"
+                        : "outline"
+                    }
+                    onClick={() => setAnswer("cabo_manutencao", false)}
+                  >
+                    Não
+                  </Button>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>,
+      <div className="space-y-4">
+        <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+          <div className="bg-card/50 p-3 rounded-md">
+            <div className="flex items-center gap-2 mb-2">
+              <Badge variant="default">Caixa</Badge>
+            </div>
+            <div className="space-y-2 text-sm">
+              <div className="flex items-center justify-between">
+                <span>Dentro das normas técnicas?</span>
+                <div className="flex items-center gap-2">
+                  <Button
+                    size="sm"
+                    variant={
+                      answers.caixa_especificacao === true
+                        ? "default"
+                        : "outline"
+                    }
+                    onClick={() => setAnswer("caixa_especificacao", true)}
+                  >
+                    Sim
+                  </Button>
+                  <Button
+                    size="sm"
+                    variant={
+                      answers.caixa_especificacao === false
+                        ? "destructive"
+                        : "outline"
+                    }
+                    onClick={() => setAnswer("caixa_especificacao", false)}
+                  >
+                    Não
+                  </Button>
+                </div>
+              </div>
+              <div className="flex items-center justify-between">
+                <span>Posição 1,6 - 1,7m?</span>
+                <div className="flex items-center gap-2">
+                  <Button
+                    size="sm"
+                    variant={
+                      answers.instalacao_altura === true ? "default" : "outline"
+                    }
+                    onClick={() => setAnswer("instalacao_altura", true)}
+                  >
+                    Sim
+                  </Button>
+                  <Button
+                    size="sm"
+                    variant={
+                      answers.instalacao_altura === false
+                        ? "destructive"
+                        : "outline"
+                    }
+                    onClick={() => setAnswer("instalacao_altura", false)}
+                  >
+                    Não
+                  </Button>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <div className="bg-card/50 p-3 rounded-md">
+            <div className="flex items-center gap-2 mb-2">
+              <Badge variant="default">Condutor / Eletrodo</Badge>
+            </div>
+            <div className="space-y-2 text-sm">
+              <div className="flex items-center justify-between">
+                <span>Sobra de cabo suficiente?</span>
+                <div className="flex items-center gap-2">
+                  <Button
+                    size="sm"
+                    variant={
+                      answers.condutor_suficiente === true
+                        ? "default"
+                        : "outline"
+                    }
+                    onClick={() => setAnswer("condutor_suficiente", true)}
+                  >
+                    Sim
+                  </Button>
+                  <Button
+                    size="sm"
+                    variant={
+                      answers.condutor_suficiente === false
+                        ? "destructive"
+                        : "outline"
+                    }
+                    onClick={() => setAnswer("condutor_suficiente", false)}
+                  >
+                    Não
+                  </Button>
+                </div>
+              </div>
+              <div className="flex items-center justify-between">
+                <span>Tem no mínimo 3 curvas?</span>
+                <div className="flex items-center gap-2">
+                  <Button
+                    size="sm"
+                    variant={
+                      answers.eletrodo_trama === true ? "default" : "outline"
+                    }
+                    onClick={() => setAnswer("eletrodo_trama", true)}
+                  >
+                    Sim
+                  </Button>
+                  <Button
+                    size="sm"
+                    variant={
+                      answers.eletrodo_trama === false
+                        ? "destructive"
+                        : "outline"
+                    }
+                    onClick={() => setAnswer("eletrodo_trama", false)}
+                  >
+                    Não
+                  </Button>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>,
+    ];
+  }, [answers]);
 
   return (
-    <div className="min-h-screen bg-background">
-      <AppHeader title="Ligação nova" subtitle="Checklist" actions={<Button variant="outline" onClick={onBack}>Voltar</Button>} />
-      <main className="flex items-start justify-center min-h-[calc(100vh-73px)] p-6">
-        <div className="w-full max-w-6xl grid grid-cols-3 gap-6">
-          <div className="col-span-2">
-            <Card className="shadow-lg">
-              <CardHeader className="border-b border-border bg-gradient-to-r from-secondary/10 to-primary/10">
-                <div className="flex items-center justify-between">
-                  <div className="flex items-center gap-3">
-                    <div className="w-10 h-10 rounded-lg bg-secondary/20 flex items-center justify-center">
-                      <Info className="w-5 h-5 text-secondary" />
-                    </div>
-                    <div>
-                      <CardTitle className="text-foreground">Checklist</CardTitle>
-                      <p className="text-sm text-muted-foreground">Valide o padrão de entrada e condições para a primeira ligação</p>
-                    </div>
-                  </div>
-                  <div className="w-64">
-                    <Progress value={progress} />
-                    <div className="mt-1 text-xs text-muted-foreground">{progress}% concluído</div>
-                  </div>
-                </div>
+    <div>
+      <AppHeader />
+      <main className="p-4">
+        <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+          <div className="lg:col-span-2">
+            <Card>
+              <CardHeader className="border-b border-border bg-transparent px-4 py-3">
+                <CardTitle className="text-sm">
+                  Checklist de Nova Conexão
+                </CardTitle>
               </CardHeader>
-              <CardContent className="p-6 space-y-6">
+              <CardContent className="p-4 space-y-4">
                 {customer && (
-                  <div className="grid grid-cols-2 gap-4">
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                     <div>
-                      <div className="text-xs text-muted-foreground">Número do Protocolo</div>
-                      <div className="text-sm text-foreground">{customer.lastProtocol ?? "—"}</div>
+                      <div className="text-xs text-muted-foreground">
+                        Protocolo
+                      </div>
+                      <div className="text-sm text-foreground">
+                        {customer.lastProtocol ?? "—"}
+                      </div>
                     </div>
                     <div>
-                      <div className="text-xs text-muted-foreground">Cliente</div>
-                      <div className="text-sm text-foreground">{customer.name}</div>
+                      <div className="text-xs text-muted-foreground">
+                        Cliente
+                      </div>
+                      <div className="text-sm text-foreground truncate">
+                        {customer.name}
+                      </div>
                     </div>
                   </div>
                 )}
-                <Alert>
-                  <AlertDescription>Necessário acesso livre para inspeção do padrão e finalização da ligação nova</AlertDescription>
+
+                <Alert className="bg-destructive/10">
+                  <AlertDescription className="text-destructive">
+                    Necessário acesso livre para inspeção do padrão e
+                    finalização da ligação nova
+                  </AlertDescription>
                 </Alert>
 
-                <div className="space-y-4">
-                  <div className="flex items-center gap-2">
-                    <Badge variant="default">Padrão de Entrada</Badge>
-                    <span className="text-xs text-muted-foreground">Verifique as condições iniciais</span>
-                  </div>
-                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                    <div className="space-y-2">
-                      <div className="text-sm">Já existe padrão de entrada?</div>
-                      <div className="flex items-center gap-2">
-                        <Button size="sm" variant={answers.padrao_entrada_existente === true ? "default" : "outline"} onClick={() => setAnswer("padrao_entrada_existente", true)}>Sim</Button>
-                        <Button size="sm" variant={answers.padrao_entrada_existente === false ? "destructive" : "outline"} onClick={() => setAnswer("padrao_entrada_existente", false)}>Não</Button>
-                      </div>
-                    </div>
-                    <div className="space-y-2">
-                      <div className="text-sm">Está situado a menos de 40m de um poste da concessionária?</div>
-                      <div className="flex items-center gap-2">
-                        <Button size="sm" variant={answers.distancia_poste === true ? "default" : "outline"} onClick={() => setAnswer("distancia_poste", true)}>Sim</Button>
-                        <Button size="sm" variant={answers.distancia_poste === false ? "destructive" : "outline"} onClick={() => setAnswer("distancia_poste", false)}>Não</Button>
-                      </div>
-                    </div>
-                    <div className="space-y-2 md:col-span-2">
-                      <div className="text-sm">Tem poste, portinhola bem engastada e na dimensão adequada?</div>
-                      <div className="flex items-center gap-2">
-                        <Button size="sm" variant={answers.poste_proprio === true ? "default" : "outline"} onClick={() => setAnswer("poste_proprio", true)}>Sim</Button>
-                        <Button size="sm" variant={answers.poste_proprio === false ? "destructive" : "outline"} onClick={() => setAnswer("poste_proprio", false)}>Não</Button>
-                      </div>
-                    </div>
-                  </div>
-                </div>
+                {stepPanels[currentStep]}
 
-                <Separator />
-
-                <div className="space-y-4">
-                  <div className="flex items-center gap-2">
-                    <Badge variant="default">Aeração Secundária</Badge>
-                    <span className="text-xs text-muted-foreground">Fixação e altura</span>
-                  </div>
-                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                    <div className="space-y-2">
-                      <div className="text-sm">Está fixado com parafusos, ou abraçadeiras e isoladores roldana?</div>
-                      <div className="flex items-center gap-2">
-                        <Button size="sm" variant={answers.fixacao_parafusos === true ? "default" : "outline"} onClick={() => setAnswer("fixacao_parafusos", true)}>Sim</Button>
-                        <Button size="sm" variant={answers.fixacao_parafusos === false ? "destructive" : "outline"} onClick={() => setAnswer("fixacao_parafusos", false)}>Não</Button>
-                      </div>
-                    </div>
-                    <div className="space-y-2">
-                      <div className="text-sm">Está na altura correta? (3,5 ou 5,0m para travessias de rua)</div>
-                      <div className="flex items-center gap-2">
-                        <Button size="sm" variant={answers.cabo_manutencao === true ? "default" : "outline"} onClick={() => setAnswer("cabo_manutencao", true)}>Sim</Button>
-                        <Button size="sm" variant={answers.cabo_manutencao === false ? "destructive" : "outline"} onClick={() => setAnswer("cabo_manutencao", false)}>Não</Button>
-                      </div>
-                    </div>
-                  </div>
-                </div>
-
-                <Separator />
-
-                <div className="space-y-4">
-                  <div className="flex items-center gap-2">
-                    <Badge variant="default">Caixa de Medição</Badge>
-                    <span className="text-xs text-muted-foreground">Normas e posição</span>
-                  </div>
-                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                    <div className="space-y-2">
-                      <div className="text-sm">A caixa está dentro das normas de especificações técnicas?</div>
-                      <div className="flex items-center gap-2">
-                        <Button size="sm" variant={answers.caixa_especificacao === true ? "default" : "outline"} onClick={() => setAnswer("caixa_especificacao", true)}>Sim</Button>
-                        <Button size="sm" variant={answers.caixa_especificacao === false ? "destructive" : "outline"} onClick={() => setAnswer("caixa_especificacao", false)}>Não</Button>
-                      </div>
-                    </div>
-                    <div className="space-y-2">
-                      <div className="text-sm">Está instalada na posição correta (entre 1,6 e 1,7m)?</div>
-                      <div className="flex items-center gap-2">
-                        <Button size="sm" variant={answers.instalacao_altura === true ? "default" : "outline"} onClick={() => setAnswer("instalacao_altura", true)}>Sim</Button>
-                        <Button size="sm" variant={answers.instalacao_altura === false ? "destructive" : "outline"} onClick={() => setAnswer("instalacao_altura", false)}>Não</Button>
-                      </div>
-                    </div>
-                  </div>
-                </div>
-
-                <Separator />
-
-                <div className="space-y-4">
-                  <div className="flex items-center gap-2">
-                    <Badge variant="default">Condutor de Enlace e Entrada</Badge>
-                  </div>
-                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                    <div className="space-y-2 md:col-span-2">
-                      <div className="text-sm">Há sobra de cabo o suficiente para a instalação dos medidores?</div>
-                      <div className="flex items-center gap-2">
-                        <Button size="sm" variant={answers.condutor_suficiente === true ? "default" : "outline"} onClick={() => setAnswer("condutor_suficiente", true)}>Sim</Button>
-                        <Button size="sm" variant={answers.condutor_suficiente === false ? "destructive" : "outline"} onClick={() => setAnswer("condutor_suficiente", false)}>Não</Button>
-                      </div>
-                    </div>
-                  </div>
-                </div>
-
-                <Separator />
-
-                <div className="space-y-4">
-                  <div className="flex items-center gap-2">
-                    <Badge variant="default">Eletrodo de Entrada</Badge>
-                  </div>
-                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                    <div className="space-y-2">
-                      <div className="text-sm">Tem no mínimo 3 curvas?</div>
-                      <div className="flex items-center gap-2">
-                        <Button size="sm" variant={answers.eletrodo_trama === true ? "default" : "outline"} onClick={() => setAnswer("eletrodo_trama", true)}>Sim</Button>
-                        <Button size="sm" variant={answers.eletrodo_trama === false ? "destructive" : "outline"} onClick={() => setAnswer("eletrodo_trama", false)}>Não</Button>
-                      </div>
-                    </div>
-                    <div className="space-y-2">
-                      <div className="text-sm">De material adequado? (PVC ou Aço)</div>
-                      <div className="flex items-center gap-2">
-                        <Button size="sm" variant={answers.tamanho_curvas === true ? "default" : "outline"} onClick={() => setAnswer("tamanho_curvas", true)}>Sim</Button>
-                        <Button size="sm" variant={answers.tamanho_curvas === false ? "destructive" : "outline"} onClick={() => setAnswer("tamanho_curvas", false)}>Não</Button>
-                      </div>
-                    </div>
-                    <div className="space-y-2 md:col-span-2">
-                      <div className="text-sm">O aterramento está adequado?</div>
-                      <div className="flex items-center gap-2">
-                        <Button size="sm" variant={answers.material_adequado === true ? "default" : "outline"} onClick={() => setAnswer("material_adequado", true)}>Sim</Button>
-                        <Button size="sm" variant={answers.material_adequado === false ? "destructive" : "outline"} onClick={() => setAnswer("material_adequado", false)}>Não</Button>
-                      </div>
-                    </div>
-                  </div>
-                </div>
-
-                {incomplete && (
-                  <div className="grid grid-cols-1 md:grid-cols-2 gap-3 mt-4">
+                {currentStep === stepPanels.length - 1 && incomplete && (
+                  <div className="grid grid-cols-1 gap-3 mt-3">
                     <Alert>
-                      <AlertDescription>Algumas perguntas não foram selecionadas</AlertDescription>
-                    </Alert>
-                    <Alert>
-                      <AlertDescription>Requer análise técnica</AlertDescription>
+                      <AlertDescription>
+                        Algumas perguntas não foram selecionadas
+                      </AlertDescription>
                     </Alert>
                   </div>
                 )}
               </CardContent>
+
               <CardFooter className="border-t border-border justify-between">
-                <Button variant="outline" onClick={onBack}>Voltar</Button>
-                <Button onClick={onNext} disabled={incomplete}>Avançar</Button>
+                <Button
+                  variant="outline"
+                  onClick={() =>
+                    currentStep > 0 ? setCurrentStep((s) => s - 1) : onBack()
+                  }
+                >
+                  {currentStep > 0 ? "Anterior" : "Voltar"}
+                </Button>
+                <Button
+                  onClick={() => {
+                    const last = stepPanels.length - 1;
+                    if (currentStep === last) {
+                      if (!incomplete) onNext();
+                    } else {
+                      setCurrentStep((s) => Math.min(s + 1, last));
+                    }
+                  }}
+                  disabled={
+                    currentStep === stepPanels.length - 1 ? incomplete : false
+                  }
+                >
+                  {currentStep === stepPanels.length - 1
+                    ? "Concluir"
+                    : "Próximo"}
+                </Button>
               </CardFooter>
             </Card>
           </div>
 
-          <aside className="col-span-1">
+          <aside>
             <Card>
-              <CardHeader className="border-b border-border bg-gradient-to-r from-secondary/10 to-primary/10">
-                <CardTitle>Etapas</CardTitle>
+              <CardHeader className="border-b border-border bg-transparent px-4 py-3">
+                <CardTitle className="text-sm">Etapas</CardTitle>
               </CardHeader>
-              <CardContent className="p-6">
-                <div className="space-y-4">
-                  <div className="flex items-center gap-3">
-                    <Progress value={progress} />
-                    <span className="text-xs text-muted-foreground">{progress}%</span>
+              <CardContent className="p-4">
+                <div className="space-y-3">
+                  <div className="flex items-center gap-2">
+                    <Progress value={progress} className="w-full" />
+                    <span className="text-xs text-muted-foreground">
+                      {progress}%
+                    </span>
                   </div>
                   <div className="relative pl-6">
                     <div className="absolute left-2 top-0 bottom-0 w-px bg-border" />
-                    <ul className="space-y-4">
+                    <ul className="space-y-3 text-sm">
                       {stepLabels.map((label, i) => (
                         <li key={label} className="flex items-start gap-2">
                           {i <= currentStep ? (
@@ -258,7 +448,17 @@ export function NewConnectionChecklistPage({ onBack, onNext, customer }: NewConn
                           ) : (
                             <Circle className="mt-0.5 w-4 h-4 text-muted-foreground" />
                           )}
-                          <span className={i <= currentStep ? (i === currentStep ? "text-primary font-semibold" : "text-primary") : "text-muted-foreground"}>{label}</span>
+                          <span
+                            className={
+                              i <= currentStep
+                                ? i === currentStep
+                                  ? "text-primary font-medium"
+                                  : "text-primary"
+                                : "text-muted-foreground"
+                            }
+                          >
+                            {label}
+                          </span>
                         </li>
                       ))}
                     </ul>
@@ -272,3 +472,5 @@ export function NewConnectionChecklistPage({ onBack, onNext, customer }: NewConn
     </div>
   );
 }
+
+export default NewConnectionChecklistPage;

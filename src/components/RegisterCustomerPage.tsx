@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 
 import {
   ArrowLeft,
@@ -51,6 +51,8 @@ export function RegisterCustomerPage({
   const [birthDate, setBirthDate] = useState("");
   const [birthDateError, setBirthDateError] = useState<string | null>(null);
   const [sex, setSex] = useState("");
+
+  // missing states and helpers used by the JSX
   const [cep, setCep] = useState("");
   const [addressData, setAddressData] = useState<AddressData | null>(null);
   const [number, setNumber] = useState("");
@@ -58,34 +60,18 @@ export function RegisterCustomerPage({
   const [cellPhone, setCellPhone] = useState("");
   const [homePhone, setHomePhone] = useState("");
   const [email, setEmail] = useState("");
-  const [company, setCompany] = useState("");
+  const [uploadedFileName, setUploadedFileName] = useState<string | null>(null);
+  const [parsedUpload, setParsedUpload] = useState<any | null>(null);
+  const [uploadError, setUploadError] = useState<string | null>(null);
   const [loadingCep, setLoadingCep] = useState(false);
   const [loadingDocument, setLoadingDocument] = useState(false);
 
+  const [company, setCompany] = useState<string | null>(null);
   const companyLabels: Record<string, string> = {
-    coelba: "Neoenergia Coelba",
-    cosern: "Neoenergia Cosern",
-    elektro: "Neoenergia Elektro",
-    pernambuco: "Neoenergia Pernambuco",
-  };
-
-  const formatDocument = (value: string, type: "cpf" | "cnpj") => {
-    const numbers = value.replace(/\D/g, "");
-
-    if (type === "cpf") {
-      return numbers
-        .slice(0, 11)
-        .replace(/(\d{3})(\d)/, "$1.$2")
-        .replace(/(\d{3})(\d)/, "$1.$2")
-        .replace(/(\d{3})(\d{1,2})$/, "$1-$2");
-    } else {
-      return numbers
-        .slice(0, 14)
-        .replace(/(\d{2})(\d)/, "$1.$2")
-        .replace(/(\d{3})(\d)/, "$1.$2")
-        .replace(/(\d{3})(\d)/, "$1/$2")
-        .replace(/(\d{4})(\d{1,2})$/, "$1-$2");
-    }
+    "Neoenergia Elektro": "Elektro",
+    "Neoenergia Coelba": "Coelba",
+    "Neoenergia Cosern": "Cosern",
+    "Neoenergia Pernambuco": "Pernambuco",
   };
 
   const formatCep = (value: string) => {
@@ -93,18 +79,68 @@ export function RegisterCustomerPage({
     return numbers.slice(0, 8).replace(/(\d{5})(\d)/, "$1-$2");
   };
 
-  const formatPhone = (value: string) => {
-    const numbers = value.replace(/\D/g, "");
-    if (numbers.length <= 10) {
-      return numbers
-        .slice(0, 10)
-        .replace(/(\d{2})(\d)/, "($1) $2")
-        .replace(/(\d{4})(\d)/, "$1-$2");
+  const formatDocument = (raw: string, type: "cpf" | "cnpj") => {
+    const d = String(raw || "").replace(/\D/g, "");
+    if (type === "cpf") {
+      return d
+        .replace(/(\d{3})(\d{3})(\d{3})(\d{2})/, "$1.$2.$3-$4")
+        .slice(0, 14);
     }
-    return numbers
-      .slice(0, 11)
-      .replace(/(\d{2})(\d)/, "($1) $2")
-      .replace(/(\d{5})(\d)/, "$1-$2");
+    return d
+      .replace(/(\d{2})(\d{3})(\d{3})(\d{4})(\d{2})/, "$1.$2.$3/$4-$5")
+      .slice(0, 18);
+  };
+
+  const formatPhone = (raw: string) => {
+    const d = String(raw || "").replace(/\D/g, "");
+    if (d.length <= 10) {
+      return d
+        .replace(/(\d{2})(\d{4})(\d{0,4})/, "($1) $2-$3")
+        .replace(/-$/, "");
+    }
+    return d.replace(/(\d{2})(\d{5})(\d{4})/, "($1) $2-$3");
+  };
+
+  const validateCPF = (raw: string) => {
+    const cpf = String(raw || "").replace(/\D/g, "");
+    if (!cpf || cpf.length !== 11) return false;
+    if (/^(\d)\1{10}$/.test(cpf)) return false;
+    const toDigit = (t: number) => {
+      let sum = 0;
+      for (let i = 0; i < t - 1; i++) sum += Number(cpf[i]) * (t - i);
+      const d = (sum * 10) % 11;
+      return d === 10 ? 0 : d;
+    };
+    return toDigit(10) === Number(cpf[9]) && toDigit(11) === Number(cpf[10]);
+  };
+
+  const validateEmail = (value: string) => {
+    if (!value) return false;
+    return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(value);
+  };
+
+  // Prevent the autofill effect from overwriting fields when we programmatically
+  // set `document` during an import operation.
+  const skipAutofillRef = useRef(false);
+  const fileInputRef = useRef<HTMLInputElement | null>(null);
+
+  const validateCNPJ = (cnpjRaw: string) => {
+    const cnpj = cnpjRaw.replace(/\D/g, "");
+    if (!cnpj || cnpj.length !== 14) return false;
+
+    if (/^(\d)\1{13}$/.test(cnpj)) return false;
+    const calc = (t: number) => {
+      const weights =
+        t === 12
+          ? [5, 4, 3, 2, 9, 8, 7, 6, 5, 4, 3, 2]
+          : [6, 5, 4, 3, 2, 9, 8, 7, 6, 5, 4, 3, 2];
+      let sum = 0;
+      for (let i = 0; i < weights.length; i++)
+        sum += Number(cnpj[i]) * weights[i];
+      const d = sum % 11;
+      return d < 2 ? 0 : 11 - d;
+    };
+    return calc(12) === Number(cnpj[12]) && calc(13) === Number(cnpj[13]);
   };
 
   const handleCepChange = async (value: string) => {
@@ -144,6 +180,11 @@ export function RegisterCustomerPage({
   };
 
   useEffect(() => {
+    if (skipAutofillRef.current) {
+      // skip a single autofill run triggered by programmatic document set
+      skipAutofillRef.current = false;
+      return;
+    }
     (async () => {
       await handleDocumentAutofill();
     })();
@@ -342,6 +383,218 @@ export function RegisterCustomerPage({
     }
   };
 
+  // --- File upload handling ---
+  const handleFileUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
+    setUploadError(null);
+    const file = e.target.files?.[0];
+    if (!file) return;
+    setUploadedFileName(file.name);
+    if (!file.name.toLowerCase().endsWith(".txt")) {
+      setUploadError("Apenas arquivos .txt são aceitos");
+      return;
+    }
+    const reader = new FileReader();
+    reader.onload = () => {
+      const text = String(reader.result || "");
+      const lines = text
+        .split(/\r?\n/)
+        .map((l) => l.trim())
+        .filter(Boolean);
+
+      // try to detect fields even if order varies
+      let detectedName: string | null = null;
+      let detectedBirth: string | null = null;
+      let detectedDoc: string | null = null;
+      let detectedPhone: string | null = null;
+      let detectedCep: string | null = null;
+      let detectedEmail: string | null = null;
+
+      const remaining: string[] = [];
+
+      for (const line of lines) {
+        // normalize common labels like "Data:" or "Nascimento:"
+        let l = line
+          .replace(/^\s*(data|nascimento|nasc)\s*[:\-\s]+/i, "")
+          .trim();
+        // email
+        if (!detectedEmail && /@/.test(l)) {
+          detectedEmail = l;
+          continue;
+        }
+
+        // birth date: accept multiple separators and 1-2 digit day/month
+        if (!detectedBirth) {
+          const dateLike1 = /^\d{1,2}[\/\-.]\d{1,2}[\/\-.]\d{4}$/.test(l); // e.g. 1/1/1980 01-01-1980 01.01.1980
+          const dateLike2 = /^\d{4}[\/\-.]\d{1,2}[\/\-.]\d{1,2}$/.test(l); // e.g. 1980-01-01
+          if (dateLike1 || dateLike2) {
+            detectedBirth = l;
+            continue;
+          }
+        }
+
+        // cep (8 digits, optionally with -)
+        const digitsOnly = l.replace(/\D/g, "");
+        if (!detectedCep && digitsOnly.length === 8) {
+          detectedCep = l;
+          continue;
+        }
+
+        // document (cpf/cnpj)
+        if (
+          !detectedDoc &&
+          (digitsOnly.length === 11 || digitsOnly.length === 14)
+        ) {
+          // basic sanity: accept it as doc
+          detectedDoc = l;
+          continue;
+        }
+
+        // phone (10 or 11 digits)
+        if (
+          !detectedPhone &&
+          (digitsOnly.length === 10 || digitsOnly.length === 11)
+        ) {
+          detectedPhone = l;
+          continue;
+        }
+
+        // otherwise keep as candidate for name
+        remaining.push(l);
+      }
+
+      if (!detectedName) {
+        if (remaining.length > 0) detectedName = remaining.join(" ");
+      }
+
+      // Validate we found all required fields
+      const missing: string[] = [];
+      if (!detectedName) missing.push("nome");
+      if (!detectedBirth) missing.push("data");
+      if (!detectedDoc) missing.push("documento (CPF/CNPJ)");
+      if (!detectedPhone) missing.push("telefone");
+      if (!detectedCep) missing.push("cep");
+      if (!detectedEmail) missing.push("email");
+
+      if (missing.length > 0) {
+        setUploadError(
+          `Arquivo inválido: não foi possível detectar os campos: ${missing.join(
+            ", "
+          )}`
+        );
+        setParsedUpload(null);
+        return;
+      }
+
+      setParsedUpload({
+        fullName: detectedName || "",
+        birthRaw: detectedBirth || "",
+        docRaw: detectedDoc || "",
+        phoneRaw: detectedPhone || "",
+        cepRaw: detectedCep || "",
+        emailRaw: detectedEmail || "",
+      });
+    };
+    reader.readAsText(file, "UTF-8");
+  };
+
+  const cancelParsedImport = () => {
+    setParsedUpload(null);
+    setUploadedFileName(null);
+    setUploadError(null);
+  };
+
+  const importParsedData = async () => {
+    if (!parsedUpload) return;
+    setUploadError(null);
+    const normalize = (s?: string) =>
+      (s || "")
+        .replace(
+          /^\s*(email|e-?mail|telefone|tel|cpf|cnpj|cep|data)\s*[:\-\s]+/i,
+          ""
+        )
+        .trim();
+
+    const {
+      fullName: fNameRaw = "",
+      birthRaw: birthRawRaw = "",
+      docRaw: docRawRaw = "",
+      phoneRaw: phoneRawRaw = "",
+      cepRaw: cepRawRaw = "",
+      emailRaw: emailRawRaw = "",
+    } = parsedUpload;
+
+    const birthRaw = normalize(birthRawRaw);
+    const docRaw = normalize(docRawRaw);
+    const phoneRaw = normalize(phoneRawRaw);
+    const cepRaw = normalize(cepRawRaw);
+    const emailRaw = normalize(emailRawRaw);
+    const fName = normalize(fNameRaw);
+
+    // validate document and email
+    const docDigits = String(docRaw || "").replace(/\D/g, "");
+    if (docDigits.length === 11) {
+      if (!validateCPF(docRaw)) {
+        setUploadError("CPF inválido");
+        return;
+      }
+      setDocumentType("cpf");
+      // prevent autofill effect from triggering while we import
+      skipAutofillRef.current = true;
+      setDocument(formatDocument(docRaw, "cpf"));
+    } else if (docDigits.length === 14) {
+      if (!validateCNPJ(docRaw)) {
+        setUploadError("CNPJ inválido");
+        return;
+      }
+      setDocumentType("cnpj");
+      // prevent autofill effect from triggering while we import
+      skipAutofillRef.current = true;
+      setDocument(formatDocument(docRaw, "cnpj"));
+    } else {
+      setUploadError("Documento inválido (deve ser CPF ou CNPJ)");
+      return;
+    }
+
+    if (!validateEmail(emailRaw)) {
+      setUploadError("E-mail com formato inválido");
+      return;
+    }
+
+    // birth: convert DD/MM/YYYY -> YYYY-MM-DD for input type=date
+    let birthInput = "";
+    if (/^\d{2}\/\d{2}\/\d{4}$/.test(birthRaw)) {
+      const m = birthRaw.match(/^(\d{2})\/(\d{2})\/(\d{4})$/);
+      if (m) birthInput = `${m[3]}-${m[2]}-${m[1]}`;
+    } else if (/^\d{4}-\d{2}-\d{2}$/.test(birthRaw)) {
+      birthInput = birthRaw;
+    }
+
+    setFullName(fName);
+    if (birthInput) setBirthDate(birthInput);
+    setCellPhone(formatPhone(phoneRaw));
+    setEmail(emailRaw);
+    setCep(formatCep(cepRaw));
+    if (cepRaw) await handleCepChange(cepRaw);
+
+    // foco no campo Nome Completo para o usuário continuar a edição
+    try {
+      // delay curto para garantir que o input esteja atualizado/renderizado
+      setTimeout(() => {
+        const el = document.getElementById(
+          "fullName"
+        ) as HTMLInputElement | null;
+        if (el && typeof el.focus === "function") el.focus();
+      }, 50);
+    } catch (e) {
+      /* ignore */
+    }
+
+    // clear parsed buffer
+    setParsedUpload(null);
+    // ensure future autofill works
+    skipAutofillRef.current = false;
+  };
+
   return (
     <div className="min-h-screen bg-background">
       <AppHeader
@@ -398,7 +651,7 @@ export function RegisterCustomerPage({
                       <button
                         key={key}
                         type="button"
-                        className={`text-white relative rounded-lg p-4 text-center transition-colors duration-150 cursor-pointer'} ${
+                        className={`text-white relative rounded-lg p-4 text-center transition-colors duration-150 cursor-pointer ${
                           company === key
                             ? "ring-2 ring-green-600 border-4 border-green-600 bg-green-100"
                             : "border border-border hover:bg-green-50 hover:border-green-400"
@@ -462,7 +715,125 @@ export function RegisterCustomerPage({
                   </div>
 
                   <div className="grid grid-cols-2 gap-4">
-                    <div className="space-y-2">
+                    <div className="space-y-2 p-3">
+                      <div className="my-2 ">
+                        <label className="w-full block cursor-pointer ">
+                          <input
+                            ref={(el) => (fileInputRef.current = el)}
+                            type="file"
+                            accept=".txt"
+                            onChange={handleFileUpload}
+                            style={{ display: "none" }}
+                          />
+
+                          <div
+                            role="button"
+                            tabIndex={0}
+                            onKeyDown={(e) => {
+                              if (e.key === "Enter" || e.key === " ") {
+                                e.preventDefault();
+                                fileInputRef.current?.click();
+                              }
+                            }}
+                            onClick={() => fileInputRef.current?.click()}
+                            className="w-full p-4 flex items-center justify-between gap-4 rounded-md p-3 border border-border bg-card transition-colors cursor-pointer hover:bg-muted"
+                          >
+                            <div className="flex items-center gap-3">
+                              <div
+                                className={`w-10 h-10 rounded-md flex items-center justify-center ${
+                                  uploadedFileName
+                                    ? "bg-white/20"
+                                    : "bg-secondary/10"
+                                }`}
+                              >
+                                <Zap
+                                  className={`w-5 h-5 ${
+                                    uploadedFileName
+                                      ? "text-white"
+                                      : "text-secondary"
+                                  }`}
+                                />
+                              </div>
+                              <div>
+                                <div
+                                  className={`text-sm ${
+                                    uploadedFileName
+                                      ? "text-white"
+                                      : "text-foreground"
+                                  }`}
+                                >
+                                  Clique ou arraste para importar um arquivo{" "}
+                                  <strong>.txt</strong>
+                                </div>
+                              </div>
+                            </div>
+
+                            <div className="text-sm text-right">
+                              {uploadedFileName ? (
+                                <div className="flex flex-col items-end">
+                                  <span className="px-3 py-1 bg-white/10 rounded-md text-sm">
+                                    {uploadedFileName}
+                                  </span>
+                                  <span className="text-xs text-white/80">
+                                    Clique novamente para substituir
+                                  </span>
+                                </div>
+                              ) : (
+                                <div className="px-3 py-1 rounded-md bg-green-600 text-white">
+                                  Selecionar arquivo
+                                </div>
+                              )}
+                            </div>
+                          </div>
+                        </label>
+
+                        {uploadError && (
+                          <p className="text-sm text-destructive mt-2">
+                            {uploadError}
+                          </p>
+                        )}
+
+                        {parsedUpload && (
+                          <div className="mt-3 p-4 bg-muted/5 border border-border rounded-md">
+                            <div className="text-sm mb-2 font-medium">
+                              Pré-visualização
+                            </div>
+                            <div className="grid grid-cols-1 md:grid-cols-2 gap-2 text-sm">
+                              <div>
+                                <strong>Nome:</strong> {parsedUpload.fullName}
+                              </div>
+                              <div>
+                                <strong>Data:</strong> {parsedUpload.birthRaw}
+                              </div>
+                              <div>
+                                <strong>Documento:</strong>{" "}
+                                {parsedUpload.docRaw}
+                              </div>
+                              <div>
+                                <strong>Telefone:</strong>{" "}
+                                {parsedUpload.phoneRaw}
+                              </div>
+                              <div>
+                                <strong>CEP:</strong> {parsedUpload.cepRaw}
+                              </div>
+                              <div>
+                                <strong>Email:</strong> {parsedUpload.emailRaw}
+                              </div>
+                            </div>
+                            <div className="flex gap-2 justify-end mt-3">
+                              <Button
+                                variant="outline"
+                                onClick={cancelParsedImport}
+                              >
+                                Cancelar
+                              </Button>
+                              <Button onClick={importParsedData}>
+                                Importar
+                              </Button>
+                            </div>
+                          </div>
+                        )}
+                      </div>
                       <Label htmlFor="document">CPF/CNPJ *</Label>
                       <div className="flex gap-2 relative">
                         <Select
